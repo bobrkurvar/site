@@ -3,8 +3,7 @@ from db import get_db_manager
 from typing import Annotated
 from db import Crud
 from db import Catalog
-from schemas.tile import TileInput
-
+from .schemas.tile import TileInput
 
 router = APIRouter()
 dbManagerDep = Annotated[Crud, Depends(get_db_manager)]

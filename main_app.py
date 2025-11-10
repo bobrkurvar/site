@@ -6,11 +6,7 @@ from contextlib import asynccontextmanager
 from db import get_db_manager
 from app.exceptions import *
 from db.exceptions import *
-
-app = FastAPI()
-
-app.include_router(main_router)
-app.mount("/static", StaticFiles(directory="/static"), name="static")
+from pathlib import Path
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -18,10 +14,14 @@ async def lifespan(app: FastAPI):
     manager = get_db_manager()
     await manager.close_and_dispose()
 
-
 log = logging.getLogger(__name__)
 
 app = FastAPI(lifespan=lifespan)
+
+BASE_DIR = Path(__file__).resolve().parent
+app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
+app.include_router(main_router)
+
 
 app.include_router(main_router)
 app.add_exception_handler(NotFoundError, not_found_in_db_exceptions_handler)

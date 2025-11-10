@@ -1,4 +1,4 @@
-from app.templates import templates
+
 from . import home
 from fastapi import APIRouter
 
