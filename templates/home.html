@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Мой сайт</title>
     <link rel="stylesheet" href="/static/style.css">
+
+    <!-- Подключаем HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.3"></script>
 </head>
 <body>
 
@@ -22,15 +25,22 @@
         <h2>Каталог товаров</h2>
         <p>Здесь вы найдёте лучшие товары по отличным ценам!</p>
 
-        <!-- Цикл по продуктам -->
-        <ul>
-        {% for product in products %}
-            <li>
-                <strong>{{ product.name }}</strong>
-            </li>
-        {% else %}
-            <li>Товары пока отсутствуют.</li>
-        {% endfor %}
+        <!-- Форма добавления нового товара -->
+        <form hx-post="/products"
+              hx-target="#product-list"
+              hx-swap="innerHTML"
+              style="margin-bottom: 20px;">
+            <input type="text" name="name" placeholder="Название" required>
+            <input type="number" name="price" placeholder="Цена" required>
+            <button type="submit">Добавить</button>
+        </form>
+
+        <!-- Контейнер для списка товаров -->
+        <ul id="product-list"
+            hx-get="/products"
+            hx-trigger="load"
+            hx-swap="innerHTML">
+            <li>Загрузка...</li>
         </ul>
     </section>
 </main>
