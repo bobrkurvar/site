@@ -3,9 +3,9 @@ from fastapi.staticfiles import StaticFiles
 from app.api import main_router
 import logging
 from contextlib import asynccontextmanager
-from db import get_db_manager
+from repo import get_db_manager
 from app.exceptions import *
-from db.exceptions import *
+from repo.exceptions import *
 from pathlib import Path
 
 @asynccontextmanager
@@ -20,10 +20,9 @@ app = FastAPI(lifespan=lifespan)
 
 BASE_DIR = Path(__file__).resolve().parent
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
-app.include_router(main_router)
-
 
 app.include_router(main_router)
+
 app.add_exception_handler(NotFoundError, not_found_in_db_exceptions_handler)
 app.add_exception_handler(
     AlreadyExistsError, entity_already_exists_in_db_exceptions_handler

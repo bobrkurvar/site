@@ -3,11 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мой сайт</title>
+    <title>Главная - Мой сайт</title>
     <link rel="stylesheet" href="/static/style.css">
-
-    <!-- Подключаем HTMX -->
-    <script src="https://unpkg.com/htmx.org@1.9.3"></script>
 </head>
 <body>
 
@@ -15,39 +12,30 @@
     <h1>Мой Сайт</h1>
     <nav>
         <a href="/">Главная</a>
-        <a href="/catalog">Каталог</a>
+        <a href="/tile">Каталог</a>
         <a href="#footer">Контакты</a>
     </nav>
 </header>
 
 <main>
-    <section class="catalog">
-        <h2>Каталог товаров</h2>
-        <p>Здесь вы найдёте лучшие товары по отличным ценам!</p>
+    <section class="featured">
+        <h2>Популярные товары</h2>
 
-        <!-- Форма добавления нового товара -->
-        <form hx-post="/products"
-              hx-target="#product-list"
-              hx-swap="innerHTML"
-              style="margin-bottom: 20px;">
-            <input type="text" name="name" placeholder="Название" required>
-            <input type="number" name="price" placeholder="Цена" required>
-            <button type="submit">Добавить</button>
-        </form>
-
-        <!-- Контейнер для списка товаров -->
-        <ul id="product-list"
-            hx-get="/products"
-            hx-trigger="load"
-            hx-swap="innerHTML">
-            <li>Загрузка...</li>
-        </ul>
+        <div class="tile-grid">
+            {% for tile in featured_tiles %}
+            <div class="tile-card">
+                <h3>{{ tile.name }}</h3>
+                <p class="price">{{ tile.price }} руб.</p>
+                {% if tile.image_path %}
+                <img src="/static/images/{{ tile.name }}"
+                     alt="{{ tile.name }}"
+                     width="300" height="200">
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
     </section>
 </main>
-
-<footer id="footer" style="padding: 40px; text-align: center; background-color: #f0f0f0;">
-    <p>© 2025 Мой Сайт. Все права защищены.</p>
-</footer>
 
 </body>
 </html>
