@@ -1,4 +1,4 @@
-from .schemas import ErrorResponse
+from app.schemas.exceptions import ErrorResponse
 from .handlers import (
     global_exception_handler,
     not_found_in_db_exceptions_handler,
