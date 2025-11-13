@@ -21,6 +21,22 @@ async def admin_page(request: Request, manager: dbManagerDep):
     })
 
 
+@router.post('/admin/tile/delete')
+async def admin_delete_by_criteria_or_all(
+        manager: dbManagerDep,
+        ident: str | None = None,
+        ident_val = None
+):
+    params = {}
+    if ident:
+        params.update({ident: ident_val})
+    elif ident_val:
+        params.update(tile_id=ident_val)
+    log.debug(params)
+    await delete_tile(manager, **params)
+    return RedirectResponse("/admin", status_code=303)
+
+
 @router.post("/admin/tile/delete/{tile_id}")
 async def admin_delete_tile(tile_id: int, manager: dbManagerDep):
     await delete_tile(manager, tile_id=tile_id)

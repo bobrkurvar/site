@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Админ-панель</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/tile_style.css">
     <link rel="stylesheet" href="/static/admin.css">
 </head>
 <body>
@@ -67,7 +67,7 @@
     <!-- Массовое удаление -->
     <section class="admin-section">
         <h2>Управление</h2>
-        <form method="post" action="/admin/tile/delete-all" style="display: inline;">
+        <form method="post" action="/admin/tile/delete" style="display: inline;">
             <button type="submit" class="delete-all-btn"
                     onclick="return confirm('Удалить ВСЕ товары?')">
                 Удалить все товары
