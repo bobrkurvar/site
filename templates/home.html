@@ -4,33 +4,44 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Главная - Мой сайт</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/tile_style.css">
 </head>
 <body>
 
-<header>
-    <h1>Мой Сайт</h1>
-    <nav>
-        <a href="/">Главная</a>
-        <a href="/tile">Каталог</a>
-        <a href="#footer">Контакты</a>
-    </nav>
+<header class="main-header">
+    <div class="header-content">
+        <h1 class="logo">МойСайт</h1>
+        <nav class="main-nav">
+            <a href="/" class="nav-link active">Главная</a>
+            <a href="/tile" class="nav-link">Каталог</a>
+            <a href="#footer" class="nav-link">Контакты</a>
+        </nav>
+    </div>
 </header>
 
 <main>
     <section class="featured">
-        <h2>Популярные товары</h2>
+        <div class="section-header">
+            <h2 class="section-title">Популярные товары</h2>
+            <p class="section-subtitle">Лучшие предложения этой недели</p>
+        </div>
 
         <div class="tile-grid">
             {% for tile in featured_tiles %}
             <div class="tile-card">
-                <h3>{{ tile.name }}</h3>
-                <p class="price">{{ tile.price }} руб.</p>
-                {% if tile.image_path %}
-                <img src="/static/images/{{ tile.name }}"
-                     alt="{{ tile.name }}"
-                     width="300" height="200">
-                {% endif %}
+                <div class="tile-image-container">
+                    {% if tile.image_path %}
+                    <img src="/static/images/{{ tile.name }}"
+                         alt="{{ tile.name }}"
+                         class="tile-image">
+                    {% else %}
+                    <div class="no-image">Нет изображения</div>
+                    {% endif %}
+                </div>
+                <div class="tile-content">
+                    <h3 class="tile-title">{{ tile.name }}</h3>
+                    <p class="price">{{ tile.price }} ₽</p>
+                </div>
             </div>
             {% endfor %}
         </div>

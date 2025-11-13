@@ -1,0 +1,141 @@
+/* Админ-панель */
+.admin-panel {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.admin-section {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.admin-section h2 {
+    margin: 0 0 20px 0;
+    color: #2c3e50;
+    font-size: 1.5em;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 10px;
+}
+
+/* Формы */
+.admin-form {
+    display: grid;
+    gap: 15px;
+    max-width: 400px;
+}
+
+.admin-form input {
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 16px;
+}
+
+.admin-form button {
+    padding: 12px;
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.admin-form button:hover {
+    background: #2980b9;
+}
+
+/* Список товаров */
+.tile-list {
+    display: grid;
+    gap: 15px;
+}
+
+.tile-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #3498db;
+}
+
+.tile-info {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.tile-info strong {
+    color: #2c3e50;
+    min-width: 150px;
+}
+
+.tile-info span {
+    color: #e74c3c;
+    font-weight: bold;
+}
+
+.tile-info img {
+    border-radius: 4px;
+    object-fit: cover;
+}
+
+/* Кнопки действий */
+.tile-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.edit-btn {
+    padding: 8px 16px;
+    background: #f39c12;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.edit-btn:hover {
+    background: #e67e22;
+}
+
+.delete-btn {
+    padding: 8px 16px;
+    background: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.delete-btn:hover {
+    background: #c0392b;
+}
+
+.delete-all-btn {
+    padding: 12px 24px;
+    background: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.delete-all-btn:hover {
+    background: #c0392b;
+}
+
+.no-items {
+    text-align: center;
+    color: #7f8c8d;
+    font-style: italic;
+    padding: 40px;
+}

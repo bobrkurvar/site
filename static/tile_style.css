@@ -1,0 +1,202 @@
+/* Основные стили */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    margin: 0;
+    color: #333;
+    min-height: 100vh;
+}
+
+/* Шапка с градиентом */
+.main-header {
+    background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+    padding: 0;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.header-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 70px;
+}
+
+.logo {
+    color: white;
+    font-size: 1.8em;
+    font-weight: 700;
+    margin: 0;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.main-nav {
+    display: flex;
+    gap: 30px;
+}
+
+.nav-link {
+    color: white;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    position: relative;
+}
+
+.nav-link:hover {
+    background: rgba(255,255,255,0.2);
+    transform: translateY(-2px);
+}
+
+.nav-link.active {
+    background: rgba(255,255,255,0.25);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+/* Основной контент */
+main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.section-header {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.section-title {
+    color: white;
+    font-size: 2.5em;
+    margin: 0 0 10px 0;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.section-subtitle {
+    color: rgba(255,255,255,0.8);
+    font-size: 1.2em;
+    margin: 0;
+}
+
+/* Сетка товаров */
+.tile-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    justify-content: center;
+}
+
+/* Карточка товара */
+.tile-card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.tile-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+}
+
+.tile-image-container {
+    height: 200px;
+    overflow: hidden;
+    position: relative;
+}
+
+.tile-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.tile-card:hover .tile-image {
+    transform: scale(1.05);
+}
+
+.no-image {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 500;
+}
+
+.tile-content {
+    padding: 25px;
+    text-align: center;
+}
+
+.tile-title {
+    margin: 0 0 15px 0;
+    font-size: 1.3em;
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.price {
+    font-weight: 700;
+    font-size: 1.4em;
+    color: #e74c3c;
+    margin: 0;
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Адаптивность */
+@media (max-width: 900px) {
+    .tile-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+
+    .section-title {
+        font-size: 2em;
+    }
+}
+
+@media (max-width: 600px) {
+    .tile-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .header-content {
+        flex-direction: column;
+        height: auto;
+        padding: 15px 20px;
+    }
+
+    .logo {
+        margin-bottom: 15px;
+    }
+
+    .main-nav {
+        gap: 15px;
+    }
+
+    .nav-link {
+        padding: 8px 16px;
+        font-size: 0.9em;
+    }
+
+    .section-title {
+        font-size: 1.8em;
+    }
+}

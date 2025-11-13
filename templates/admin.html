@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ-панель</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/admin.css">
+</head>
+<body>
+
+<header class="main-header">
+    <div class="header-content">
+        <h1 class="logo">Админ-панель</h1>
+        <nav class="main-nav">
+            <a href="/" class="nav-link">Главная</a>
+            <a href="/tile" class="nav-link">Каталог</a>
+            <a href="/admin" class="nav-link active">Админка</a>
+        </nav>
+    </div>
+</header>
+
+<main class="admin-panel">
+    <!-- Форма добавления товара -->
+    <section class="admin-section">
+        <h2>Добавить товар</h2>
+        <form class="admin-form" method="post" action="/admin/tile" enctype="multipart/form-data">
+            <input type="text" name="name" placeholder="Название товара" required>
+            <input type="number" name="price" placeholder="Цена" step="0.01" required>
+            <input type="file" name="image" accept="image/*">
+            <button type="submit">Добавить товар</button>
+        </form>
+    </section>
+
+    <!-- Список товаров -->
+    <section class="admin-section">
+        <h2>Список товаров ({{ tiles|length }} шт.)</h2>
+        <div class="tile-list">
+            {% for tile in tiles %}
+            <div class="tile-item">
+                <div class="tile-info">
+                    <strong>{{ tile.name }}</strong>
+                    <span>{{ tile.price }} руб.</span>
+                    {% if tile.image_path %}
+                    <img src="/static/images/{{ tile.name }}"
+                         alt="{{ tile.name }}"
+                         width="50" height="50">
+                    {% endif %}
+                </div>
+                <div class="tile-actions">
+                    <a href="/admin/edit/{{ tile.id }}" class="edit-btn">Редактировать</a>
+                    <form method="post" action="/admin/tile/delete/{{ tile.id }}" style="display: inline;">
+                        <button type="submit" class="delete-btn"
+                                onclick="return confirm('Удалить товар?')">
+                            Удалить
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+            {% if not tiles %}
+            <p class="no-items">Товаров нет</p>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Массовое удаление -->
+    <section class="admin-section">
+        <h2>Управление</h2>
+        <form method="post" action="/admin/tile/delete-all" style="display: inline;">
+            <button type="submit" class="delete-all-btn"
+                    onclick="return confirm('Удалить ВСЕ товары?')">
+                Удалить все товары
+            </button>
+        </form>
+    </section>
+</main>
+
+</body>
+</html>

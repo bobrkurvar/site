@@ -2,7 +2,7 @@ import logging
 import sys
 
 logger = logging.getLogger()
-# logging.getLogger("aiogram").setLevel()
+
 logging.getLogger("asyncio").propagate = False
 logger.setLevel(logging.DEBUG)
 formatter = logging.Formatter(

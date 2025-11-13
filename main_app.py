@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from app.api import main_router
+from app.api import api_router
+from app.presentation import presentation_router
 import logging
 from contextlib import asynccontextmanager
 from repo import get_db_manager
@@ -21,7 +22,8 @@ app = FastAPI(lifespan=lifespan)
 BASE_DIR = Path(__file__).resolve().parent
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
-app.include_router(main_router)
+app.include_router(api_router)
+app.include_router(presentation_router)
 
 app.add_exception_handler(NotFoundError, not_found_in_db_exceptions_handler)
 app.add_exception_handler(
