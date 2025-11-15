@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Depends, File, UploadFile, Form, Request
+from fastapi import APIRouter, Depends, File, UploadFile, Form
 from repo import get_db_manager, Crud
 from typing import Annotated
 from domain.tile import Tile
+from domain.tile_size import TileSize
 from services.tile import add_tile, delete_tile
-from fastapi.templating import Jinja2Templates
 import logging
 
 router = APIRouter()
@@ -25,6 +25,17 @@ async def get_tile_lst(manager: dbManagerDep):
     result = await manager.read(Tile)
     return result
 
+
+@router.post('/tile/sizes')
+async def create_tile_size(manager: dbManagerDep):
+    result = await manager.create(TileSize)
+    return result
+
+
+@router.get('/tile/sizes')
+async def get_all_tile_size(manager: dbManagerDep):
+    result = await manager.read(TileSize)
+    return result
 
 @router.get("/tile{tile_id}")
 async def get_tile_by_id(tile_id: int,  manager: dbManagerDep):
@@ -51,3 +62,4 @@ async def delete_tile_by_criteria_or_all(
         params.update(tile_id=ident_val)
     log.debug(params)
     await delete_tile(manager, **params)
+
