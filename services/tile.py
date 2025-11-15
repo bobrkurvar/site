@@ -1,11 +1,13 @@
 from pathlib import Path
 import logging
 from domain.tile import Tile
+from core import config
 
 log = logging.getLogger(__name__)
 
 async def add_tile(name: str, price: float, image, manager):
-    upload_dir = Path("static/images").absolute()
+    path = config.image_path
+    upload_dir = Path(path)
     upload_dir.mkdir(parents=True, exist_ok=True)
     image_path = upload_dir / name
 
@@ -30,7 +32,8 @@ async def add_tile(name: str, price: float, image, manager):
 
 async def delete_tile(manager, tile_id: int | None = None, name: str | None = None):
     image_path = None
-    upload_dir = Path("static/images").absolute()
+    path = config.image_path
+    upload_dir = Path(path)
     if name:
         image_path = upload_dir / name
     else:
