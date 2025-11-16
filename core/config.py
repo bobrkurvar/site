@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     db_password: str
     db_name: str
     image_path: str
+
     @property
     def db_url(self):
         return f"postgresql+asyncpg://{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.db_name}"

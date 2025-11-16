@@ -1,27 +1,33 @@
-from sqlalchemy import ForeignKeyConstraint, ForeignKey
+from sqlalchemy import ForeignKey, ForeignKeyConstraint
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+
 from core import config
 
 
 class Base(AsyncAttrs, DeclarativeBase):
     pass
 
+
 class Catalog(Base):
     __tablename__ = "catalog"
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(unique=True)
-    color: Mapped[str]
+    color_name: Mapped[str] = mapped_column(
+        ForeignKey("tile_colors.name", ondelete="CASCADE")
+    )
     image_path: Mapped[str] = mapped_column(default=config.image_path)
     size_height: Mapped[float]
     size_width: Mapped[float]
 
-    size: Mapped['SizeTile'] = relationship("SizeTile", back_populates="tiles")
+    color: Mapped["TileColor"] = relationship("TileColor", back_populates="tiles")
+    size: Mapped["TileSize"] = relationship("TileSize", back_populates="tiles")
 
     __table_args__ = (
         ForeignKeyConstraint(
-            ['size_height', 'size_width'],
-            ['tile_size.height', 'tile_size.width']
+            ["size_height", "size_width"],
+            ["tile_sizes.height", "tile_sizes.width"],
+            ondelete="CASCADE",
         ),
     )
 
@@ -31,31 +37,50 @@ class Catalog(Base):
             "name": self.name,
             "size_height": self.size_height,
             "size_width": self.size_width,
+            "color_name": self.color_name,
+            "color_feature": self.color.feature_name if self.color else None,
             "image_path": self.image_path,
-            "color": self.color
         }
+
 
 class TileSize(Base):
-    __tablename__ = 'tile_sizes'
+    __tablename__ = "tile_sizes"
     height: Mapped[float] = mapped_column(primary_key=True)
     width: Mapped[float] = mapped_column(primary_key=True)
-    tiles: Mapped[list['Catalog']] = relationship("Catalog", back_populates='size')
+    tiles: Mapped[list["Catalog"]] = relationship(
+        "Catalog",
+        back_populates="size",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
 
     def model_dump(self):
-        return {
-            "height": self.height,
-            "width": self.width
-        }
+        return {"height": self.height, "width": self.width}
 
 
 class TileColorFeature(Base):
-    __tablename__ = 'tile_color_features'
+    __tablename__ = "tile_color_features"
     name: Mapped[str] = mapped_column(primary_key=True)
-    color: Mapped['TileColor'] = relationship('TileColor', back_populates='feat_name')
+    colors: Mapped[list["TileColor"]] = relationship(
+        "TileColor",
+        back_populates="feature",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
 
 
 class TileColor(Base):
-    __tablename__= 'tile_colors'
+    __tablename__ = "tile_colors"
     name: Mapped[str] = mapped_column(primary_key=True)
-    feature: Mapped[str] = mapped_column(ForeignKey('tile_color_features.name'))
-    feat_name: Mapped['TileColorFeature'] = relationship("TileColorFeature", back_populates='color')
+    feature_name: Mapped[str] = mapped_column(
+        ForeignKey("tile_color_features.name", ondelete="CASCADE")
+    )
+    feature: Mapped["TileColorFeature"] = relationship(
+        "TileColorFeature", back_populates="colors"
+    )
+    tiles: Mapped[list["Catalog"]] = relationship(
+        "Catalog",
+        back_populates="color",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )

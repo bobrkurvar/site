@@ -41,40 +41,88 @@
         </form>
     </section>
 
-<!-- Форма добавления товара -->
-<section class="admin-section">
-    <h2>Добавить товар</h2>
+    <!-- Форма добавления свойства цвета -->
+    <section class="admin-section">
+        <h2>Добавить свойство цвета</h2>
+        <form class="admin-form" method="post" action="/admin/color/properties">
+            <input type="text" name="name" placeholder="Название свойства (например: Моноколор)" required>
+            <button type="submit">Добавить свойство</button>
+        </form>
+    </section>
 
-    <form class="admin-form" method="post" action="/admin/tile" enctype="multipart/form-data">
-        <input type="text" name="name" placeholder="Название товара" required>
+    <!-- Форма добавления цвета -->
+    <section class="admin-section">
+        <h2>Добавить цвет</h2>
+        <form class="admin-form" method="post" action="/admin/tile/colors">
+            <input type="text" name="name" placeholder="Название цвета (например: Белый)" required>
 
-        <!-- Выбор готового размера -->
-        <select name="size" required>
-            <option value="">Выберите размер</option>
-            {% for size in tile_sizes %}
-            <option value="{{ size.height }},{{ size.width }}">
-                {{ size.name }} ({{ size.width }}x{{ size.height }})
-            </option>
-            {% endfor %}
-        </select>
+            <!-- Выбор свойства цвета -->
+            <select name="property_id" required>
+                <option value="">Выберите свойство цвета</option>
+                {% for property in color_properties %}
+                <option value="{{ property.id }}">
+                    {{ property.name }}
+                </option>
+                {% endfor %}
+            </select>
 
-        <!-- Поле для ввода цвета -->
-        <input type="text" name="color" placeholder="Цвет (например: белый, черный)" required>
+            <button type="submit">Добавить цвет</button>
+        </form>
 
-        <input type="file" name="image" accept="image/*" required>
-        <button type="submit">Добавить товар</button>
-    </form>
+        {% if not color_properties %}
+        <div class="no-properties-warning">
+            <p>⚠️ Нет доступных свойств цвета. Сначала добавьте свойства выше.</p>
+        </div>
+        {% endif %}
+    </section>
 
-    {% if not tile_sizes %}
-    <div class="no-sizes-warning">
-        <p>⚠️ Нет доступных размеров. Сначала добавьте размеры выше.</p>
-    </div>
-    {% endif %}
+    <!-- Форма добавления товара -->
+    <section class="admin-section">
+        <h2>Добавить товар</h2>
+
+        <form class="admin-form" method="post" action="/admin/tile" enctype="multipart/form-data">
+            <input type="text" name="name" placeholder="Название товара" required>
+
+            <!-- Выбор готового размера -->
+            <select name="size" required>
+                <option value="">Выберите размер</option>
+                {% for size in tile_sizes %}
+                <option value="{{ size.height }},{{ size.width }}">
+                    {{ size.name }} ({{ size.width }}x{{ size.height }})
+                </option>
+                {% endfor %}
+            </select>
+
+            <!-- Выбор цвета из списка -->
+            <select name="color_id" required>
+                <option value="">Выберите цвет</option>
+                {% for color in tile_colors %}
+                <option value="{{ color.id }}">
+                    {{ color.name }} ({{ color.property_name }})
+                </option>
+                {% endfor %}
+            </select>
+
+            <input type="file" name="image" accept="image/*" required>
+            <button type="submit">Добавить товар</button>
+        </form>
+
+        {% if not tile_sizes %}
+        <div class="no-sizes-warning">
+            <p>⚠️ Нет доступных размеров. Сначала добавьте размеры выше.</p>
+        </div>
+        {% endif %}
+
+        {% if not tile_colors %}
+        <div class="no-colors-warning">
+            <p>⚠️ Нет доступных цветов. Сначала добавьте цвета выше.</p>
+        </div>
+        {% endif %}
     </section>
 
     <!-- Список размеров -->
     <section class="admin-section">
-        <h2>Доступные размеры ({{ tile_sizes|length }} шт.)</h2>
+        <h2 data-count="{{ tile_sizes|length }} шт.">Доступные размеры</h2>
         <div class="tile-list">
             {% for size in tile_sizes %}
             <div class="tile-item">
@@ -112,50 +160,148 @@
         {% endif %}
     </section>
 
-<!-- Список товаров -->
-<section class="admin-section">
-    <h2>Список товаров ({{ tiles|length }} шт.)</h2>
-    <div class="tile-list">
-        {% for tile in tiles %}
-        <div class="tile-item">
-            <div class="tile-info">
-                <strong>{{ tile.name }}</strong>
-                <span>Размер: {{ tile.width }}x{{ tile.height }}</span>
-                <span>Цвет: {{ tile.color }}</span>
-                {% if tile.image_path %}
-                <img src="/static/images/{{ tile.name }}"
-                     alt="{{ tile.name }}"
-                     width="50" height="50">
-                {% else %}
-                <span class="no-image">Нет изображения</span>
-                {% endif %}
+    <!-- Список свойств цвета -->
+    <section class="admin-section">
+        <h2 data-count="{{ color_properties|length }} шт.">Свойства цвета</h2>
+        <div class="property-list">
+            {% for property in color_properties %}
+            <div class="property-item">
+                <div class="property-info">
+                    <strong>{{ property.name }}</strong>
+                    <span>Цветов: {{ property.color_count }}</span>
+                </div>
+                <div class="property-actions">
+                    <form method="post" action="/admin/color/properties/delete">
+                        <input type="hidden" name="property_id" value="{{ property.id }}">
+                        <button type="submit" class="delete-btn"
+                                onclick="return confirm('Удалить свойство цвета?')">
+                            Удалить
+                        </button>
+                    </form>
+                </div>
             </div>
-            <div class="tile-actions">
-                <a href="/admin/edit/{{ tile.tile_id }}" class="edit-btn">Редактировать</a>
-                <form method="post" action="/admin/tile/delete/{{ tile.id }}" style="display: inline;">
-                    <button type="submit" class="delete-btn"
-                            onclick="return confirm('Удалить товар?')">
-                        Удалить
-                    </button>
-                </form>
-            </div>
+            {% endfor %}
+            {% if not color_properties %}
+            <p class="no-items">Свойств цвета нет</p>
+            {% endif %}
         </div>
-        {% endfor %}
-        {% if not tiles %}
-        <p class="no-items">Товаров нет</p>
+
+        <!-- Удаление всех свойств -->
+        {% if color_properties %}
+        <div class="delete-all-container">
+            <form method="post" action="/admin/color/properties/delete">
+                <button type="submit" class="delete-all-btn"
+                        onclick="return confirm('Удалить ВСЕ свойства цвета?')">
+                    Удалить все свойства
+                </button>
+            </form>
+        </div>
         {% endif %}
-    </div>
+    </section>
+
+    <!-- Список цветов -->
+    <section class="admin-section">
+        <h2 data-count="{{ tile_colors|length }} шт.">Доступные цвета</h2>
+        <div class="color-list">
+            {% for color in tile_colors %}
+            <div class="color-item">
+                <div class="color-info">
+                    <strong>{{ color.name }}</strong>
+                    <span>Свойство: {{ color.property_name }}</span>
+                </div>
+                <div class="color-actions">
+                    <form method="post" action="/admin/tile/colors/delete">
+                        <input type="hidden" name="color_id" value="{{ color.id }}">
+                        <button type="submit" class="delete-btn"
+                                onclick="return confirm('Удалить цвет?')">
+                            Удалить
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+            {% if not tile_colors %}
+            <p class="no-items">Цветов нет</p>
+            {% endif %}
+        </div>
+
+        <!-- Удаление всех цветов -->
+        {% if tile_colors %}
+        <div class="delete-all-container">
+            <form method="post" action="/admin/tile/colors/delete">
+                <button type="submit" class="delete-all-btn"
+                        onclick="return confirm('Удалить ВСЕ цвета?')">
+                    Удалить все цвета
+                </button>
+            </form>
+        </div>
+        {% endif %}
+    </section>
+
+    <!-- Список товаров -->
+    <section class="admin-section">
+        <h2 data-count="{{ tiles|length }} шт.">Список товаров</h2>
+        <div class="tile-list">
+            {% for tile in tiles %}
+            <div class="tile-item">
+                <div class="tile-info">
+                    <strong>{{ tile.name }}</strong>
+                    <span>Размер: {{ tile.width }}x{{ tile.height }}</span>
+                    <span>Цвет: {{ tile.color_name }} ({{ tile.color_property }})</span>
+                    {% if tile.image_path %}
+                    <img src="/static/images/{{ tile.image_path }}"
+                         alt="{{ tile.name }}"
+                         class="tile-image">
+                    {% else %}
+                    <span class="no-image">Нет изображения</span>
+                    {% endif %}
+                </div>
+                <div class="tile-actions">
+                    <a href="/admin/edit/{{ tile.id }}" class="edit-btn">Редактировать</a>
+                    <form method="post" action="/admin/tile/delete/{{ tile.id }}">
+                        <button type="submit" class="delete-btn"
+                                onclick="return confirm('Удалить товар?')">
+                            Удалить
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+            {% if not tiles %}
+            <p class="no-items">Товаров нет</p>
+            {% endif %}
+        </div>
     </section>
 
     <!-- Массовое удаление -->
     <section class="admin-section">
         <h2>Управление</h2>
-        <form method="post" action="/admin/tile/delete-all">
-            <button type="submit" class="delete-all-btn"
-                    onclick="return confirm('Удалить ВСЕ товары?')">
-                Удалить все товары
-            </button>
-        </form>
+        <div class="management-buttons">
+            <form method="post" action="/admin/tile/delete-all">
+                <button type="submit" class="delete-all-btn"
+                        onclick="return confirm('Удалить ВСЕ товары?')">
+                    Удалить все товары
+                </button>
+            </form>
+            <form method="post" action="/admin/tile/colors/delete-all">
+                <button type="submit" class="delete-all-btn"
+                        onclick="return confirm('Удалить ВСЕ цвета?')">
+                    Удалить все цвета
+                </button>
+            </form>
+            <form method="post" action="/admin/color/properties/delete-all">
+                <button type="submit" class="delete-all-btn"
+                        onclick="return confirm('Удалить ВСЕ свойства цвета?')">
+                    Удалить все свойства
+                </button>
+            </form>
+            <form method="post" action="/admin/tile/sizes/delete-all">
+                <button type="submit" class="delete-all-btn"
+                        onclick="return confirm('Удалить ВСЕ размеры?')">
+                    Удалить все размеры
+                </button>
+            </form>
+        </div>
     </section>
 </main>
 

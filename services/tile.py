@@ -1,12 +1,17 @@
-from pathlib import Path
 import logging
-from domain.tile import Tile
-from core import config
+from pathlib import Path
+
 import aiofiles
+
+from core import config
+from domain.tile import Tile
 
 log = logging.getLogger(__name__)
 
-async def add_tile(name: str, height: float, width: float, color: str, image: bytes, manager):
+
+async def add_tile(
+    name: str, height: float, width: float, color: str, image: bytes, manager
+):
 
     path = config.image_path
     upload_dir = Path(path)
@@ -21,15 +26,23 @@ async def add_tile(name: str, height: float, width: float, color: str, image: by
             await fw.write(image)
         file_created = True
     except FileExistsError:
-        log.error('не удалось записать файл')
+        log.error("не удалось записать файл")
 
     try:
-        return await manager.create(Tile, name=name, size_height=height, size_width=width, color=color, image_path=str(image_path))
+        return await manager.create(
+            Tile,
+            name=name,
+            size_height=height,
+            size_width=width,
+            color=color,
+            image_path=str(image_path),
+        )
     except Exception:
-        log.error('БД упала, удаляем файл')
+        log.error("БД упала, удаляем файл")
         if file_created:
             image_path.unlink(missing_ok=True)
         raise
+
 
 async def delete_tile(manager, **filters):
 
@@ -39,7 +52,7 @@ async def delete_tile(manager, **filters):
 
     try:
         for tile in tiles:
-            image_path = Path(tile['image_path'])
+            image_path = Path(tile["image_path"])
             if image_path.exists():
                 image_path.unlink(missing_ok=True)
                 files_deleted += 1
@@ -51,4 +64,3 @@ async def delete_tile(manager, **filters):
         raise
 
     await manager.delete(Tile, **filters)
-

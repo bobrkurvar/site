@@ -34,5 +34,6 @@ class CustomForeignKeyViolationError(RepositoryError):
         self.detail = detail
         super().__init__(f"Foreign key violation in {model_name}: {detail}")
 
+
 class DatabaseError(RepositoryError):
     pass
