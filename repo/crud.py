@@ -46,94 +46,75 @@ class Crud:
                     await session.flush()
                     return tup.model_dump()
         except IntegrityError as err:
-            log.debug("ПЕРЕХВАТИЛ INTEGIRITYERROR С КОДОМ %s", err.orig.pgcode)
-            if err.orig.pgcode == "23505":
-                log.debug("ТАКАЯ СУЩНОСТЬ УЖЕ СУЩЕСТВУЕТ")
-                raise AlreadyExistsError(model.__name__, "id", tup.id)
-            elif err.orig.pgcode == "23503":
-                log.debug("ВНЕШНИЙ КЛЮЧ НА НЕ СУЩЕСТВУЮЩЕЕ ПОЛЕ")
-                raise CustomForeignKeyViolationError(model.__name__, "doer_id", 3)
+            pgcode = getattr(err.orig, 'pgcode', None)
 
-    async def delete(self, domain_model, ident: str | None = None, ident_val=None):
+            if pgcode == "23505":
+                constraint_name = getattr(err.orig.diag, 'constraint_name', 'unknown') if hasattr(err.orig, 'diag') else 'unknown'
+                raise AlreadyExistsError(model.__name__, constraint_name)
+
+            elif pgcode == "23503":
+                detail = getattr(err.orig.diag, 'message_detail', str(err)) if hasattr(err.orig, 'diag') else str(err)
+                raise CustomForeignKeyViolationError(model.__name__, detail)
+
+    async def delete(self, domain_model, **filters):
         async with self._session_factory.begin() as session:
             model = self._mapper[domain_model]
-            if not (ident_val is None):
-                if ident is None:
-                    log.debug("Crud получил запрос на удаление id: %s", ident_val)
-                    for_remove = await session.get(model, ident_val)
-                    if for_remove is not None:
-                        await session.delete(for_remove)
-                        return for_remove.model_dump()
-                    else:
-                        raise NotFoundError(model.__name__, "id", ident_val)
-                else:
-                    log.debug(
-                        "Crud получил запрос на удаление по параметру %s: %s",
-                        ident,
-                        ident_val,
-                    )
-                    for_remove = (
-                        (
-                            await session.execute(
-                                select(model).where(getattr(model, ident) == ident_val)
-                            )
-                        )
-                        .scalars()
-                        .all()
-                    )
-                    if not for_remove:
-                        raise NotFoundError(model.__name__, ident, ident_val)
-                    for chunk in for_remove:
-                        await session.delete(chunk)
-            else:
-                # models = await session.execute(select(model)).scalars().all()
-                # if models is None:
-                #     raise NotFoundError(model.__name__)
-                await session.execute(delete(model))
+            query = select(model)
 
-    async def update(self, domain_model, ident: str, ident_val: int, **kwargs):
+            for field, value in filters.items():
+                query = query.filter(getattr(model, field) == value)
+
+            result = await session.execute(query)
+            records_to_delete = result.scalars().all()
+
+            if not records_to_delete:
+                raise NotFoundError(model.__name__, str(filters))
+
+            for record in records_to_delete:
+                await session.delete(record)
+
+            log.debug("Удалено %d записей из %s с фильтрами: %s",
+                      len(records_to_delete), model.__name__, filters)
+
+            return [record.model_dump() for record in records_to_delete]
+
+    async def update(self, domain_model, filters: dict, values: dict):
         async with self._session_factory.begin() as session:
             model = self._mapper[domain_model]
-            query = (
-                update(model).where(getattr(model, ident) == ident_val).values(**kwargs)
-            )
+            query = update(model)
+
+            for field, value in filters.items():
+                query = query.where(getattr(model, field) == value)
+
+            query = query.values(**values)
+
             await session.execute(query)
 
     async def read(
-        self,
-        domain_model,
-        ident: str | None = None,
-        ident_val: int | str | None = None,
-        limit: int | None = None,
-        offset: int | None = None,
-        order_by: str | None = None,
-        to_join: str | None = None,
+            self,
+            domain_model,
+            limit: int | None = None,
+            offset: int | None = None,
+            order_by: str | None = None,
+            **filters
     ):
         async with self._session_factory.begin() as session:
             model = self._mapper[domain_model]
             query = select(model)
-            if to_join:
-                joined_table = getattr(model, to_join)
-                query = query.join(joined_table)
-            if ident:
-                if to_join:
-                    query = query.where(
-                        getattr(joined_table.property.mapper.class_, ident) == ident_val
-                    )
-                else:
-                    query = query.where(getattr(model, ident) == ident_val)
+
+            for field, value in filters.items():
+                query = query.where(getattr(model, field) == value)
+
             if order_by:
-                log.debug("сортировка по %s", order_by)
                 query = query.order_by(getattr(model, order_by))
+
             if offset:
                 query = query.offset(offset)
             if limit:
                 query = query.limit(limit)
-            res = (await session.execute(query)).scalars().all()
-            # if not res:
-                # log.debug("Возвращаемый список пуст: %s", res)
-                # raise NotFoundError(model.__name__, ident, ident_val)
-            return res if not res else [r.model_dump() for r in res]
+
+            result = (await session.execute(query)).scalars().all()
+            return [r.model_dump() for r in result]
 
     async def close_and_dispose(self):
         log.debug("подключение к движку %s закрывается", self._engine)

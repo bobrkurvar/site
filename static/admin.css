@@ -28,7 +28,8 @@
     max-width: 400px;
 }
 
-.admin-form input {
+.admin-form input,
+.admin-form select {
     padding: 12px;
     border: 1px solid #ddd;
     border-radius: 6px;
@@ -49,7 +50,7 @@
     background: #2980b9;
 }
 
-/* Список товаров */
+/* Список товаров и размеров */
 .tile-list {
     display: grid;
     gap: 15px;
@@ -69,6 +70,7 @@
     display: flex;
     gap: 20px;
     align-items: center;
+    flex-wrap: wrap;
 }
 
 .tile-info strong {
@@ -138,4 +140,60 @@
     color: #7f8c8d;
     font-style: italic;
     padding: 40px;
+}
+
+/* Стили для select */
+.admin-form select:required:invalid {
+    color: #6c757d;
+}
+
+.admin-form select option {
+    color: #2c3e50;
+}
+
+/* Стили для ошибок */
+.error-banner {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.error-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.error-icon {
+    font-size: 1.2em;
+}
+
+.error-text {
+    color: #856404;
+    font-weight: 500;
+}
+
+/* Предупреждение об отсутствии размеров */
+.no-sizes-warning {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 6px;
+    padding: 12px;
+    margin-top: 15px;
+    text-align: center;
+    color: #856404;
+}
+
+.no-image {
+    color: #7f8c8d;
+    font-style: italic;
+    font-size: 14px;
+}
+
+.delete-all-container {
+    margin-top: 20px;
+    text-align: center;
 }

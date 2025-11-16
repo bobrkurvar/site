@@ -4,6 +4,7 @@ from typing import Annotated
 from domain.tile import Tile
 from domain.tile_size import TileSize
 from services.tile import add_tile, delete_tile
+from app.schemas.tile import TileSizeInput, TileDelete
 import logging
 
 router = APIRouter()
@@ -13,11 +14,13 @@ log = logging.getLogger(__name__)
 @router.post("/tile")
 async def create_tile(
         name: Annotated[str, Form()],
-        price: Annotated[float, Form()],
+        height: Annotated[float, Form(gt=0)],
+        width: Annotated[float, Form(gt=0)],
         image: Annotated[UploadFile, File()],
         manager: dbManagerDep,
 ):
-    result = await add_tile(name, price, image, manager)
+    bytes_image = await image.read()
+    result = await add_tile(name, height, width, bytes_image, manager)
     return result
 
 @router.get("/tile")
@@ -27,8 +30,8 @@ async def get_tile_lst(manager: dbManagerDep):
 
 
 @router.post('/tile/sizes')
-async def create_tile_size(manager: dbManagerDep):
-    result = await manager.create(TileSize)
+async def create_tile_size(tile_size: TileSizeInput, manager: dbManagerDep):
+    result = await manager.create(TileSize, **tile_size.model_dump())
     return result
 
 
@@ -39,27 +42,26 @@ async def get_all_tile_size(manager: dbManagerDep):
 
 @router.get("/tile{tile_id}")
 async def get_tile_by_id(tile_id: int,  manager: dbManagerDep):
-    result = await manager.read(Tile, ident_val=tile_id)
+    result = await manager.read(Tile, id=tile_id)
     return result
 
 
 @router.delete('/tile{tile_id}')
 async def delete_tile_by_id(tile_id: int, manager: dbManagerDep):
-    result = await delete_tile(manager, tile_id)
+    result = await delete_tile(manager, id=tile_id)
     return result
 
 
 @router.delete('/tile')
 async def delete_tile_by_criteria_or_all(
         manager: dbManagerDep,
-        ident: str | None = None,
-        ident_val = None
+        tile: TileDelete
 ):
     params = {}
-    if ident:
-        params.update({ident: ident_val})
-    elif ident_val:
-        params.update(tile_id=ident_val)
+    if tile.name:
+        params.update(name=tile.name)
+    if tile.size:
+        params.update(size_height=tile.size.height, size_width=tile.size.width)
     log.debug(params)
     await delete_tile(manager, **params)
 

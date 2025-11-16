@@ -1,6 +1,7 @@
 from repo.crud import Crud
-from db.models import Catalog
+from db.models import Catalog, SizeTile
 from domain.tile import Tile
+from domain.tile_size import TileSize
 from core import config
 
 def get_db_manager() -> Crud:
@@ -8,5 +9,6 @@ def get_db_manager() -> Crud:
     manager = Crud(db_host)
 
     manager.register(Tile, Catalog)
+    manager.register(TileSize, SizeTile)
 
     return manager
