@@ -1,4 +1,4 @@
-from sqlalchemy import ForeignKeyConstraint
+from sqlalchemy import ForeignKeyConstraint, ForeignKey
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from core import config
@@ -35,8 +35,8 @@ class Catalog(Base):
             "color": self.color
         }
 
-class SizeTile(Base):
-    __tablename__ = 'tile_size'
+class TileSize(Base):
+    __tablename__ = 'tile_sizes'
     height: Mapped[float] = mapped_column(primary_key=True)
     width: Mapped[float] = mapped_column(primary_key=True)
     tiles: Mapped[list['Catalog']] = relationship("Catalog", back_populates='size')
@@ -46,3 +46,16 @@ class SizeTile(Base):
             "height": self.height,
             "width": self.width
         }
+
+
+class TileColorFeature(Base):
+    __tablename__ = 'tile_color_features'
+    name: Mapped[str] = mapped_column(primary_key=True)
+    color: Mapped['TileColor'] = relationship('TileColor', back_populates='feat_name')
+
+
+class TileColor(Base):
+    __tablename__= 'tile_colors'
+    name: Mapped[str] = mapped_column(primary_key=True)
+    feature: Mapped[str] = mapped_column(ForeignKey('tile_color_features.name'))
+    feat_name: Mapped['TileColorFeature'] = relationship("TileColorFeature", back_populates='color')

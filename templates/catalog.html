@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Каталог плитки</title>
-    <link rel="stylesheet" href="/static/tile_style.css">
+    <link rel="stylesheet" href="/static/base.css">
     <link rel="stylesheet" href="/static/catalog.css">
 </head>
 <body>
@@ -25,40 +25,84 @@
         <p>Всего товаров: {{ tiles|length }} шт.</p>
     </div>
 
-    <div class="tile-grid">
-        {% for tile in tiles %}
-        <div class="tile-card">
-            <div class="tile-image-container">
-                {% if tile.image_path %}
-                <img src="/static/images/{{ tile.name }}"
-                     alt="{{ tile.name }}"
-                     class="tile-image"
-                     loading="lazy">
-                {% else %}
-                <div class="no-image">Нет изображения</div>
-                {% endif %}
-            </div>
-            <div class="tile-content">
-                <h3 class="tile-title">{{ tile.name }}</h3>
-                <div class="size-badge">
-                    <span class="size-icon">📐</span>
-                    {{ tile.width }}×{{ tile.height }}
-                </div>
-                {% if tile.color %}
-                <div class="color-badge">
-                    <span class="color-icon">🎨</span>
-                    {{ tile.color }}
-                </div>
-                {% endif %}
-            </div>
-        </div>
-        {% endfor %}
+    <div class="catalog-layout">
+        <!-- Панель фильтров сбоку -->
+        <aside class="filters-sidebar">
+            <div class="filters-panel">
+                <h3>Фильтры</h3>
+                <form class="filters-form" method="get" action="/catalog">
+                    <div class="filter-group">
+                        <label>Поиск по названию:</label>
+                        <input type="text" name="name" placeholder="Введите название..."
+                               value="{{ request.query_params.get('name', '') }}">
+                    </div>
 
-        {% if not tiles %}
-        <div class="empty-catalog">
-            <p>В каталоге пока нет товаров</p>
-        </div>
-        {% endif %}
+                    <div class="filter-group">
+                        <label>Размер:</label>
+                        <select name="size">
+                            <option value="">Все размеры</option>
+                            {% for size in available_sizes %}
+                            <option value="{{ size.width }},{{ size.height }}"
+                                    {% if request.query_params.get('size') == size.width ~ ',' ~ size.height %}selected{% endif %}>
+                                {{ size.width }}x{{ size.height }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label>Цвет:</label>
+                        <input type="text" name="color" placeholder="Введите цвет..."
+                               value="{{ request.query_params.get('color', '') }}">
+                    </div>
+
+                    <div class="filter-actions">
+                        <button type="submit" class="filter-btn">Применить фильтры</button>
+                        <a href="/catalog" class="clear-filters">Сбросить</a>
+                    </div>
+                </form>
+            </div>
+        </aside>
+
+        <!-- Основной контент с товарами -->
+        <section class="products-section">
+            <div class="tile-grid">
+                {% for tile in tiles %}
+                <div class="tile-card">
+                    <div class="tile-image-container">
+                        {% if tile.image_path %}
+                        <img src="/static/images/{{ tile.name }}"
+                             alt="{{ tile.name }}"
+                             class="tile-image"
+                             loading="lazy">
+                        {% else %}
+                        <div class="no-image">Нет изображения</div>
+                        {% endif %}
+                    </div>
+                    <div class="tile-content">
+                        <h3 class="tile-title">{{ tile.name }}</h3>
+                        <div class="size-badge">
+                            <span class="size-icon">📐</span>
+                            {{ tile.width }}×{{ tile.height }}
+                        </div>
+                        {% if tile.color %}
+                        <div class="color-badge">
+                            <span class="color-icon">🎨</span>
+                            {{ tile.color }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+
+                {% if not tiles %}
+                <div class="empty-catalog">
+                    <p>Товары не найдены</p>
+                    <a href="/catalog" class="clear-filters">Показать все товары</a>
+                </div>
+                {% endif %}
+            </div>
+        </section>
     </div>
 </main>
 

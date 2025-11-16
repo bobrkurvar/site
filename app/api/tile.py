@@ -1,8 +1,7 @@
 from fastapi import APIRouter, Depends, File, UploadFile, Form
 from repo import get_db_manager, Crud
 from typing import Annotated
-from domain.tile import Tile
-from domain.tile_size import TileSize
+from domain.tile import Tile, TileSize
 from services.tile import add_tile, delete_tile
 from app.schemas.tile import TileSizeInput, TileDelete
 import logging

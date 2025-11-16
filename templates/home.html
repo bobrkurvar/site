@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Главная - Мой сайт</title>
-    <link rel="stylesheet" href="/static/tile_style.css">
+    <link rel="stylesheet" href="/static/base.css">
+    <link rel="stylesheet" href="/static/home.css">
 </head>
 <body>
 
@@ -14,7 +15,6 @@
         <nav class="main-nav">
             <a href="/" class="nav-link active">Главная</a>
             <a href="/catalog" class="nav-link">Каталог</a>
-            <a href="#footer" class="nav-link">Контакты</a>
         </nav>
     </div>
 </header>
@@ -44,6 +44,12 @@
                         <span class="size-icon">📐</span>
                         {{ tile.size_width }}×{{ tile.size_height }}
                     </div>
+                    {% if tile.color %}
+                    <div class="color-badge">
+                        <span class="color-icon">🎨</span>
+                        {{ tile.color }}
+                    </div>
+                    {% endif %}
                 </div>
             </div>
             {% endfor %}

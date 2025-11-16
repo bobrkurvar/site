@@ -18,12 +18,12 @@ class Crud:
     _engine = None
     _session_factory = None
 
-    def __init__(self, url):
+    def __init__(self, url, domain_with_orm: dict | None = None):
         if self.__class__._engine is None:
             self.__class__._engine = create_async_engine(url)
         if self.__class__._session_factory is None:
             self.__class__._session_factory = async_sessionmaker(self._engine)
-        self._mapper = {}
+        self._mapper = domain_with_orm if domain_with_orm else {}
 
     def register(self, domain_cls, orm_cls):
         self._mapper[domain_cls] = orm_cls

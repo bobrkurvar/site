@@ -4,8 +4,7 @@ from fastapi import Request, status
 from fastapi.templating import Jinja2Templates
 
 from repo import get_db_manager
-from domain.tile import Tile
-from domain.tile_size import TileSize
+from domain import Tile, TileSize
 from repo.exceptions import (
     AlreadyExistsError,
     CustomForeignKeyViolationError,

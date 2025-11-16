@@ -1,6 +1,6 @@
-from .admin import router as admin_router
-from .home import router as home_router
-from .catalog import router as catalog_router
+from app.presentation.entities import router as admin_router
+from app.presentation.views.home import router as home_router
+from app.presentation.views.catalog import router as catalog_router
 from fastapi import APIRouter
 
 
