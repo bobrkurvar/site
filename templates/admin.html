@@ -14,7 +14,7 @@
         <h1 class="logo">Админ-панель</h1>
         <nav class="main-nav">
             <a href="/" class="nav-link">Главная</a>
-            <a href="/tile" class="nav-link">Каталог</a>
+            <a href="/catalog" class="nav-link">Каталог</a>
             <a href="/admin" class="nav-link active">Админка</a>
         </nav>
     </div>
@@ -57,6 +57,9 @@
             </option>
             {% endfor %}
         </select>
+
+        <!-- Поле для ввода цвета -->
+        <input type="text" name="color" placeholder="Цвет (например: белый, черный)" required>
 
         <input type="file" name="image" accept="image/*" required>
         <button type="submit">Добавить товар</button>
@@ -117,7 +120,8 @@
         <div class="tile-item">
             <div class="tile-info">
                 <strong>{{ tile.name }}</strong>
-                <span>Размер: {{ tile.size_width }}x{{ tile.size_height }}</span>
+                <span>Размер: {{ tile.width }}x{{ tile.height }}</span>
+                <span>Цвет: {{ tile.color }}</span>
                 {% if tile.image_path %}
                 <img src="/static/images/{{ tile.name }}"
                      alt="{{ tile.name }}"
@@ -128,7 +132,7 @@
             </div>
             <div class="tile-actions">
                 <a href="/admin/edit/{{ tile.tile_id }}" class="edit-btn">Редактировать</a>
-                <form method="post" action="/admin/tile/delete/{{ tile.tile_id }}" style="display: inline;">
+                <form method="post" action="/admin/tile/delete/{{ tile.id }}" style="display: inline;">
                     <button type="submit" class="delete-btn"
                             onclick="return confirm('Удалить товар?')">
                         Удалить
@@ -146,7 +150,7 @@
     <!-- Массовое удаление -->
     <section class="admin-section">
         <h2>Управление</h2>
-        <form method="post" action="/admin/tile/delete">
+        <form method="post" action="/admin/tile/delete-all">
             <button type="submit" class="delete-all-btn"
                     onclick="return confirm('Удалить ВСЕ товары?')">
                 Удалить все товары

@@ -13,7 +13,7 @@
         <h1 class="logo">МойСайт</h1>
         <nav class="main-nav">
             <a href="/" class="nav-link active">Главная</a>
-            <a href="/tile" class="nav-link">Каталог</a>
+            <a href="/catalog" class="nav-link">Каталог</a>
             <a href="#footer" class="nav-link">Контакты</a>
         </nav>
     </div>
@@ -40,7 +40,10 @@
                 </div>
                 <div class="tile-content">
                     <h3 class="tile-title">{{ tile.name }}</h3>
-                    <p class="price">{{ tile.price }} ₽</p>
+                    <div class="size-badge">
+                        <span class="size-icon">📐</span>
+                        {{ tile.size_width }}×{{ tile.size_height }}
+                    </div>
                 </div>
             </div>
             {% endfor %}

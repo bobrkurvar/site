@@ -1,9 +1,8 @@
 
 class Tile:
 
-    def __init__(self, price: float, name: str, image_path: str, tile_id: int | None = None):
-        self.price = price
+    def __init__(self, color: str, name: str, tile_id: int | None = None):
         self.name = name
-        self.image_path = image_path
+        self.color = color
         self.id = tile_id
         

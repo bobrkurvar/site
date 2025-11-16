@@ -6,7 +6,7 @@ import aiofiles
 
 log = logging.getLogger(__name__)
 
-async def add_tile(name: str, height: float, width: float, image: bytes, manager):
+async def add_tile(name: str, height: float, width: float, color: str, image: bytes, manager):
 
     path = config.image_path
     upload_dir = Path(path)
@@ -24,7 +24,7 @@ async def add_tile(name: str, height: float, width: float, image: bytes, manager
         log.error('не удалось записать файл')
 
     try:
-        return await manager.create(Tile, name=name, size_height=height, size_width=width, image_path=str(image_path))
+        return await manager.create(Tile, name=name, size_height=height, size_width=width, color=color, image_path=str(image_path))
     except Exception:
         log.error('БД упала, удаляем файл')
         if file_created:

@@ -11,6 +11,7 @@ class Catalog(Base):
     __tablename__ = "catalog"
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(unique=True)
+    color: Mapped[str]
     image_path: Mapped[str] = mapped_column(default=config.image_path)
     size_height: Mapped[float]
     size_width: Mapped[float]
@@ -30,7 +31,8 @@ class Catalog(Base):
             "name": self.name,
             "size_height": self.size_height,
             "size_width": self.size_width,
-            "image_path": self.image_path
+            "image_path": self.image_path,
+            "color": self.color
         }
 
 class SizeTile(Base):

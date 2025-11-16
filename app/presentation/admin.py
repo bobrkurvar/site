@@ -2,8 +2,7 @@ from fastapi import APIRouter, Depends, File, UploadFile, Form, Request
 from fastapi.responses import RedirectResponse
 from repo import get_db_manager, Crud
 from typing import Annotated
-from domain.tile import Tile
-from domain.tile_size import TileSize
+from domain import Tile, TileSize
 from services.tile import add_tile, delete_tile
 from fastapi.templating import Jinja2Templates
 from app.schemas.tile import TileSizeInput
@@ -25,6 +24,14 @@ async def admin_page(request: Request, manager: dbManagerDep):
     })
 
 
+@router.post('/tile/delete-all')
+async def delete_tile_by_criteria_or_all(
+        manager: dbManagerDep,
+):
+    await delete_tile(manager)
+    return RedirectResponse("/admin", status_code=303)
+
+
 @router.post("/tile/sizes/delete")
 async def admin_delete_tile_size(
         manager: dbManagerDep,
@@ -40,7 +47,7 @@ async def admin_delete_tile_size(
 
 @router.post("/tile/delete/{tile_id}")
 async def admin_delete_tile(tile_id: int, manager: dbManagerDep):
-    await delete_tile(manager, tile_id=tile_id)
+    await delete_tile(manager, id=tile_id)
     return RedirectResponse("/admin", status_code=303)
 
 
@@ -48,6 +55,7 @@ async def admin_delete_tile(tile_id: int, manager: dbManagerDep):
 async def admin_create_tile(
     name: Annotated[str, Form()],
     size: Annotated[str, Form()],
+    color: Annotated[str, Form()],
     image: Annotated[UploadFile, File()],
     manager: dbManagerDep,
 ):
@@ -55,7 +63,7 @@ async def admin_create_tile(
     height_str, width_str = size.split(',')
     height = float(height_str)
     width = float(width_str)
-    await add_tile(name, height, width, bytes_image, manager)
+    await add_tile(name, height, width, color, bytes_image, manager)
     return RedirectResponse("/admin", status_code=303)
 
 

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Каталог плитки</title>
+    <link rel="stylesheet" href="/static/tile_style.css">
+    <link rel="stylesheet" href="/static/catalog.css">
+</head>
+<body>
+
+<header class="main-header">
+    <div class="header-content">
+        <h1 class="logo">Каталог плитки</h1>
+        <nav class="main-nav">
+            <a href="/" class="nav-link">Главная</a>
+            <a href="/catalog" class="nav-link active">Каталог</a>
+        </nav>
+    </div>
+</header>
+
+<main class="catalog-panel">
+    <div class="catalog-header">
+        <h2>Наша коллекция плитки</h2>
+        <p>Всего товаров: {{ tiles|length }} шт.</p>
+    </div>
+
+    <div class="tile-grid">
+        {% for tile in tiles %}
+        <div class="tile-card">
+            <div class="tile-image-container">
+                {% if tile.image_path %}
+                <img src="/static/images/{{ tile.name }}"
+                     alt="{{ tile.name }}"
+                     class="tile-image"
+                     loading="lazy">
+                {% else %}
+                <div class="no-image">Нет изображения</div>
+                {% endif %}
+            </div>
+            <div class="tile-content">
+                <h3 class="tile-title">{{ tile.name }}</h3>
+                <div class="size-badge">
+                    <span class="size-icon">📐</span>
+                    {{ tile.width }}×{{ tile.height }}
+                </div>
+                {% if tile.color %}
+                <div class="color-badge">
+                    <span class="color-icon">🎨</span>
+                    {{ tile.color }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+
+        {% if not tiles %}
+        <div class="empty-catalog">
+            <p>В каталоге пока нет товаров</p>
+        </div>
+        {% endif %}
+    </div>
+</main>
+
+</body>
+</html>
