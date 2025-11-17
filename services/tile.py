@@ -10,7 +10,13 @@ log = logging.getLogger(__name__)
 
 
 async def add_tile(
-    name: str, height: float, width: float, color: str, image: bytes, manager
+    name: str,
+    height: float,
+    width: float,
+    color: str,
+    surface: str,
+    image: bytes,
+    manager,
 ):
 
     path = config.image_path
@@ -34,7 +40,8 @@ async def add_tile(
             name=name,
             size_height=height,
             size_width=width,
-            color=color,
+            color_name=color,
+            surface_name=surface,
             image_path=str(image_path),
         )
     except Exception:

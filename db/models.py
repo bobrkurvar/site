@@ -19,9 +19,13 @@ class Catalog(Base):
     image_path: Mapped[str] = mapped_column(default=config.image_path)
     size_height: Mapped[float]
     size_width: Mapped[float]
+    surface_name: Mapped[str] = mapped_column(
+        ForeignKey("tile_surface.name", ondelete="CASCADE")
+    )
 
     color: Mapped["TileColor"] = relationship("TileColor", back_populates="tiles")
     size: Mapped["TileSize"] = relationship("TileSize", back_populates="tiles")
+    surface: Mapped["Surface"] = relationship("Surface", back_populates="tiles")
 
     __table_args__ = (
         ForeignKeyConstraint(
@@ -81,6 +85,17 @@ class TileColor(Base):
     tiles: Mapped[list["Catalog"]] = relationship(
         "Catalog",
         back_populates="color",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+
+
+class Surface(Base):
+    __tablename__ = "tile_surface"
+    name: Mapped[str] = mapped_column(primary_key=True)
+    tiles: Mapped[list["Catalog"]] = relationship(
+        "Catalog",
+        back_populates="surface",
         cascade="all, delete-orphan",
         passive_deletes=True,
     )

@@ -210,7 +210,7 @@
                     <span>Свойство: {{ color.property_name }}</span>
                 </div>
                 <div class="color-actions">
-                    <form method="post" action="/admin/tile/colors/delete">
+                    <form method="post" action="/admin/tile/colors/delete/{ {color.name }}">
                         <input type="hidden" name="color_id" value="{{ color.id }}">
                         <button type="submit" class="delete-btn"
                                 onclick="return confirm('Удалить цвет?')">

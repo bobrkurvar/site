@@ -5,8 +5,11 @@ from sqlalchemy import delete, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
-from repo.exceptions import (AlreadyExistsError,
-                             CustomForeignKeyViolationError, NotFoundError)
+from repo.exceptions import (
+    AlreadyExistsError,
+    CustomForeignKeyViolationError,
+    NotFoundError,
+)
 
 log = logging.getLogger(__name__)
 
@@ -100,18 +103,19 @@ class Crud:
             await session.execute(query)
 
     async def read(
-            self,
-            domain_model,
-            to_join=None,
-            limit: int | None = None,
-            offset: int | None = None,
-            order_by: str | None = None,
-            **filters
+        self,
+        domain_model,
+        to_join=None,
+        limit: int | None = None,
+        offset: int | None = None,
+        order_by: str | None = None,
+        **filters
     ):
         async with self._session_factory.begin() as session:
             model = self._mapper[domain_model]
 
             from sqlalchemy.orm import selectinload
+
             options = []
 
             if to_join:
@@ -137,7 +141,6 @@ class Crud:
 
             result = (await session.execute(query)).unique().scalars().all()
             return [r.model_dump() for r in result]
-
 
     async def close_and_dispose(self):
         log.debug("подключение к движку %s закрывается", self._engine)

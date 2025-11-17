@@ -13,7 +13,7 @@ dbManagerDep = Annotated[Crud, Depends(get_db_manager)]
 log = logging.getLogger(__name__)
 
 
-@router.post("/tile/sizes/delete")
+@router.post("/sizes/delete-all")
 async def admin_delete_tile_size(
     manager: dbManagerDep,
     height: Annotated[float | None, Form(gt=0)] = None,
@@ -26,7 +26,7 @@ async def admin_delete_tile_size(
     return RedirectResponse("/admin", status_code=303)
 
 
-@router.post("/tile/sizes")
+@router.post("/sizes/create")
 async def admin_create_tile_size(
     manager: dbManagerDep,
     height: Annotated[float | None, Form(gt=0)],
@@ -36,7 +36,7 @@ async def admin_create_tile_size(
     return RedirectResponse("/admin", status_code=303)
 
 
-@router.post("/tile/sizes/delete")
+@router.post("/sizes/delete")
 async def admin_delete_tile_size(tile_size: TileSizeInput, manager: dbManagerDep):
     await manager.delete(TileSize, **tile_size.model_dump())
     return RedirectResponse("/admin", status_code=303)
