@@ -1,61 +1,71 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Главная - Мой сайт</title>
-    <link rel="stylesheet" href="/static/base.css">
-    <link rel="stylesheet" href="/static/home.css">
-</head>
-<body>
+{% extends "base.html" %}
 
-<header class="main-header">
-    <div class="header-content">
-        <h1 class="logo">МойСайт</h1>
-        <nav class="main-nav">
-            <a href="/" class="nav-link active">Главная</a>
-            <a href="/catalog" class="nav-link">Каталог</a>
-        </nav>
+{% block title %}Главная - Мой сайт{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/home.css">
+{% endblock %}
+
+{% block content %}
+<!-- Герой-секция -->
+<section class="hero-section">
+    <div class="hero-content">
+        <h2 class="hero-title">Добро пожаловать в мир качественной плитки</h2>
+        <p class="hero-subtitle">Мы предлагаем лучшие решения для вашего интерьера</p>
+        <div class="hero-actions">
+            <a href="/catalog" class="btn-primary">Перейти в каталог</a>
+            <a href="#about" class="btn-secondary">Узнать больше</a>
+        </div>
     </div>
-</header>
+    <div class="hero-visual">
+        <div class="hero-pattern"></div>
+    </div>
+</section>
 
-<main>
-    <section class="featured">
-        <div class="section-header">
-            <h2 class="section-title">Популярные товары</h2>
-            <p class="section-subtitle">Лучшие предложения этой недели</p>
-        </div>
-
-        <div class="tile-grid">
-            {% for tile in featured_tiles %}
-            <div class="tile-card">
-                <div class="tile-image-container">
-                    {% if tile.image_path %}
-                    <img src="/static/images/{{ tile.name }}"
-                         alt="{{ tile.name }}"
-                         class="tile-image">
-                    {% else %}
-                    <div class="no-image">Нет изображения</div>
-                    {% endif %}
-                </div>
-                <div class="tile-content">
-                    <h3 class="tile-title">{{ tile.name }}</h3>
-                    <div class="size-badge">
-                        <span class="size-icon">📐</span>
-                        {{ tile.size_width }}×{{ tile.size_height }}
-                    </div>
-                    {% if tile.color %}
-                    <div class="color-badge">
-                        <span class="color-icon">🎨</span>
-                        {{ tile.color }}
-                    </div>
-                    {% endif %}
-                </div>
+<!-- О компании -->
+<section id="about" class="about-section">
+    <div class="container">
+        <h2 class="section-title">О нашей компании</h2>
+        <div class="about-content">
+            <div class="about-text">
+                <p>Мы специализируемся на поставках высококачественной керамической плитки для любых помещений.</p>
+                <ul class="features-list">
+                    <li>✅ Широкий ассортимент цветов и размеров</li>
+                    <li>✅ Высокое качество материалов</li>
+                    <li>✅ Доступные цены</li>
+                    <li>✅ Профессиональные консультации</li>
+                </ul>
             </div>
-            {% endfor %}
         </div>
-    </section>
-</main>
+    </div>
+</section>
 
-</body>
-</html>
+<!-- Преимущества -->
+<section class="benefits-section">
+    <div class="container">
+        <h2 class="section-title">Почему выбирают нас</h2>
+        <div class="benefits-grid">
+            <div class="benefit-card">
+                <div class="benefit-icon">🏆</div>
+                <h3>Качество</h3>
+                <p>Только проверенные материалы от ведущих производителей</p>
+            </div>
+            <div class="benefit-card">
+                <div class="benefit-icon">🚚</div>
+                <h3>Доставка</h3>
+                <p>Быстрая доставка по всему городу в удобное для вас время</p>
+            </div>
+            <div class="benefit-card">
+                <div class="benefit-icon">💎</div>
+                <h3>Ассортимент</h3>
+                <p>Широкий выбор плитки для любых помещений и стилей</p>
+            </div>
+            <div class="benefit-card">
+                <div class="benefit-icon">👨‍💼</div>
+                <h3>Консультации</h3>
+                <p>Профессиональные советы по выбору и укладке плитки</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

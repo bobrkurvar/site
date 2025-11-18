@@ -1,0 +1,301 @@
+/* Страница деталей плитки */
+.tile-detail-panel {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Хлебные крошки */
+.breadcrumbs {
+    margin-bottom: 30px;
+    font-size: 14px;
+    color: #666;
+}
+
+.breadcrumbs a {
+    color: #3498db;
+    text-decoration: none;
+}
+
+.breadcrumbs a:hover {
+    text-decoration: underline;
+}
+
+.breadcrumbs span {
+    color: #2c3e50;
+    font-weight: 500;
+}
+
+/* Основной layout */
+.tile-detail-layout {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 40px;
+    align-items: start;
+    margin-bottom: 60px;
+}
+
+/* Левая часть - изображение */
+.tile-visual-section {
+    background: white;
+    border-radius: 15px;
+    padding: 0;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.tile-header {
+    padding: 25px 30px;
+    border-bottom: 1px solid #ecf0f1;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+}
+
+.tile-main-title {
+    margin: 0;
+    font-size: 2em;
+    color: #2c3e50;
+    font-weight: 700;
+    text-align: center;
+}
+
+.tile-image-main {
+    padding: 30px;
+    text-align: center;
+}
+
+.tile-detail-image {
+    max-width: 100%;
+    max-height: 500px;
+    border-radius: 10px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+.no-image-large {
+    height: 400px;
+    background: linear-gradient(135deg, #34495e, #2c3e50);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    border-radius: 10px;
+}
+
+.no-image-icon {
+    font-size: 3em;
+    margin-bottom: 15px;
+}
+
+/* Миниатюры */
+.tile-thumbnails {
+    display: flex;
+    gap: 10px;
+    padding: 20px 30px;
+    border-top: 1px solid #ecf0f1;
+    overflow-x: auto;
+}
+
+.thumbnail {
+    flex-shrink: 0;
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.thumbnail:hover {
+    border-color: #3498db;
+}
+
+.thumbnail-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Правая часть - технические данные */
+.tile-specs-sidebar {
+    position: sticky;
+    top: 100px;
+}
+
+.specs-panel {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.specs-title {
+    margin: 0 0 25px 0;
+    font-size: 1.5em;
+    color: #2c3e50;
+    text-align: center;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #3498db;
+}
+
+.specs-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.spec-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #ecf0f1;
+}
+
+.spec-label {
+    font-weight: 600;
+    color: #2c3e50;
+    flex-shrink: 0;
+}
+
+.spec-value {
+    color: #34495e;
+    font-weight: 500;
+    text-align: right;
+    flex: 1;
+    margin-left: 15px;
+}
+
+/* Кнопки действий */
+.tile-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 30px;
+}
+
+.btn-primary, .btn-secondary, .btn-back {
+    padding: 15px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+}
+
+.btn-secondary {
+    background: white;
+    color: #2c3e50;
+    border: 2px solid #bdc3c7;
+}
+
+.btn-secondary:hover {
+    border-color: #3498db;
+    color: #3498db;
+}
+
+.btn-back {
+    background: #95a5a6;
+    color: white;
+}
+
+.btn-back:hover {
+    background: #7f8c8d;
+}
+
+/* Дополнительная информация */
+.additional-info {
+    border-top: 1px solid #ecf0f1;
+    padding-top: 25px;
+}
+
+.additional-info h3 {
+    margin: 0 0 15px 0;
+    color: #2c3e50;
+    font-size: 1.2em;
+}
+
+.info-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.info-list li {
+    padding: 8px 0;
+    color: #27ae60;
+    font-weight: 500;
+}
+
+/* Похожие товары */
+.similar-tiles {
+    margin-top: 40px;
+}
+
+.similar-tiles h2 {
+    color: white;
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 2em;
+}
+
+.similar-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.similar-placeholder {
+    background: rgba(255,255,255,0.1);
+    padding: 40px;
+    text-align: center;
+    border-radius: 10px;
+    color: white;
+}
+
+/* Адаптивность */
+@media (max-width: 1024px) {
+    .tile-detail-layout {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+
+    .tile-specs-sidebar {
+        position: static;
+    }
+}
+
+@media (max-width: 768px) {
+    .tile-detail-panel {
+        padding: 15px;
+    }
+
+    .tile-main-title {
+        font-size: 1.5em;
+    }
+
+    .spec-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+
+    .spec-value {
+        text-align: left;
+        margin-left: 0;
+    }
+}

@@ -158,7 +158,7 @@
             <div class="characteristics-list">
                 {% for color in tile_colors %}
                 <div class="characteristic-item">
-                    <span>{{ color.name }} ({{ color.property_name }})</span>
+                    <span>{{ color.name }} ({{ color.feature_name }})</span>
                     <form method="post" action="/admin/tile/color/delete">
                         <input type="hidden" name="color_id" value="{{ color.id }}">
                         <button type="submit" class="delete-btn"

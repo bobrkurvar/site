@@ -28,6 +28,19 @@ class TileSurface:
     def __str__(self):
         return f"{self.name}"
 
+class TileMaterial:
+    def __init__(self, name: str):
+        self.name = name
+
+    def __str__(self):
+        return f'{self.name}'
+
+class Producer:
+    def __init__(self, name: str):
+        self.name = name
+
+    def __str__(self):
+        return f'{self.name}'
 
 class Tile:
     def __init__(
@@ -36,26 +49,25 @@ class Tile:
         color: TileColor,
         name: str,
         surface: TileSurface,
+        material: TileMaterial,
+        box_weight: float,
+        box_area: float,
+        pallet_weight: float,
+        pallet_area: float,
+        producer: Producer,
         tile_id: int | None = None,
     ):
         self.name = name
         self.color = color
         self.size = size
         self.surface = surface
+        self.material = material
+        self.box_weight = box_weight
+        self.box_area = box_area
+        self.pallet_weight = pallet_weight
+        self.pallet_area = pallet_area
+        self.producer = producer
         self.id = tile_id
 
     def __str__(self):
         return f"{str(self.color)} {str(self.surface)} {self.name}"
-
-
-class Box:
-    def __init__(self, tiles: list[Tile], weight: float):
-        self.count = len(tiles)
-        self.area = sum(tile.size.height * tile.size.width for tile in tiles)
-        self.weight = weight
-
-
-class Pallet:
-    def __init__(self, boxes: list[Box]):
-        self.weight = sum(box.weight for box in boxes)
-        self.area = sum(box.area for box in boxes)

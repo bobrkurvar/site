@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ tile.name }} - Детали плитки</title>
+    <link rel="stylesheet" href="/static/base.css">
+    <link rel="stylesheet" href="/static/tile_detail.css">
+</head>
+<body>
+
+<header class="main-header">
+    <div class="header-content">
+        <h1 class="logo">Каталог плитки</h1>
+        <nav class="main-nav">
+            <a href="/" class="nav-link">Главная</a>
+            <a href="/catalog" class="nav-link active">Каталог</a>
+        </nav>
+    </div>
+</header>
+
+<main class="tile-detail-panel">
+    <!-- Хлебные крошки -->
+    <nav class="breadcrumbs">
+        <a href="/">Главная</a> &gt;
+        <a href="/catalog">Каталог</a> &gt;
+        <span>{{ tile.name }}</span>
+    </nav>
+
+    <div class="tile-detail-layout">
+        <!-- Левая часть - изображение и название -->
+        <section class="tile-visual-section">
+            <div class="tile-header">
+                <h1 class="tile-main-title">{{ tile.name }}</h1>
+            </div>
+
+            <div class="tile-image-main">
+                {% if tile.image_path %}
+                <img src="/static/images/{{ tile.name }}"
+                     alt="{{ tile.name }}"
+                     class="tile-detail-image"
+                     loading="eager">
+                {% else %}
+                <div class="no-image-large">
+                    <div class="no-image-icon">🖼️</div>
+                    <p>Изображение отсутствует</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Миниатюры (если есть дополнительные фото) -->
+            <div class="tile-thumbnails">
+                {% if tile.additional_images %}
+                    {% for img in tile.additional_images %}
+                    <div class="thumbnail">
+                        <img src="/static/images/{{ tile.name }}"
+                             alt="{{ tile.name }} - фото {{ loop.index }}"
+                             class="thumbnail-image">
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </section>
+
+        <!-- Правая часть - технические данные -->
+        <aside class="tile-specs-sidebar">
+            <div class="specs-panel">
+                <h2 class="specs-title">Технические характеристики</h2>
+
+                <div class="specs-list">
+                    <div class="spec-item">
+                        <span class="spec-label">Размер:</span>
+                        <span class="spec-value">{{ tile.size_width }} × {{ tile.size_height }} мм</span>
+                    </div>
+
+                    <div class="spec-item">
+                        <span class="spec-label">Цвет:</span>
+                        <span class="spec-value">{{ tile.color_name or 'Не указан' }}</span>
+                    </div>
+
+                    {% if tile.color_property %}
+                    <div class="spec-item">
+                        <span class="spec-label">Свойство цвета:</span>
+                        <span class="spec-value">{{ tile.feature_name }}</span>
+                    </div>
+                    {% endif %}
+
+                    {% if tile.material %}
+                    <div class="spec-item">
+                        <span class="spec-label">Материал:</span>
+                        <span class="spec-value">{{ tile.material }}</span>
+                    </div>
+                    {% endif %}
+
+                    {% if tile.surface %}
+                    <div class="spec-item">
+                        <span class="spec-label">Поверхность:</span>
+                        <span class="spec-value">{{ tile.surface_name }}</span>
+                    </div>
+                    {% endif %}
+
+                    {% if tile.weight %}
+                    <div class="spec-item">
+                        <span class="spec-label">Вес:</span>
+                        <span class="spec-value">{{ tile.weight }} кг/м²</span>
+                    </div>
+                    {% endif %}
+
+                    {% if tile.water_absorption %}
+                    <div class="spec-item">
+                        <span class="spec-label">Водопоглощение:</span>
+                        <span class="spec-value">{{ tile.water_absorption }}%</span>
+                    </div>
+                    {% endif %}
+
+                    {% if tile.frost_resistance %}
+                    <div class="spec-item">
+                        <span class="spec-label">Морозостойкость:</span>
+                        <span class="spec-value">{{ tile.frost_resistance }}</span>
+                    </div>
+                    {% endif %}
+
+                    {% if tile.abrasion_resistance %}
+                    <div class="spec-item">
+                        <span class="spec-label">Сопротивление истиранию:</span>
+                        <span class="spec-value">{{ tile.abrasion_resistance }}</span>
+                    </div>
+                    {% endif %}
+
+                    {% if tile.thickness %}
+                    <div class="spec-item">
+                        <span class="spec-label">Толщина:</span>
+                        <span class="spec-value">{{ tile.thickness }} мм</span>
+                    </div>
+                    {% endif %}
+
+                    <!-- Стандартные поля -->
+                    <div class="spec-item">
+                        <span class="spec-label">Артикул:</span>
+                        <span class="spec-value">#{{ tile.id }}</span>
+                    </div>
+
+                    <div class="spec-item">
+                        <span class="spec-label">Категория:</span>
+                        <span class="spec-value">Керамическая плитка</span>
+                    </div>
+                </div>
+
+                <!-- Действия -->
+                <div class="tile-actions">
+                    <button class="btn-primary">Запросить цену</button>
+                    <button class="btn-secondary">Добавить в избранное</button>
+                    <a href="/catalog" class="btn-back">← Назад в каталог</a>
+                </div>
+
+                <!-- Дополнительная информация -->
+                <div class="additional-info">
+                    <h3>Дополнительно</h3>
+                    <ul class="info-list">
+                        <li>✅ Подходит для внутренней отделки</li>
+                        <li>✅ Легко чистится</li>
+                        <li>✅ Устойчива к влаге</li>
+                        {% if tile.frost_resistance %}
+                        <li>✅ Подходит для наружной отделки</li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Похожие товары -->
+    <section class="similar-tiles">
+        <h2>Похожие товары</h2>
+        <div class="similar-grid">
+            <!-- Здесь можно вставить похожие плитки из каталога -->
+            <div class="similar-placeholder">
+                <p>Здесь будут показаны похожие товары</p>
+            </div>
+        </div>
+    </section>
+</main>
+
+</body>
+</html>

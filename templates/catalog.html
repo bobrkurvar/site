@@ -68,31 +68,23 @@
         <section class="products-section">
             <div class="tile-grid">
                 {% for tile in tiles %}
-                <div class="tile-card">
-                    <div class="tile-image-container">
-                        {% if tile.image_path %}
-                        <img src="/static/images/{{ tile.name }}"
-                             alt="{{ tile.name }}"
-                             class="tile-image"
-                             loading="lazy">
-                        {% else %}
-                        <div class="no-image">Нет изображения</div>
-                        {% endif %}
-                    </div>
-                    <div class="tile-content">
-                        <h3 class="tile-title">{{ tile.name }}</h3>
-                        <div class="size-badge">
-                            <span class="size-icon">📐</span>
-                            {{ tile.width }}×{{ tile.height }}
+                <a href="/catalog/{{ tile.id }}" class="tile-card-link">
+                    <div class="tile-card">
+                        <div class="tile-header">
+                            <h3 class="tile-title">{{ tile.name }}</h3>
                         </div>
-                        {% if tile.color %}
-                        <div class="color-badge">
-                            <span class="color-icon">🎨</span>
-                            {{ tile.color }}
+                        <div class="tile-image-container">
+                            {% if tile.image_path %}
+                            <img src="/static/images/tiles/{{ tile.name }}"
+                                 alt="{{ tile.name }}"
+                                 class="tile-image"
+                                 loading="lazy">
+                            {% else %}
+                            <div class="no-image">Нет изображения</div>
+                            {% endif %}
                         </div>
-                        {% endif %}
                     </div>
-                </div>
+                </a>
                 {% endfor %}
 
                 {% if not tiles %}

@@ -1,82 +1,146 @@
-/* Основные стили */
+/* base.css - цветовая схема бежевой плитки */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
-    margin: 0;
-    color: #333;
+    line-height: 1.6;
+    color: #5d4037; /* Тёмный коричневый для текста */
+    background: linear-gradient(135deg, #d7ccc8 0%, #bcaaa4 100%); /* Бежевые тона */
     min-height: 100vh;
 }
 
-/* Шапка с градиентом */
+/* Шапка */
 .main-header {
-    background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
-    padding: 0;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-    position: sticky;
-    top: 0;
+    background: rgba(245, 245, 220, 0.95); /* Бежевый с прозрачностью */
+    backdrop-filter: blur(10px);
+    padding: 15px 0;
+    box-shadow: 0 4px 20px rgba(93, 64, 55, 0.15); /* Тени в коричневых тонах */
+    position: relative;
     z-index: 1000;
+    border-bottom: 1px solid rgba(188, 170, 164, 0.3);
 }
 
 .header-content {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 20px;
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    height: 70px;
-}
-
-.logo {
-    color: white;
-    font-size: 1.8em;
-    font-weight: 700;
-    margin: 0;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-}
-
-.main-nav {
-    display: flex;
+    align-items: flex-end;
+    padding: 0 20px;
     gap: 30px;
 }
 
+/* Секция с лого - в правой части */
+.logo-section {
+    text-align: right;
+    order: 2;
+}
+
+.logo-image {
+    height: 80px;
+    width: auto;
+    max-width: 300px;
+    object-fit: contain;
+    filter: drop-shadow(2px 2px 4px rgba(93, 64, 55, 0.3));
+}
+
+.logo-subtitle {
+    color: #8d6e63; /* Средний коричневый */
+    font-size: 1em;
+    margin: 8px 0 0 0;
+    font-weight: 300;
+    letter-spacing: 1px;
+}
+
+/* Навигация - в левой части */
+.main-nav {
+    display: flex;
+    gap: 30px;
+    order: 1;
+    margin-bottom: 10px;
+}
+
 .nav-link {
-    color: white;
+    color: #5d4037; /* Тёмный коричневый */
     text-decoration: none;
-    padding: 10px 20px;
-    border-radius: 25px;
-    transition: all 0.3s ease;
+    font-size: 1.2em;
     font-weight: 500;
+    padding: 10px 20px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
     position: relative;
 }
 
 .nav-link:hover {
-    background: rgba(52, 152, 219, 0.3);
+    background: rgba(141, 110, 99, 0.1); /* Прозрачный коричневый */
     transform: translateY(-2px);
 }
 
 .nav-link.active {
-    background: rgba(52, 152, 219, 0.4);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    background: rgba(141, 110, 99, 0.2); /* Активный - коричневый */
+    color: #6d4c41;
+    box-shadow: 0 4px 15px rgba(141, 110, 99, 0.2);
+}
+
+.nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 20px;
+    right: 20px;
+    height: 2px;
+    background: #8d6e63; /* Коричневая полоска */
+    border-radius: 1px;
 }
 
 /* Основной контент */
 main {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 40px 20px;
+    min-height: calc(100vh - 100px);
 }
 
-/* Адаптивность */
-@media (max-width: 600px) {
+/* Утилиты */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Адаптивность для шапки */
+@media (max-width: 768px) {
     .header-content {
         flex-direction: column;
-        height: auto;
-        padding: 15px 20px;
+        align-items: center;
+        text-align: center;
+        gap: 20px;
     }
 
-    .logo {
-        margin-bottom: 15px;
+    .logo-section {
+        order: 1;
+        text-align: center;
+    }
+
+    .main-nav {
+        order: 2;
+        margin-bottom: 0;
+    }
+
+    .logo-image {
+        height: 60px;
+    }
+
+    .nav-link {
+        font-size: 1.1em;
+        padding: 8px 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .logo-image {
+        height: 50px;
     }
 
     .main-nav {
@@ -84,7 +148,15 @@ main {
     }
 
     .nav-link {
-        padding: 8px 16px;
+        font-size: 1em;
+        padding: 6px 12px;
+    }
+
+    .header-content {
+        padding: 0 15px;
+    }
+
+    .logo-subtitle {
         font-size: 0.9em;
     }
 }

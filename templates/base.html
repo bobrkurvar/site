@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Мой сайт{% endblock %}</title>
+    <link rel="stylesheet" href="/static/base.css">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<header class="main-header">
+    <div class="header-content">
+        <div class="logo-section">
+            <img src="/static/images/logo.png"
+                 alt="МойСайт - Качественная плитка"
+                 class="logo-image">
+            <p class="logo-subtitle">Качественная плитка для вашего дома</p>
+        </div>
+        <nav class="main-nav">
+            <a href="/" class="nav-link {% if request.url.path == '/' %}active{% endif %}">Главная</a>
+            <a href="/catalog" class="nav-link {% if request.url.path.startswith('/catalog') %}active{% endif %}">Каталог</a>
+        </nav>
+    </div>
+</header>
+
+<main>
+    {% block content %}
+    {% endblock %}
+</main>
+
+</body>
+</html>

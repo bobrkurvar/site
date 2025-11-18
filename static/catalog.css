@@ -38,6 +38,8 @@
     padding: 25px;
     box-shadow: 0 15px 35px rgba(0,0,0,0.15);
     border: 1px solid rgba(255,255,255,0.2);
+    width: 100%; /* Добавлено */
+    box-sizing: border-box; /* Важно! */
 }
 
 .filters-panel h3 {
@@ -58,12 +60,14 @@
     display: flex;
     flex-direction: column;
     gap: 20px;
+    width: 100%; /* Добавлено */
 }
 
 .filter-group {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    width: 100%; /* Добавлено */
 }
 
 .filter-group label {
@@ -82,7 +86,9 @@
     transition: all 0.3s ease;
     background: white;
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    width: 100%;
+    width: 100%; /* Изменено с 100% на calc(100% - 28px) */
+    box-sizing: border-box; /* Важно! */
+    max-width: 100%; /* Добавлено */
 }
 
 .filter-group input:focus,
@@ -101,6 +107,7 @@
     flex-direction: column;
     gap: 12px;
     margin-top: 10px;
+    width: 100%; /* Добавлено */
 }
 
 .filter-btn {
@@ -114,6 +121,8 @@
     font-weight: 600;
     transition: all 0.3s ease;
     box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+    width: 100%; /* Добавлено */
+    box-sizing: border-box; /* Добавлено */
 }
 
 .filter-btn:hover {
@@ -131,6 +140,8 @@
     transition: all 0.3s ease;
     text-align: center;
     border: 1px solid #e74c3c;
+    width: 100%; /* Добавлено */
+    box-sizing: border-box; /* Добавлено */
 }
 
 .clear-filters:hover {
@@ -328,4 +339,67 @@
         width: 100%;
         text-align: center;
     }
+}
+
+/* Ссылка-карточка */
+.tile-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    transition: all 0.3s ease;
+}
+
+.tile-card-link:hover {
+    text-decoration: none;
+    color: inherit;
+    transform: translateY(-5px);
+}
+
+/* Заголовок карточки */
+.tile-header {
+    padding: 15px 20px 10px;
+    border-bottom: 1px solid #ecf0f1;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+}
+
+.tile-title {
+    margin: 0;
+    font-size: 1.1em;
+    color: #2c3e50;
+    font-weight: 600;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Остальной CSS остается таким же, но добавьте: */
+.tile-card {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+    position: relative;
+    cursor: pointer; /* Добавьте курсор указателя */
+}
+
+.tile-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+
+.tile-image-container {
+    height: 180px; /* Немного уменьшил высоту из-за добавленного заголовка */
+    overflow: hidden;
+    position: relative;
+}
+
+.tile-content {
+    padding: 15px 20px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
 }

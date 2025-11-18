@@ -1,4 +1,4 @@
-from sqlalchemy import ForeignKey, ForeignKeyConstraint, inspect
+from sqlalchemy import ForeignKey, ForeignKeyConstraint
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
@@ -22,10 +22,18 @@ class Catalog(Base):
     surface_name: Mapped[str] = mapped_column(
         ForeignKey("tile_surface.name", ondelete="CASCADE")
     )
+    material_name: Mapped[str] = mapped_column(
+        ForeignKey("tile_materials.name", ondelete="CASCADE")
+    )
+    producer_name: Mapped[str] = mapped_column(
+        ForeignKey("producers.name", ondelete="CASCADE")
+    )
 
     color: Mapped["TileColor"] = relationship("TileColor", back_populates="tiles")
     size: Mapped["TileSize"] = relationship("TileSize", back_populates="tiles")
     surface: Mapped["TileSurface"] = relationship("TileSurface", back_populates="tiles")
+    material: Mapped["TileMaterial"] = relationship("TileMaterial", back_populates="tiles")
+    producer: Mapped["Producer"] = relationship("Producer", back_populates="tiles")
 
     __table_args__ = (
         ForeignKeyConstraint(
@@ -43,6 +51,8 @@ class Catalog(Base):
             "size_width": self.size_width,
             "color_name": self.color_name,
             "surface_name": self.surface_name,
+            "material_name": self.material_name,
+            "producer_name": self.producer_name,
             "image_path": self.image_path,
         }
 
@@ -106,12 +116,39 @@ class TileColor(Base):
             "feature_name": self.feature_name
         }
 
+
 class TileSurface(Base):
     __tablename__ = "tile_surface"
     name: Mapped[str] = mapped_column(primary_key=True)
     tiles: Mapped[list["Catalog"]] = relationship(
         "Catalog",
         back_populates="surface",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+
+    def model_dump(self):
+        return {"name": self.name}
+
+class TileMaterial(Base):
+    __tablename__ = "tile_materials"
+    name: Mapped[str] = mapped_column(primary_key=True)
+    tiles: Mapped[list["Catalog"]] = relationship(
+        "Catalog",
+        back_populates="material",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+
+    def model_dump(self):
+        return {"name": self.name}
+
+class Producer(Base):
+    __tablename__ = "producers"
+    name: Mapped[str] = mapped_column(primary_key=True)
+    tiles: Mapped[list["Catalog"]] = relationship(
+        "Catalog",
+        back_populates="producer",
         cascade="all, delete-orphan",
         passive_deletes=True,
     )

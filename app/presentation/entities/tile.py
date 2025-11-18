@@ -33,6 +33,8 @@ async def admin_create_tile(
     color_name: Annotated[str, Form()],
     color_feature: Annotated[str, Form()],
     surface: Annotated[str, Form()],
+    material: Annotated[str, Form()],
+    producer: Annotated[str, Form()],
     image: Annotated[UploadFile, File()],
     manager: dbManagerDep,
 ):
@@ -40,6 +42,7 @@ async def admin_create_tile(
     height_str, width_str = size.split()
     height = float(height_str)
     width = float(width_str)
-    log.debug("height: %s, width: %s, color: %s, surface: %s", height, width, color_name, surface)
-    await add_tile(name, height, width, color_name, color_feature, surface, bytes_image, manager)
+    log.debug("height: %s, width: %s, color: %s, color_feature: %s, surface: %s, material: %s, producer: %s", height, width, color_name, color_feature, surface, material, producer)
+    await add_tile(name, height, width, color_name, color_feature, surface, material, producer, bytes_image, manager)
     return RedirectResponse("/admin", status_code=303)
+

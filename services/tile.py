@@ -30,7 +30,19 @@ async def add_tile_color(color_name: str, feature_name: str, manager, session):
 
     tile_color = await manager.read(TileColor, name=color_name, session=session)
     if not tile_color:
-        await manager.create(TileColor, name=color_name, session=session)
+        await manager.create(TileColor, name=color_name, feature_name=feature_name, session=session)
+
+
+async def add_tile_material(material_name: str, manager, session):
+    tile_material = await manager.read(TileMaterial, name=material_name)
+    if not tile_material:
+        await manager.create(TileColorFeature, name=material_name, session=session)
+
+
+async def add_producer(producer_name: str, manager, session):
+    producer = await manager.read(Producer, name=producer_name)
+    if not producer:
+        await manager.create(Producer, name=producer_name, session=session)
 
 async def add_tile(
     name: str,
@@ -39,6 +51,8 @@ async def add_tile(
     color: str,
     color_feature: str,
     surface: str,
+    material: str,
+    producer: str,
     image: bytes,
     manager,
 ):
@@ -49,11 +63,12 @@ async def add_tile(
     image_path = upload_dir / name
 
     async with UnitOfWork(manager._session_factory) as uow:
+
         await add_tile_size(height, width, manager, uow.session)
-
         await add_tile_surface(surface, manager, uow.session)
-
         await add_tile_color(color, color_feature, manager, uow.session)
+        await add_tile_material(material, manager, uow.session)
+        await add_producer(producer, manager, uow.session)
 
         tile_record = await manager.create(
             Tile,
@@ -62,6 +77,8 @@ async def add_tile(
             size_width=width,
             color_name=color,
             surface_name=surface,
+            material_name = material,
+            producer_name = producer,
             image_path=str(image_path),
             session = uow.session
         )
