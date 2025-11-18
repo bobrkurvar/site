@@ -4,6 +4,7 @@ from typing import Any, List
 from sqlalchemy import delete, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from sqlalchemy.orm import selectinload
 
 from repo.exceptions import (
     AlreadyExistsError,
@@ -28,23 +29,38 @@ class Crud:
     def register(self, domain_cls, orm_cls):
         self._mapper[domain_cls] = orm_cls
 
-    async def create(self, domain_model, seq_data: List[Any] | None = None, **kwargs):
+    async def create(
+            self,
+            domain_model,
+            seq_data: list | None = None,
+            session=None,
+            **kwargs
+    ):
+        model = self._mapper[domain_model]
+
+        async def _create_internal(session):
+            if seq_data:
+                log.debug("создание нескольких объектов")
+                objs = [model(**data) for data in seq_data]
+                session.add_all(objs)
+                await session.flush()
+                return [obj.model_dump() for obj in objs]
+            else:
+                log.debug("параметры для создания %s", kwargs)
+                obj = model(**kwargs)
+                session.add(obj)
+                await session.flush()
+                return obj.model_dump()
+
         try:
-            async with self._session_factory.begin() as session:
-                model = self._mapper[domain_model]
-                if seq_data:
-                    log.debug("создание нескольких объектов")
-                    tup_lst = [model(**new_data) for new_data in seq_data]
-                    session.add_all(tup_lst)
-                    await session.flush()
-                    return [tup.model_dump() for tup in tup_lst]
-                else:
-                    log.debug("параметры для создания %s", kwargs)
-                    tup = model(**kwargs)
-                    log.debug("создание задачи %s", tup)
-                    session.add(tup)
-                    await session.flush()
-                    return tup.model_dump()
+            # Если сессия передана, используем её (для UoW)
+            if session is not None:
+                return await _create_internal(session)
+            # Иначе создаём свою транзакцию
+            else:
+                async with self._session_factory.begin() as session_ctx:
+                    return await _create_internal(session_ctx)
+
         except IntegrityError as err:
             pgcode = getattr(err.orig, "pgcode", None)
 
@@ -67,19 +83,18 @@ class Crud:
     async def delete(self, domain_model, **filters):
         async with self._session_factory.begin() as session:
             model = self._mapper[domain_model]
-            query = select(model)
 
-            for field, value in filters.items():
-                query = query.filter(getattr(model, field) == value)
-
+            conditions = [getattr(model, field) == value for field, value in filters.items()]
+            query = select(model).where(*conditions)
             result = await session.execute(query)
-            records_to_delete = result.scalars().all()
+            records_to_delete = list(result.scalars())  # объекты остаются привязанными
 
             if not records_to_delete:
                 raise NotFoundError(model.__name__, str(filters))
 
-            for record in records_to_delete:
-                await session.delete(record)
+            # Массовое удаление
+            delete_query = delete(model).where(*conditions)
+            await session.execute(delete_query)
 
             log.debug(
                 "Удалено %d записей из %s с фильтрами: %s",
@@ -105,22 +120,24 @@ class Crud:
     async def read(
         self,
         domain_model,
+        session = None,
         to_join=None,
         limit: int | None = None,
         offset: int | None = None,
         order_by: str | None = None,
         **filters
     ):
-        async with self._session_factory.begin() as session:
-            model = self._mapper[domain_model]
 
-            from sqlalchemy.orm import selectinload
+        async def _read_internal(session):
+            model = self._mapper[domain_model]
 
             options = []
 
             if to_join:
-                to_join = set(to_join)
-                for join_attr in to_join:
+
+                join_attrs  = set(to_join)
+                log.debug("to_join: %s", to_join)
+                for join_attr in join_attrs:
                     if hasattr(model, join_attr):
                         options.append(selectinload(getattr(model, join_attr)))
 
@@ -141,6 +158,11 @@ class Crud:
 
             result = (await session.execute(query)).unique().scalars().all()
             return [r.model_dump() for r in result]
+        if session is not None:
+            return await _read_internal(session)
+        else:
+            async with self._session_factory.begin() as session:
+                return await _read_internal(session)
 
     async def close_and_dispose(self):
         log.debug("подключение к движку %s закрывается", self._engine)

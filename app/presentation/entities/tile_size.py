@@ -8,12 +8,12 @@ from app.schemas.tile import TileSizeInput
 from domain import TileSize
 from repo import Crud, get_db_manager
 
-router = APIRouter()
+router = APIRouter(prefix='/admin/tile')
 dbManagerDep = Annotated[Crud, Depends(get_db_manager)]
 log = logging.getLogger(__name__)
 
 
-@router.post("/sizes/delete-all")
+@router.post("/sizes/delete")
 async def admin_delete_tile_size(
     manager: dbManagerDep,
     height: Annotated[float | None, Form(gt=0)] = None,
@@ -35,8 +35,3 @@ async def admin_create_tile_size(
     await manager.create(TileSize, height=height, width=width)
     return RedirectResponse("/admin", status_code=303)
 
-
-@router.post("/sizes/delete")
-async def admin_delete_tile_size(tile_size: TileSizeInput, manager: dbManagerDep):
-    await manager.delete(TileSize, **tile_size.model_dump())
-    return RedirectResponse("/admin", status_code=303)

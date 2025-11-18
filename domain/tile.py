@@ -21,7 +21,7 @@ class TileColor:
         return f"{self.name} {str(self.feature)}"
 
 
-class Surface:
+class TileSurface:
     def __init__(self, name: str):
         self.name = name
 
@@ -35,7 +35,7 @@ class Tile:
         size: TileSize,
         color: TileColor,
         name: str,
-        surface: Surface,
+        surface: TileSurface,
         tile_id: int | None = None,
     ):
         self.name = name

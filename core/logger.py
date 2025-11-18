@@ -4,6 +4,7 @@ import sys
 logger = logging.getLogger()
 
 logging.getLogger("asyncio").propagate = False
+logging.getLogger("python_multipart").setLevel(logging.WARNING)
 logger.setLevel(logging.DEBUG)
 formatter = logging.Formatter(
     "[%(asctime)s] #%(levelname)-8s %(filename)s:%(lineno)d - %(name)s - %(message)s"
