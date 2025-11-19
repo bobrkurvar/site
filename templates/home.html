@@ -9,30 +9,65 @@
 
 {% block content %}
 
-<!-- СЛАЙДЕР -->
-<section class="slider">
-    <div class="slides">
+<!-- СЛАЙДЕР + Чек-лист + Производители -->
+<section class="slider-section">
+    <div class="slider-container">
 
-        <div class="slide active">
-            <img src="/static/images/slides/slide1.png" alt="Слайд 1">
+        <!-- Левая колонка: только преимущества -->
+        <div class="slider-sidebar">
+            <div class="features-checklist">
+                <h3>Наши преимущества</h3>
+                <ul>
+                    <li>✅ Широкий ассортимент цветов и размеров</li>
+                    <li>✅ Высокое качество материалов</li>
+                    <li>✅ Быстрая доставка</li>
+                    <li>✅ Профессиональные консультации</li>
+                </ul>
+            </div>
         </div>
 
-        <div class="slide">
-            <img src="/static/images/slides/slide2.png" alt="Слайд 2">
+        <!-- Правая колонка: слайдер + производители -->
+        <div class="slider-column">
+            <div class="slider">
+                <div class="slides">
+
+                    <div class="slide active">
+                        <img src="/static/images/slides/slide1.png" alt="Слайд 1">
+                    </div>
+
+                    <div class="slide">
+                        <img src="/static/images/slides/slide2.png" alt="Слайд 2">
+                    </div>
+
+                    <div class="slide">
+                        <img src="/static/images/slides/slide3.png" alt="Слайд 3">
+                    </div>
+
+                </div>
+
+                <div class="dots">
+                    <span class="dot active" data-index="0"></span>
+                    <span class="dot" data-index="1"></span>
+                    <span class="dot" data-index="2"></span>
+                </div>
+            </div>
+
+            <!-- Список производителей под слайдером -->
+            <div class="producers-list">
+                <h3>Производители</h3>
+                <ul>
+                    <li>Atlas Concorde</li>
+                    <li>Kerama Marazzi</li>
+                    <li>Ceramica Classic</li>
+                    <li>Porcelanosa</li>
+                    <li>Roca</li>
+                </ul>
+            </div>
         </div>
 
-        <div class="slide">
-            <img src="/static/images/slides/slide3.png" alt="Слайд 3">
-        </div>
-
-    </div>
-
-    <div class="dots">
-        <span class="dot active" data-index="0"></span>
-        <span class="dot" data-index="1"></span>
-        <span class="dot" data-index="2"></span>
     </div>
 </section>
+
 
 
 <!-- Герой-секция -->
@@ -66,34 +101,6 @@
     </div>
 </section>
 
-<!-- Преимущества -->
-<section class="benefits-section">
-    <div class="container">
-        <h2 class="section-title">Почему выбирают нас</h2>
-        <div class="benefits-grid">
-            <div class="benefit-card">
-                <div class="benefit-icon">🏆</div>
-                <h3>Качество</h3>
-                <p>Только проверенные материалы от ведущих производителей</p>
-            </div>
-            <div class="benefit-card">
-                <div class="benefit-icon">🚚</div>
-                <h3>Доставка</h3>
-                <p>Быстрая доставка по всему городу в удобное для вас время</p>
-            </div>
-            <div class="benefit-card">
-                <div class="benefit-icon">💎</div>
-                <h3>Ассортимент</h3>
-                <p>Широкий выбор плитки для любых помещений и стилей</p>
-            </div>
-            <div class="benefit-card">
-                <div class="benefit-icon">👨‍💼</div>
-                <h3>Консультации</h3>
-                <p>Профессиональные советы по выбору и укладке плитки</p>
-            </div>
-        </div>
-    </div>
-</section>
 
 {% endblock %}
 
