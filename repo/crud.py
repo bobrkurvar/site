@@ -46,7 +46,7 @@ class Crud:
                 await session.flush()
                 return [obj.model_dump() for obj in objs]
             else:
-                log.debug("параметры для создания %s", kwargs)
+                log.debug("%s: параметры для создания %s", domain_model.__class__.__name__, kwargs)
                 obj = model(**kwargs)
                 session.add(obj)
                 await session.flush()

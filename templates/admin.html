@@ -86,6 +86,29 @@
                 </datalist>
             </div>
 
+            <!-- Производитель -->
+            <div class="form-group">
+                <h3>Производитель</h3>
+                <input type="text" name="producer" placeholder="Выберите производителя" required list="producer-list">
+                <datalist id="producer-list">
+                    {% for producer in producers %}
+                    <option value="{{ producer.name }}">
+                    {% endfor %}
+                </datalist>
+            </div>
+
+            <!-- Материал -->
+            <div class="form-group">
+                <h3>Материал</h3>
+                <input type="text" name="material" placeholder="Выберите материал" required list="material-list">
+                <datalist id="material-list">
+                    {% for material in materials %}
+                    <option value="{{ material.name }}">
+                    {% endfor %}
+                </datalist>
+            </div>
+
+
             <button type="submit">Добавить товар</button>
         </form>
     </section>

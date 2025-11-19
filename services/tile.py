@@ -16,7 +16,6 @@ async def add_tile_surface(name: str, manager, session):
         await manager.create(TileSurface, name=name, session=session)
 
 
-
 async def add_tile_size(height:float, width: float, manager, session):
     tile_size = await manager.read(TileSize, height=height, width=width, session=session)
     if not tile_size:
@@ -25,10 +24,12 @@ async def add_tile_size(height:float, width: float, manager, session):
 
 async def add_tile_color(color_name: str, feature_name: str, manager, session):
     tile_color_feature = await manager.read(TileColorFeature, name=feature_name)
+    log.debug("tile_color_feature: %s", tile_color_feature)
     if not tile_color_feature:
         await manager.create(TileColorFeature, name=feature_name, session=session)
 
     tile_color = await manager.read(TileColor, name=color_name, session=session)
+    log.debug("tile_color: %s", tile_color)
     if not tile_color:
         await manager.create(TileColor, name=color_name, feature_name=feature_name, session=session)
 
@@ -36,7 +37,7 @@ async def add_tile_color(color_name: str, feature_name: str, manager, session):
 async def add_tile_material(material_name: str, manager, session):
     tile_material = await manager.read(TileMaterial, name=material_name)
     if not tile_material:
-        await manager.create(TileColorFeature, name=material_name, session=session)
+        await manager.create(TileMaterial, name=material_name, session=session)
 
 
 async def add_producer(producer_name: str, manager, session):

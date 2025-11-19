@@ -1,140 +1,117 @@
-/* base.css - цветовая схема бежевой плитки */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+/* ------------------------------- */
+/*       НОВАЯ ШАПКА САЙТА         */
+/* ------------------------------- */
 
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    line-height: 1.6;
-    color: #5d4037; /* Тёмный коричневый для текста */
-    background: linear-gradient(135deg, #d7ccc8 0%, #bcaaa4 100%); /* Бежевые тона */
-    min-height: 100vh;
-}
-
-/* Шапка */
+/* Вся шапка */
 .main-header {
-    background: rgba(245, 245, 220, 0.95); /* Бежевый с прозрачностью */
+    background: rgba(245, 245, 220, 0.95);
     backdrop-filter: blur(10px);
-    padding: 15px 0;
-    box-shadow: 0 4px 20px rgba(93, 64, 55, 0.15); /* Тени в коричневых тонах */
+    border-bottom: 1px solid rgba(188, 170, 164, 0.4);
+    box-shadow: 0 3px 12px rgba(93, 64, 55, 0.2);
     position: relative;
     z-index: 1000;
-    border-bottom: 1px solid rgba(188, 170, 164, 0.3);
 }
 
-.header-content {
+/* Верхняя строка */
+.header-top {
     max-width: 1200px;
     margin: 0 auto;
+    padding: 12px 20px;
     display: flex;
     justify-content: space-between;
-    align-items: flex-end;
-    padding: 0 20px;
-    gap: 30px;
+    align-items: center;
 }
 
-/* Секция с лого - в правой части */
-.logo-section {
-    text-align: right;
-    order: 2;
+/* Левая часть — логотип и название */
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 18px;
 }
 
 .logo-image {
-    height: 80px;
+    height: 90px; /* БЫЛО 60px → теперь больше */
     width: auto;
-    max-width: 300px;
     object-fit: contain;
-    filter: drop-shadow(2px 2px 4px rgba(93, 64, 55, 0.3));
+    margin-left: -10px; /* Сдвиг логотипа ещё левее */
+    filter: drop-shadow(2px 2px 4px rgba(93, 64, 55, 0.25));
 }
 
-.logo-subtitle {
-    color: #8d6e63; /* Средний коричневый */
-    font-size: 1em;
-    margin: 8px 0 0 0;
-    font-weight: 300;
-    letter-spacing: 1px;
+.site-name {
+    font-weight: 600;
+    font-size: 1.6em;  /* Чуть крупнее, чтобы совпадать с большим логотипом */
+    color: #5d4037;
 }
 
-/* Навигация - в левой части */
-.main-nav {
+/* Правая часть — номер и почта */
+.header-right {
     display: flex;
-    gap: 30px;
-    order: 1;
-    margin-bottom: 10px;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    margin-right: -10px; /* Двигаем контакты немного правее */
 }
 
-.nav-link {
-    color: #5d4037; /* Тёмный коричневый */
+.contact-item {
+    font-size: 1.15em; /* немного больше */
+    color: #5d4037;
     text-decoration: none;
-    font-size: 1.2em;
+    transition: opacity 0.3s ease;
+}
+
+.contact-item:hover {
+    opacity: 0.7;
+}
+
+
+/* Нижнее меню */
+.header-menu {
+    display: flex;
+    justify-content: center;
+    gap: 35px;
+    padding: 12px 0;
+    background: rgba(255, 255, 255, 0.4);
+    border-top: 1px solid rgba(188, 170, 164, 0.3);
+}
+
+.menu-link {
+    text-decoration: none;
+    color: #5d4037;
+    font-size: 1.15em;
     font-weight: 500;
-    padding: 10px 20px;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-    position: relative;
+    padding: 8px 20px;
+    border-radius: 6px;
+    transition: 0.3s ease;
 }
 
-.nav-link:hover {
-    background: rgba(141, 110, 99, 0.1); /* Прозрачный коричневый */
-    transform: translateY(-2px);
+.menu-link:hover {
+    background: rgba(141, 110, 99, 0.15);
 }
 
-.nav-link.active {
-    background: rgba(141, 110, 99, 0.2); /* Активный - коричневый */
-    color: #6d4c41;
-    box-shadow: 0 4px 15px rgba(141, 110, 99, 0.2);
+.menu-link.active {
+    background: rgba(141, 110, 99, 0.25);
+    box-shadow: 0 3px 10px rgba(141, 110, 99, 0.25);
 }
 
-.nav-link.active::after {
-    content: '';
-    position: absolute;
-    bottom: -5px;
-    left: 20px;
-    right: 20px;
-    height: 2px;
-    background: #8d6e63; /* Коричневая полоска */
-    border-radius: 1px;
-}
+/* ------------------------------- */
+/*           Адаптивность          */
+/* ------------------------------- */
 
-/* Основной контент */
-main {
-    min-height: calc(100vh - 100px);
-}
-
-/* Утилиты */
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
-}
-
-/* Адаптивность для шапки */
 @media (max-width: 768px) {
-    .header-content {
+    .header-top {
         flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+
+    .header-right {
         align-items: center;
-        text-align: center;
+    }
+
+    .header-menu {
+        flex-wrap: wrap;
         gap: 20px;
-    }
-
-    .logo-section {
-        order: 1;
-        text-align: center;
-    }
-
-    .main-nav {
-        order: 2;
-        margin-bottom: 0;
-    }
-
-    .logo-image {
-        height: 60px;
-    }
-
-    .nav-link {
-        font-size: 1.1em;
-        padding: 8px 16px;
+        padding: 10px 0 15px;
     }
 }
 
@@ -143,20 +120,12 @@ main {
         height: 50px;
     }
 
-    .main-nav {
-        gap: 15px;
+    .site-name {
+        font-size: 1.2em;
     }
 
-    .nav-link {
+    .menu-link {
         font-size: 1em;
-        padding: 6px 12px;
-    }
-
-    .header-content {
-        padding: 0 15px;
-    }
-
-    .logo-subtitle {
-        font-size: 0.9em;
+        padding: 6px 14px;
     }
 }

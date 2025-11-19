@@ -4,9 +4,37 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="/static/home.css">
+<link rel="stylesheet" href="/static/slider.css">
 {% endblock %}
 
 {% block content %}
+
+<!-- СЛАЙДЕР -->
+<section class="slider">
+    <div class="slides">
+
+        <div class="slide active">
+            <img src="/static/images/slides/slide1.png" alt="Слайд 1">
+        </div>
+
+        <div class="slide">
+            <img src="/static/images/slides/slide2.png" alt="Слайд 2">
+        </div>
+
+        <div class="slide">
+            <img src="/static/images/slides/slide3.png" alt="Слайд 3">
+        </div>
+
+    </div>
+
+    <div class="dots">
+        <span class="dot active" data-index="0"></span>
+        <span class="dot" data-index="1"></span>
+        <span class="dot" data-index="2"></span>
+    </div>
+</section>
+
+
 <!-- Герой-секция -->
 <section class="hero-section">
     <div class="hero-content">
@@ -32,8 +60,6 @@
                 <ul class="features-list">
                     <li>✅ Широкий ассортимент цветов и размеров</li>
                     <li>✅ Высокое качество материалов</li>
-                    <li>✅ Доступные цены</li>
-                    <li>✅ Профессиональные консультации</li>
                 </ul>
             </div>
         </div>
@@ -68,4 +94,73 @@
         </div>
     </div>
 </section>
+
 {% endblock %}
+
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const slides = document.querySelectorAll(".slide");
+    const dots = document.querySelectorAll(".dot");
+    const slider = document.querySelector(".slides");
+
+    let current = 0;
+    let interval = null;
+
+    function showSlide(index) {
+        slides.forEach(s => s.classList.remove("active"));
+        dots.forEach(d => d.classList.remove("active"));
+        slides[index].classList.add("active");
+        dots[index].classList.add("active");
+    }
+
+    function nextSlide() {
+        current = (current + 1) % slides.length;
+        showSlide(current);
+    }
+
+    function prevSlide() {
+        current = (current - 1 + slides.length) % slides.length;
+        showSlide(current);
+    }
+
+    function startAutoSlide() {
+        interval = setInterval(nextSlide, 4000);
+    }
+
+    function stopAutoSlide() {
+        clearInterval(interval);
+    }
+
+    // Переключение по клику на левую/правую часть слайда
+    slider.addEventListener("click", (e) => {
+        const rect = slider.getBoundingClientRect();
+        const x = e.clientX - rect.left; // координата клика внутри слайда
+
+        stopAutoSlide();
+        if (x < rect.width / 2) {
+            prevSlide(); // клик слева → предыдущий слайд
+        } else {
+            nextSlide(); // клик справа → следующий слайд
+        }
+        startAutoSlide();
+    });
+
+    // Точки
+    dots.forEach(dot => {
+        dot.addEventListener("click", () => {
+            stopAutoSlide();
+            current = parseInt(dot.dataset.index);
+            showSlide(current);
+            startAutoSlide();
+        });
+    });
+
+    // Запуск
+    showSlide(current);
+    startAutoSlide();
+});
+</script>
+{% endblock %}
+

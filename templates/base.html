@@ -10,24 +10,35 @@
 <body>
 
 <header class="main-header">
-    <div class="header-content">
-        <div class="logo-section">
-            <img src="/static/images/logo.png"
-                 alt="МойСайт - Качественная плитка"
-                 class="logo-image">
-            <p class="logo-subtitle">Качественная плитка для вашего дома</p>
+
+    <!-- Верхняя часть шапки -->
+    <div class="header-top">
+        <div class="header-left">
+            <img src="/static/images/logo.png" alt="Логотип" class="logo-image">
+            <span class="site-name">Мой сайт плитки</span>
         </div>
-        <nav class="main-nav">
-            <a href="/" class="nav-link {% if request.url.path == '/' %}active{% endif %}">Главная</a>
-            <a href="/catalog" class="nav-link {% if request.url.path.startswith('/catalog') %}active{% endif %}">Каталог</a>
-        </nav>
+
+        <div class="header-right">
+            <a href="tel:+79990000000" class="contact-item">📞 +7 (999) 000-00-00</a>
+            <a href="mailto:info@example.com" class="contact-item">✉ info@example.com</a>
+        </div>
     </div>
+
+    <!-- Нижняя часть — вкладки -->
+    <nav class="header-menu">
+        <a href="/" class="menu-link {% if request.url.path == '/' %}active{% endif %}">Главная</a>
+        <a href="/catalog" class="menu-link {% if request.url.path.startswith('/catalog') %}active{% endif %}">Каталог</a>
+        <a href="/clients" class="menu-link {% if request.url.path.startswith('/clients') %}active{% endif %}">Для клиентов</a>
+    </nav>
+
 </header>
 
 <main>
     {% block content %}
     {% endblock %}
 </main>
+
+{% block extra_js %}{% endblock %}
 
 </body>
 </html>
