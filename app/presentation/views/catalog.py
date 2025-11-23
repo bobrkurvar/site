@@ -27,7 +27,7 @@ async def get_catalog_page(
     if color:
         filters['color_name'] = color
     if size:
-        filters['width'], filters['height'] = size.split(',')
+        filters['size_width'], filters['size_height'] = (float(i) for i in size.split(','))
 
     tiles = await manager.read(Tile, to_join=['color'], **filters)
     return templates.TemplateResponse(
