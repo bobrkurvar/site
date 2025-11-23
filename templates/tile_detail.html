@@ -1,24 +1,10 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ tile.name }} - Детали плитки</title>
-    <link rel="stylesheet" href="/static/base.css">
-    <link rel="stylesheet" href="/static/tile_detail.css">
-</head>
-<body>
+{% extends "base.html" %}
 
-<header class="main-header">
-    <div class="header-content">
-        <h1 class="logo">Каталог плитки</h1>
-        <nav class="main-nav">
-            <a href="/" class="nav-link">Главная</a>
-            <a href="/catalog" class="nav-link active">Каталог</a>
-        </nav>
-    </div>
-</header>
+{% block extra_css %}
+<link rel="stylesheet" href="/static/tile_detail.css">
+{% endblock %}
 
+{% block content %}
 <main class="tile-detail-panel">
     <!-- Хлебные крошки -->
     <nav class="breadcrumbs">
@@ -36,7 +22,7 @@
 
             <div class="tile-image-main">
                 {% if tile.image_path %}
-                <img src="/static/images/{{ tile.name }}"
+                <img src="/static/images/tiles/{{ tile.name }}"
                      alt="{{ tile.name }}"
                      class="tile-detail-image"
                      loading="eager">
@@ -53,7 +39,7 @@
                 {% if tile.additional_images %}
                     {% for img in tile.additional_images %}
                     <div class="thumbnail">
-                        <img src="/static/images/{{ tile.name }}"
+                        <img src="/static/images/tiles/{{ tile.name }}"
                              alt="{{ tile.name }} - фото {{ loop.index }}"
                              class="thumbnail-image">
                     </div>
@@ -181,5 +167,4 @@
     </section>
 </main>
 
-</body>
-</html>
+{% endblock %}

@@ -97,22 +97,20 @@ async def add_tile(
 
 async def delete_tile(manager, **filters):
 
-    tiles = await manager.read(Tile, **filters)
+    async with UnitOfWork(manager._session_factory) as uow:
+        tiles = await manager.read(Tile, session = uow.session, **filters)
 
-    files_deleted = 0
+        files_deleted = 0
 
-    await manager.delete(Tile, **filters)
+        await manager.delete(Tile, session = uow.session, **filters)
 
-    try:
         for tile in tiles:
             image_path = Path(tile["image_path"])
+            log.debug('for delete image_path: %s', image_path)
             if image_path.exists():
                 image_path.unlink(missing_ok=True)
                 files_deleted += 1
                 log.info(f"Удален файл: {image_path}")
         log.info("Удалено файлов: %s", files_deleted)
 
-    except Exception as e:
-        log.error(f"Ошибка при удалении файлов")
-        raise
 

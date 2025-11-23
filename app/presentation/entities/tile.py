@@ -7,7 +7,7 @@ from fastapi.responses import RedirectResponse
 from repo import Crud, get_db_manager
 from services.tile import add_tile, delete_tile
 
-router = APIRouter(prefix='/admin/tile')
+router = APIRouter(prefix='/admin/tiles')
 dbManagerDep = Annotated[Crud, Depends(get_db_manager)]
 log = logging.getLogger(__name__)
 

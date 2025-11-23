@@ -7,7 +7,7 @@ from fastapi.responses import RedirectResponse
 from domain import TileColor, TileColorFeature
 from repo import Crud, get_db_manager
 
-router = APIRouter(prefix='/admin/tile')
+router = APIRouter(prefix='/admin/tiles')
 dbManagerDep = Annotated[Crud, Depends(get_db_manager)]
 log = logging.getLogger(__name__)
 

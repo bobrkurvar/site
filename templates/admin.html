@@ -34,7 +34,7 @@
     <section class="admin-section">
         <h2>Добавить товар</h2>
 
-        <form class="admin-form" method="post" action="/admin/tile/create" enctype="multipart/form-data">
+        <form class="admin-form" method="post" action="/admin/tiles/create" enctype="multipart/form-data">
             <!-- Основная информация -->
             <div class="form-group">
                 <h3>Основная информация</h3>
@@ -126,7 +126,7 @@
                     <span>Цвет: {{ tile.color_name }} ({{ tile.feature_name }})</span>
                     <span>Поверхность: {{ tile.surface_name }}</span>
                     {% if tile.image_path %}
-                    <img src="/static/images/{{ tile.name }}"
+                    <img src="/static/images/tiles/{{ tile.name }}"
                          alt="{{ tile.name }}"
                          class="tile-image">
                     {% else %}
@@ -135,7 +135,7 @@
                 </div>
                 <div class="tile-actions">
                     <a href="/admin/edit/{{ tile.id }}" class="edit-btn">Редактировать</a>
-                    <form method="post" action="/admin/tile/delete">
+                    <form method="post" action="/admin/tiles/delete">
                         <input type="hidden" name="tile_id" value="{{ tile.id }}">
                         <button type="submit" class="delete-btn"
                                 onclick="return confirm('Удалить товар?')">
@@ -162,7 +162,7 @@
                 {% for size in tile_sizes %}
                 <div class="characteristic-item">
                     <span>{{ size.name }} ({{ size.width }}×{{ size.height }})</span>
-                    <form method="post" action="/admin/tile/sizes/delete">
+                    <form method="post" action="/admin/tiles/sizes/delete">
                         <input type="hidden" name="height" value="{{ size.height }}">
                         <input type="hidden" name="width" value="{{ size.width }}">
                         <button type="submit" class="delete-btn"
@@ -182,7 +182,7 @@
                 {% for color in tile_colors %}
                 <div class="characteristic-item">
                     <span>{{ color.name }} ({{ color.feature_name }})</span>
-                    <form method="post" action="/admin/tile/color/delete">
+                    <form method="post" action="/admin/tiles/color/delete">
                         <input type="hidden" name="color_id" value="{{ color.id }}">
                         <button type="submit" class="delete-btn"
                                 onclick="return confirm('Удалить цвет?')">
@@ -201,7 +201,7 @@
                 {% for surface in tile_surfaces %}
                 <div class="characteristic-item">
                     <span>{{ surface.name }}</span>
-                    <form method="post" action="/admin/tile/surface/delete">
+                    <form method="post" action="/admin/tiles/surface/delete">
                         <input type="hidden" name="surface_id" value="{{ surface.id }}">
                         <button type="submit" class="delete-btn"
                                 onclick="return confirm('Удалить поверхность?')">
@@ -218,25 +218,25 @@
     <section class="admin-section">
         <h2>Управление</h2>
         <div class="management-buttons">
-            <form method="post" action="/admin/tile/delete">
+            <form method="post" action="/admin/tiles/delete">
                 <button type="submit" class="delete-all-btn"
                         onclick="return confirm('Удалить ВСЕ товары?')">
                     Удалить все товары
                 </button>
             </form>
-            <form method="post" action="/admin/tile/color/delete">
+            <form method="post" action="/admin/tiles/color/delete">
                 <button type="submit" class="delete-all-btn"
                         onclick="return confirm('Удалить ВСЕ цвета?')">
                     Удалить все цвета
                 </button>
             </form>
-            <form method="post" action="/admin/tile/surface/delete">
+            <form method="post" action="/admin/tiles/surface/delete">
                 <button type="submit" class="delete-all-btn"
                         onclick="return confirm('Удалить ВСЕ поверхности?')">
                     Удалить все поверхности
                 </button>
             </form>
-            <form method="post" action="/admin/tile/sizes/delete">
+            <form method="post" action="/admin/tiles/sizes/delete">
                 <button type="submit" class="delete-all-btn"
                         onclick="return confirm('Удалить ВСЕ размеры?')">
                     Удалить все размеры

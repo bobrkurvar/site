@@ -13,7 +13,7 @@ dbManagerDep = Annotated[Crud, Depends(get_db_manager)]
 log = logging.getLogger(__name__)
 
 
-@router.post("/tile")
+@router.post("/tiles")
 async def create_tile(
     name: Annotated[str, Form()],
     height: Annotated[float, Form(gt=0)],
@@ -26,37 +26,37 @@ async def create_tile(
     return result
 
 
-@router.get("/tile")
+@router.get("/tiles")
 async def get_tile_lst(manager: dbManagerDep):
     result = await manager.read(Tile)
     return result
 
 
-@router.post("/tile/sizes")
+@router.post("/tiles/sizes")
 async def create_tile_size(tile_size: TileSizeInput, manager: dbManagerDep):
     result = await manager.create(TileSize, **tile_size.model_dump())
     return result
 
 
-@router.get("/tile/sizes")
+@router.get("/tiles/sizes")
 async def get_all_tile_size(manager: dbManagerDep):
     result = await manager.read(TileSize)
     return result
 
 
-@router.get("/tile{tile_id}")
+@router.get("/tiles{tile_id}")
 async def get_tile_by_id(tile_id: int, manager: dbManagerDep):
     result = await manager.read(Tile, id=tile_id)
     return result
 
 
-@router.delete("/tile{tile_id}")
+@router.delete("/tiles{tile_id}")
 async def delete_tile_by_id(tile_id: int, manager: dbManagerDep):
     result = await delete_tile(manager, id=tile_id)
     return result
 
 
-@router.delete("/tile")
+@router.delete("/tiles")
 async def delete_tile_by_criteria_or_all(manager: dbManagerDep, tile: TileDelete):
     params = {}
     if tile.name:

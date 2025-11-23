@@ -25,7 +25,7 @@ async def get_catalog_page(
     if name:
         filters['name'] = name
     if color:
-        filters['color'] = color
+        filters['color_name'] = color
     if size:
         filters['width'], filters['height'] = size.split(',')
 

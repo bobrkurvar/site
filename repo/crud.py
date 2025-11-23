@@ -80,8 +80,8 @@ class Crud:
                 )
                 raise CustomForeignKeyViolationError(model.__name__, detail)
 
-    async def delete(self, domain_model, **filters):
-        async with self._session_factory.begin() as session:
+    async def delete(self, domain_model, session, **filters):
+        async def _delete_internal(session):
             model = self._mapper[domain_model]
 
             conditions = [getattr(model, field) == value for field, value in filters.items()]
@@ -104,6 +104,12 @@ class Crud:
             )
 
             return [record.model_dump() for record in records_to_delete]
+
+        if session is not None:
+            return await _delete_internal(session)
+        else:
+            async with self._session_factory.begin() as session:
+                return await _delete_internal(session)
 
     async def update(self, domain_model, filters: dict, values: dict):
         async with self._session_factory.begin() as session:
