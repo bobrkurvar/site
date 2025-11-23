@@ -7,6 +7,14 @@ html, body {
     padding: 0;
 }
 
+body {
+    background-image: url('/static/images/background.jpg'); /* путь к твоему изображению */
+    background-size: cover;      /* растягивает изображение на весь экран */
+    background-position: center; /* центрирует изображение */
+    background-repeat: no-repeat; /* не повторяет изображение */
+    background-attachment: fixed; /* фон не скроллится вместе со страницей */
+}
+
 /* Вся шапка */
 .main-header {
     background: rgba(245, 245, 220, 0.95);

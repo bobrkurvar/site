@@ -4,6 +4,6 @@
 .idea/
 migrations/**
 alembic.ini
-static/images/**
+static/tiles/**
 
 
