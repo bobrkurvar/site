@@ -18,7 +18,7 @@
         <aside class="filters-sidebar">
             <div class="filters-panel">
                 <h3>Фильтры</h3>
-                <form class="filters-form" method="get" action="/catalog">
+                <form class="filters-form" method="get" action="/catalog" id="filtersForm">
                     <div class="filter-group">
                         <label>Поиск по названию:</label>
                         <input type="text" name="name" placeholder="Введите название..."
@@ -31,7 +31,7 @@
                         <select name="size">
                             <option value="">Все размеры</option>
                             {% for tile in tiles %}
-                            <option value="{{ tile.size_width }}, {{ tile.size_height }}"
+                            <option value="{{ tile.size_width }},{{ tile.size_height }}"
                                 {% if request.query_params.get('size') == tile.size_width ~ ',' ~ tile.size_height %}selected{% endif %}>
                                 {{ tile.size_width }}x{{  tile.size_height }}
                             </option>
@@ -94,4 +94,17 @@
         </section>
     </div>
 </main>
+
+<!-- JS для отправки только заполненных фильтров -->
+<script>
+document.getElementById('filtersForm').addEventListener('submit', function(event) {
+    const form = event.target;
+    const inputs = Array.from(form.elements);
+    inputs.forEach(input => {
+        if ((input.tagName === 'INPUT' || input.tagName === 'SELECT') && !input.value) {
+            input.disabled = true; // пустые поля не будут отправлены
+        }
+    });
+});
+</script>
 {% endblock %}
