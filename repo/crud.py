@@ -80,7 +80,7 @@ class Crud:
                 )
                 raise CustomForeignKeyViolationError(model.__name__, detail)
 
-    async def delete(self, domain_model, session, **filters):
+    async def delete(self, domain_model, session = None, **filters):
         async def _delete_internal(session):
             model = self._mapper[domain_model]
 
