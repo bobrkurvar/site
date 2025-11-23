@@ -3,7 +3,7 @@ import logging
 from fastapi import Request, status
 from fastapi.templating import Jinja2Templates
 
-from domain import Tile, TileSize
+from domain import Tile, TileSize, TileColor, TileColorFeature, TileSurface
 from repo import get_db_manager
 from repo.exceptions import (
     AlreadyExistsError,
@@ -93,8 +93,12 @@ async def admin_database_error_handler(request: Request, exc: DatabaseError):
 async def admin_global_error_handler(request: Request, exc: Exception):
     log.error("Глобальная ошибка: %s", exc)
     manager = get_db_manager()
-    tiles = await manager.read(Tile)
+    tiles = await manager.read(Tile, to_join=["color"])
+
     tile_sizes = await manager.read(TileSize)
+    tile_colors = await manager.read(TileColor)
+    color_properties = await manager.read(TileColorFeature)
+    surfaces = await manager.read(TileSurface)
 
     return templates.TemplateResponse(
         "admin.html",
@@ -102,6 +106,9 @@ async def admin_global_error_handler(request: Request, exc: Exception):
             "request": request,
             "tiles": tiles,
             "tile_sizes": tile_sizes,
+            "tile_colors": tile_colors,
+            "color_properties": color_properties,
+            "tile_surfaces": surfaces,
             "error": f"Произошла ошибка: {exc}",
         },
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
