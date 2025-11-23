@@ -14,19 +14,19 @@ class Catalog(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(unique=True)
     color_name: Mapped[str] = mapped_column(
-        ForeignKey("tile_colors.name", ondelete="CASCADE")
+        ForeignKey("tile_colors.name")
     )
     image_path: Mapped[str] = mapped_column(default=config.image_path)
     size_height: Mapped[float]
     size_width: Mapped[float]
     surface_name: Mapped[str] = mapped_column(
-        ForeignKey("tile_surface.name", ondelete="CASCADE")
+        ForeignKey("tile_surface.name")
     )
     material_name: Mapped[str] = mapped_column(
-        ForeignKey("tile_materials.name", ondelete="CASCADE")
+        ForeignKey("tile_materials.name")
     )
     producer_name: Mapped[str] = mapped_column(
-        ForeignKey("producers.name", ondelete="CASCADE")
+        ForeignKey("producers.name")
     )
 
     color: Mapped["TileColor"] = relationship("TileColor", back_populates="tiles")
@@ -39,7 +39,6 @@ class Catalog(Base):
         ForeignKeyConstraint(
             ["size_height", "size_width"],
             ["tile_sizes.height", "tile_sizes.width"],
-            ondelete="CASCADE",
         ),
     )
 
@@ -72,8 +71,6 @@ class TileSize(Base):
     tiles: Mapped[list["Catalog"]] = relationship(
         "Catalog",
         back_populates="size",
-        cascade="all, delete-orphan",
-        passive_deletes=True,
     )
 
     def model_dump(self):
@@ -86,8 +83,6 @@ class TileColorFeature(Base):
     colors: Mapped[list["TileColor"]] = relationship(
         "TileColor",
         back_populates="feature",
-        cascade="all, delete-orphan",
-        passive_deletes=True,
     )
 
     def model_dump(self):
@@ -98,7 +93,7 @@ class TileColor(Base):
     __tablename__ = "tile_colors"
     name: Mapped[str] = mapped_column(primary_key=True)
     feature_name: Mapped[str] = mapped_column(
-        ForeignKey("tile_color_features.name", ondelete="CASCADE")
+        ForeignKey("tile_color_features.name")
     )
     feature: Mapped["TileColorFeature"] = relationship(
         "TileColorFeature", back_populates="colors"
@@ -106,8 +101,6 @@ class TileColor(Base):
     tiles: Mapped[list["Catalog"]] = relationship(
         "Catalog",
         back_populates="color",
-        cascade="all, delete-orphan",
-        passive_deletes=True,
     )
 
     def model_dump(self):
@@ -123,8 +116,6 @@ class TileSurface(Base):
     tiles: Mapped[list["Catalog"]] = relationship(
         "Catalog",
         back_populates="surface",
-        cascade="all, delete-orphan",
-        passive_deletes=True,
     )
 
     def model_dump(self):
@@ -136,8 +127,6 @@ class TileMaterial(Base):
     tiles: Mapped[list["Catalog"]] = relationship(
         "Catalog",
         back_populates="material",
-        cascade="all, delete-orphan",
-        passive_deletes=True,
     )
 
     def model_dump(self):
@@ -149,8 +138,6 @@ class Producer(Base):
     tiles: Mapped[list["Catalog"]] = relationship(
         "Catalog",
         back_populates="producer",
-        cascade="all, delete-orphan",
-        passive_deletes=True,
     )
 
     def model_dump(self):
