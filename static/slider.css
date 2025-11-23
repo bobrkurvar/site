@@ -1,7 +1,8 @@
 /* Контейнер слайдера */
 .slider {
-    max-width: 800px; /* уже, чем раньше */
-    height: 500px;    /* выше */
+    max-width: 1200px; /* увеличено с 800px */
+    width: 90%;        /* займет 90% ширины родителя */
+    height: 500px;
     margin: 40px auto;
     position: relative;
 }
