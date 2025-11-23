@@ -25,23 +25,32 @@
                                value="{{ request.query_params.get('name', '') }}">
                     </div>
 
+                    <!-- Размер -->
                     <div class="filter-group">
                         <label>Размер:</label>
                         <select name="size">
                             <option value="">Все размеры</option>
-                            {% for size in available_sizes %}
-                            <option value="{{ size.width }},{{ size.height }}"
-                                    {% if request.query_params.get('size') == size.width ~ ',' ~ size.height %}selected{% endif %}>
-                                {{ size.width }}x{{ size.height }}
+                            {% for tile in tiles %}
+                            <option value="{{ tile.size_width }}, {{ tile.size_height }}"
+                                {% if request.query_params.get('size') == tile.size_width ~ ',' ~ tile.size_height %}selected{% endif %}>
+                                {{ tile.size_width }}x{{  tile.size_height }}
                             </option>
                             {% endfor %}
                         </select>
                     </div>
 
+                    <!-- Цвет -->
                     <div class="filter-group">
                         <label>Цвет:</label>
-                        <input type="text" name="color" placeholder="Введите цвет..."
-                               value="{{ request.query_params.get('color', '') }}">
+                        <select name="color">
+                            <option value="">Все цвета</option>
+                            {% for tile in tiles %}
+                            <option value="{{ tile.color_name }}"
+                                {% if request.query_params.get('color') == tile.color_name %}selected{% endif %}>
+                                {{ tile.color_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
                     </div>
 
                     <div class="filter-actions">
