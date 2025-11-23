@@ -14,8 +14,22 @@ log = logging.getLogger(__name__)
 
 
 @router.get("")
-async def get_catalog_page(request: Request, manager: dbManagerDep):
-    tiles = await manager.read(Tile, to_join=['color'])
+async def get_catalog_page(
+        request: Request,
+        manager: dbManagerDep,
+        name: str | None = None,
+        size: str | None = None,
+        color: str | None = None
+):
+    filters = {}
+    if name:
+        filters['name'] = name
+    if color:
+        filters['color'] = color
+    if size:
+        filters['width'], filters['height'] = size.split(',')
+
+    tiles = await manager.read(Tile, to_join=['color'], **filters)
     return templates.TemplateResponse(
         "catalog.html",
         {
