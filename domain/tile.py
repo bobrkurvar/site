@@ -45,6 +45,16 @@ class Producer:
     def __str__(self):
         return f'{self.name}'
 
+class BoxWeight:
+
+    def __init__(self, weight: float):
+        self.weight = weight
+
+class PalletWeight:
+
+    def __init__(self, weight: float):
+        self.weight = weight
+
 class Tile:
     def __init__(
         self,

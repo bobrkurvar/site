@@ -23,7 +23,7 @@ async def add_tile_size(height:float, width: float, manager, session):
 
 
 async def add_tile_color(color_name: str, feature_name: str, manager, session):
-    tile_color_feature = await manager.read(TileColorFeature, name=feature_name)
+    tile_color_feature = await manager.read(TileColorFeature, name=feature_name, session=session)
     log.debug("tile_color_feature: %s", tile_color_feature)
     if not tile_color_feature:
         await manager.create(TileColorFeature, name=feature_name, session=session)
@@ -35,15 +35,25 @@ async def add_tile_color(color_name: str, feature_name: str, manager, session):
 
 
 async def add_tile_material(material_name: str, manager, session):
-    tile_material = await manager.read(TileMaterial, name=material_name)
+    tile_material = await manager.read(TileMaterial, name=material_name, session=session)
     if not tile_material:
         await manager.create(TileMaterial, name=material_name, session=session)
 
 
 async def add_producer(producer_name: str, manager, session):
-    producer = await manager.read(Producer, name=producer_name)
+    producer = await manager.read(Producer, name=producer_name, session=session)
     if not producer:
         await manager.create(Producer, name=producer_name, session=session)
+
+async def add_box_weight(box_weight: float, manager, session):
+    weight = await manager.read(BoxWeight, weight=box_weight, session=session)
+    if not weight:
+        await manager.create(BoxWeight, weight=box_weight, session=session)
+
+async def add_pallet_weight(pallet_weight: float, manager, session):
+    weight = await manager.read(PalletWeight, weight=pallet_weight, session=session)
+    if not weight:
+        await manager.create(PalletWeight, weight=pallet_weight, session=session)
 
 async def add_tile(
     name: str,
@@ -54,6 +64,8 @@ async def add_tile(
     surface: str,
     material: str,
     producer: str,
+    box_weight: float,
+    pallet_weight: float,
     image: bytes,
     manager,
 ):
@@ -70,6 +82,8 @@ async def add_tile(
         await add_tile_color(color, color_feature, manager, uow.session)
         await add_tile_material(material, manager, uow.session)
         await add_producer(producer, manager, uow.session)
+        await add_box_weight(box_weight, manager, uow.session)
+        await add_pallet_weight(pallet_weight, manager, uow.session)
 
         tile_record = await manager.create(
             Tile,

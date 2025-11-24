@@ -28,12 +28,20 @@ class Catalog(Base):
     producer_name: Mapped[str] = mapped_column(
         ForeignKey("producers.name")
     )
+    box_weight: Mapped[float] = mapped_column(
+        ForeignKey("box_weights.name")
+    )
+    pallet_weight: Mapped[float] = mapped_column(
+        ForeignKey("pallet_weights.name")
+    )
 
     color: Mapped["TileColor"] = relationship("TileColor", back_populates="tiles")
     size: Mapped["TileSize"] = relationship("TileSize", back_populates="tiles")
     surface: Mapped["TileSurface"] = relationship("TileSurface", back_populates="tiles")
     material: Mapped["TileMaterial"] = relationship("TileMaterial", back_populates="tiles")
     producer: Mapped["Producer"] = relationship("Producer", back_populates="tiles")
+    box: Mapped["BoxWeight"] = relationship("BoxWeight", back_populates="tiles")
+    pallet: Mapped["PalletWeight"] = relationship("PalletWeight", back_populates="tiles")
 
     __table_args__ = (
         ForeignKeyConstraint(
@@ -52,6 +60,8 @@ class Catalog(Base):
             "surface_name": self.surface_name,
             "material_name": self.material_name,
             "producer_name": self.producer_name,
+            "box_weight": self.box_weight,
+            "pallet_weight": self.pallet_weight,
             "image_path": self.image_path,
         }
 
@@ -142,3 +152,19 @@ class Producer(Base):
 
     def model_dump(self):
         return {"name": self.name}
+
+class BoxWeight(Base):
+    __tablename__ = "box_weights"
+    weight: Mapped[float] = mapped_column(primary_key=True)
+    tiles: Mapped[list["Catalog"]] = relationship("Catalog", back_populates='box')
+
+    def model_dump(self):
+        return {"weight": self.weight}
+
+class PalletWeight(Base):
+    __tablename__ = "pallet_weights"
+    weight: Mapped[float] = mapped_column(primary_key=True)
+    tiles: Mapped[list["Catalog"]] = relationship("Catalog", back_populates='pallet')
+
+    def model_dump(self):
+        return {"weight": self.weight}

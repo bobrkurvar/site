@@ -35,6 +35,8 @@ async def admin_create_tile(
     surface: Annotated[str, Form()],
     material: Annotated[str, Form()],
     producer: Annotated[str, Form()],
+    box_weight: Annotated[float, Form()],
+    pallet_weight: Annotated[float, Form()],
     image: Annotated[UploadFile, File()],
     manager: dbManagerDep,
 ):
