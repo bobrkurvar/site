@@ -7,7 +7,7 @@ from fastapi.responses import RedirectResponse
 from domain import TileColor, TileColorFeature
 from repo import Crud, get_db_manager
 
-router = APIRouter(prefix='/admin/tiles')
+router = APIRouter(prefix="/admin/tiles")
 dbManagerDep = Annotated[Crud, Depends(get_db_manager)]
 log = logging.getLogger(__name__)
 
@@ -22,7 +22,7 @@ async def admin_create_tile_color_feature(
 
 @router.post("/color/feature/delete")
 async def admin_delete_tile_color_feature(
-        manager: dbManagerDep, name: Annotated[str, Form()] = None
+    manager: dbManagerDep, name: Annotated[str, Form()] = None
 ):
     if name:
         log.debug("name: %s", name)
@@ -41,11 +41,11 @@ async def admin_create_tile_color(
 
 
 @router.post("/color/delete")
-async def admin_delete_all_colors(manager: dbManagerDep, name: Annotated[str, Form()] = None):
+async def admin_delete_all_colors(
+    manager: dbManagerDep, name: Annotated[str, Form()] = None
+):
     if name:
         await manager.delete(TileColor, name=name)
     else:
         await manager.delete(TileColor)
     return RedirectResponse("/admin", status_code=303)
-
-

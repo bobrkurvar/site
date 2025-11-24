@@ -108,6 +108,30 @@
                 </datalist>
             </div>
 
+            <!-- Вес коробки -->
+            <div class="form-group">
+                <h3>Вес коробки</h3>
+                <input type="number" step="0.01" name="box_weight" placeholder="Выберите вес коробки" required
+                       list="box-weight-list">
+                <datalist id="box-weight-list">
+                    {% for box in box_weights %}
+                    <option value="{{ box.weight }}">
+                    {% endfor %}
+                </datalist>
+            </div>
+
+            <!-- Вес паллеты -->
+            <div class="form-group">
+                <h3>Вес паллеты</h3>
+                <input type="number" step="0.01" name="pallet_weight" placeholder="Выберите вес паллеты" required
+                       list="pallet-weight-list">
+                <datalist id="pallet-weight-list">
+                    {% for pallet in pallet_weights %}
+                    <option value="{{ pallet.weight }}">
+                    {% endfor %}
+                </datalist>
+            </div>
+
 
             <button type="submit">Добавить товар</button>
         </form>

@@ -16,7 +16,7 @@ log = logging.getLogger(__name__)
 
 @router.get("/")
 async def get_main_page(request: Request, manager: dbManagerDep):
-    products = await manager.read(Tile, to_join=['color'])
+    products = await manager.read(Tile, to_join=["color"])
     log.debug(products)
     return templates.TemplateResponse(
         "home.html", {"request": request, "featured_tiles": products}

@@ -8,7 +8,7 @@ from app.schemas.tile import TileSizeInput
 from domain import TileSize
 from repo import Crud, get_db_manager
 
-router = APIRouter(prefix='/admin/tiles')
+router = APIRouter(prefix="/admin/tiles")
 dbManagerDep = Annotated[Crud, Depends(get_db_manager)]
 log = logging.getLogger(__name__)
 
@@ -34,4 +34,3 @@ async def admin_create_tile_size(
 ):
     await manager.create(TileSize, height=height, width=width)
     return RedirectResponse("/admin", status_code=303)
-

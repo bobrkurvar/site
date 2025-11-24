@@ -3,14 +3,11 @@ import logging
 from fastapi import Request, status
 from fastapi.templating import Jinja2Templates
 
-from domain import Tile, TileSize, TileColor, TileColorFeature, TileSurface
+from domain import Tile, TileColor, TileColorFeature, TileSize, TileSurface
 from repo import get_db_manager
-from repo.exceptions import (
-    AlreadyExistsError,
-    CustomForeignKeyViolationError,
-    DatabaseError,
-    NotFoundError,
-)
+from repo.exceptions import (AlreadyExistsError,
+                             CustomForeignKeyViolationError, DatabaseError,
+                             NotFoundError)
 
 log = logging.getLogger(__name__)
 templates = Jinja2Templates("templates")

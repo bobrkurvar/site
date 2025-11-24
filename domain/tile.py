@@ -4,7 +4,7 @@ class TileSize:
         self.width = width
 
     def __str__(self):
-        return f'{self.height} x {self.width}'
+        return f"{self.height} x {self.width}"
 
 
 class TileColorFeature:
@@ -31,29 +31,34 @@ class TileSurface:
     def __str__(self):
         return f"{self.name}"
 
+
 class TileMaterial:
     def __init__(self, name: str):
         self.name = name
 
     def __str__(self):
-        return f'{self.name}'
+        return f"{self.name}"
+
 
 class Producer:
     def __init__(self, name: str):
         self.name = name
 
     def __str__(self):
-        return f'{self.name}'
+        return f"{self.name}"
+
 
 class BoxWeight:
 
     def __init__(self, weight: float):
         self.weight = weight
 
+
 class PalletWeight:
 
     def __init__(self, weight: float):
         self.weight = weight
+
 
 class Tile:
     def __init__(
@@ -84,7 +89,7 @@ class Tile:
 
     @property
     def present(self):
-        return f'{str(self.material)} {self.name} {str(self.size)} {str(self.color)} {str(self.surface)} ({self.article})'
+        return f"{str(self.material)} {self.name} {str(self.size)} {str(self.color)} {str(self.surface)} ({self.article})"
 
     def __str__(self):
         return f"{str(self.color)} {str(self.surface)} {self.name}"

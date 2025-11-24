@@ -6,11 +6,8 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.orm import selectinload
 
-from repo.exceptions import (
-    AlreadyExistsError,
-    CustomForeignKeyViolationError,
-    NotFoundError,
-)
+from repo.exceptions import (AlreadyExistsError,
+                             CustomForeignKeyViolationError, NotFoundError)
 
 log = logging.getLogger(__name__)
 
@@ -30,11 +27,7 @@ class Crud:
         self._mapper[domain_cls] = orm_cls
 
     async def create(
-            self,
-            domain_model,
-            seq_data: list | None = None,
-            session=None,
-            **kwargs
+        self, domain_model, seq_data: list | None = None, session=None, **kwargs
     ):
         model = self._mapper[domain_model]
 
@@ -46,7 +39,11 @@ class Crud:
                 await session.flush()
                 return [obj.model_dump() for obj in objs]
             else:
-                log.debug("%s: параметры для создания %s", domain_model.__class__.__name__, kwargs)
+                log.debug(
+                    "%s: параметры для создания %s",
+                    domain_model.__class__.__name__,
+                    kwargs,
+                )
                 obj = model(**kwargs)
                 session.add(obj)
                 await session.flush()
@@ -80,11 +77,15 @@ class Crud:
                 )
                 raise CustomForeignKeyViolationError(model.__name__, detail)
 
-    async def delete(self, domain_model, session = None, **filters):
+            raise
+
+    async def delete(self, domain_model, session=None, **filters):
         async def _delete_internal(session):
             model = self._mapper[domain_model]
 
-            conditions = [getattr(model, field) == value for field, value in filters.items()]
+            conditions = [
+                getattr(model, field) == value for field, value in filters.items()
+            ]
             query = select(model).where(*conditions)
             result = await session.execute(query)
             records_to_delete = list(result.scalars())  # объекты остаются привязанными
@@ -126,7 +127,7 @@ class Crud:
     async def read(
         self,
         domain_model,
-        session = None,
+        session=None,
         to_join=None,
         limit: int | None = None,
         offset: int | None = None,
@@ -141,7 +142,7 @@ class Crud:
 
             if to_join:
 
-                join_attrs  = set(to_join)
+                join_attrs = set(to_join)
                 log.debug("to_join: %s", to_join)
                 for join_attr in join_attrs:
                     if hasattr(model, join_attr):
@@ -164,6 +165,7 @@ class Crud:
 
             result = (await session.execute(query)).unique().scalars().all()
             return [r.model_dump() for r in result]
+
         if session is not None:
             return await _read_internal(session)
         else:

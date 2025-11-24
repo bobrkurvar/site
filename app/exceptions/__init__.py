@@ -1,9 +1,7 @@
 from app.schemas.exceptions import ErrorResponse
 
-from .api_handlers import (
-    data_base_exception_handler,
-    entity_already_exists_in_db_exceptions_handler,
-    foreign_key_violation_exceptions_handler,
-    global_exception_handler,
-    not_found_in_db_exceptions_handler,
-)
+from .api_handlers import (data_base_exception_handler,
+                           entity_already_exists_in_db_exceptions_handler,
+                           foreign_key_violation_exceptions_handler,
+                           global_exception_handler,
+                           not_found_in_db_exceptions_handler)
