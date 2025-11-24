@@ -30,10 +30,10 @@
                         <label>Размер:</label>
                         <select name="size">
                             <option value="">Все размеры</option>
-                            {% for tile in tiles %}
-                            <option value="{{ tile.size_width }},{{ tile.size_height }}"
-                                {% if request.query_params.get('size') == tile.size_width ~ ',' ~ tile.size_height %}selected{% endif %}>
-                                {{ tile.size_width }}x{{ tile.size_height }}
+                            {% for size in sizes %}
+                            <option value="{{ size.width }},{{ size.height }}"
+                                {% if request.query_params.get('size') == size.width ~ ',' ~ size.height %}selected{% endif %}>
+                                {{ size.width }}x{{ size.height }}
                             </option>
                             {% endfor %}
                         </select>
@@ -44,10 +44,10 @@
                         <label>Цвет:</label>
                         <select name="color">
                             <option value="">Все цвета</option>
-                            {% for tile in tiles %}
-                            <option value="{{ tile.color_name }}"
-                                {% if request.query_params.get('color') == tile.color_name %}selected{% endif %}>
-                                {{ tile.color_name }}
+                            {% for color in colors %}
+                            <option value="{{ color.name }}"
+                                {% if request.query_params.get('color') == color.name %}selected{% endif %}>
+                                {{ color.name }}
                             </option>
                             {% endfor %}
                         </select>

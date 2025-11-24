@@ -56,7 +56,7 @@
                 <div class="specs-list">
                     <div class="spec-item">
                         <span class="spec-label">Размер:</span>
-                        <span class="spec-value">{{ tile.size_width }} × {{ tile.size_height }} мм</span>
+                        <span class="spec-value">{{ tile.size_width }} × {{ tile.size_height }} см</span>
                     </div>
 
                     <div class="spec-item">
@@ -64,7 +64,7 @@
                         <span class="spec-value">{{ tile.color_name or 'Не указан' }}</span>
                     </div>
 
-                    {% if tile.color_property %}
+                    {% if tile.feature_name %}
                     <div class="spec-item">
                         <span class="spec-label">Свойство цвета:</span>
                         <span class="spec-value">{{ tile.feature_name }}</span>
@@ -87,16 +87,16 @@
 
                     {% if tile.box_weight %}
                     <div class="spec-item">
-                        <span class="spec-label">Вес:</span>
-                        <span class="spec-value">{{ tile.box_weight }} кг/м²</span>
+                        <span class="spec-label">Вес коробки:</span>
+                        <span class="spec-value">{{ tile.box_weight }} кг</span>
                     </div>
                     {% endif %}
 
 
-                    {% if tile.frost_resistance %}
+                    {% if tile.pallet_weight %}
                     <div class="spec-item">
-                        <span class="spec-label">Морозостойкость:</span>
-                        <span class="spec-value">{{ tile.frost_resistance }}</span>
+                        <span class="spec-label">Вес паллета:</span>
+                        <span class="spec-value">{{ tile.pallet_weight }} кг/м²</span>
                     </div>
                     {% endif %}
 
