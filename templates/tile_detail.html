@@ -85,19 +85,13 @@
                     </div>
                     {% endif %}
 
-                    {% if tile.weight %}
+                    {% if tile.box_weight %}
                     <div class="spec-item">
                         <span class="spec-label">Вес:</span>
-                        <span class="spec-value">{{ tile.weight }} кг/м²</span>
+                        <span class="spec-value">{{ tile.box_weight }} кг/м²</span>
                     </div>
                     {% endif %}
 
-                    {% if tile.water_absorption %}
-                    <div class="spec-item">
-                        <span class="spec-label">Водопоглощение:</span>
-                        <span class="spec-value">{{ tile.water_absorption }}%</span>
-                    </div>
-                    {% endif %}
 
                     {% if tile.frost_resistance %}
                     <div class="spec-item">
@@ -132,39 +126,11 @@
                     </div>
                 </div>
 
-                <!-- Действия -->
-                <div class="tile-actions">
-                    <button class="btn-primary">Запросить цену</button>
-                    <button class="btn-secondary">Добавить в избранное</button>
-                    <a href="/catalog" class="btn-back">← Назад в каталог</a>
-                </div>
 
-                <!-- Дополнительная информация -->
-                <div class="additional-info">
-                    <h3>Дополнительно</h3>
-                    <ul class="info-list">
-                        <li>✅ Подходит для внутренней отделки</li>
-                        <li>✅ Легко чистится</li>
-                        <li>✅ Устойчива к влаге</li>
-                        {% if tile.frost_resistance %}
-                        <li>✅ Подходит для наружной отделки</li>
-                        {% endif %}
-                    </ul>
-                </div>
             </div>
         </aside>
     </div>
 
-    <!-- Похожие товары -->
-    <section class="similar-tiles">
-        <h2>Похожие товары</h2>
-        <div class="similar-grid">
-            <!-- Здесь можно вставить похожие плитки из каталога -->
-            <div class="similar-placeholder">
-                <p>Здесь будут показаны похожие товары</p>
-            </div>
-        </div>
-    </section>
 </main>
 
 {% endblock %}
