@@ -13,13 +13,16 @@ templates = Jinja2Templates("templates")
 log = logging.getLogger(__name__)
 
 
+ITEMS_PER_PAGE = 1
+
 @router.get("")
 async def get_catalog_page(
         request: Request,
         manager: dbManagerDep,
         name: str | None = None,
         size: str | None = None,
-        color: str | None = None
+        color: str | None = None,
+        page: int = 1
 ):
     filters = {}
     if name:
@@ -27,14 +30,30 @@ async def get_catalog_page(
     if color:
         filters['color_name'] = color
     if size:
-        filters['width'], filters['height'] = size.split(',')
+        filters['size_width'], filters['size_height'] = (float(i) for i in size.split(','))
 
-    tiles = await manager.read(Tile, to_join=['color'], **filters)
+    limit = ITEMS_PER_PAGE
+    offset = (page - 1) * limit
+
+    tiles = await manager.read(
+        Tile,
+        to_join=['color'],
+        offset=offset,
+        limit=limit,
+        **filters
+    )
+
+    total_count = len(await manager.read(Tile, **filters))
+    total_pages = max((total_count + limit - 1) // limit, 1)
+
     return templates.TemplateResponse(
         "catalog.html",
         {
             "request": request,
             "tiles": tiles,
+            "page": page,
+            "total_pages": total_pages,
+            "total_count": total_count
         },
     )
 

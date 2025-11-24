@@ -10,7 +10,7 @@
 <main class="catalog-panel">
     <div class="catalog-header">
         <h2>Наша коллекция плитки</h2>
-        <p>Всего товаров: {{ tiles|length }} шт.</p>
+        <p>Всего товаров: {{ total_count }} шт.</p>
     </div>
 
     <div class="catalog-layout">
@@ -18,7 +18,7 @@
         <aside class="filters-sidebar">
             <div class="filters-panel">
                 <h3>Фильтры</h3>
-                <form class="filters-form" method="get" action="/catalog">
+                <form class="filters-form" method="get" action="/catalog" id="filtersForm">
                     <div class="filter-group">
                         <label>Поиск по названию:</label>
                         <input type="text" name="name" placeholder="Введите название..."
@@ -31,9 +31,9 @@
                         <select name="size">
                             <option value="">Все размеры</option>
                             {% for tile in tiles %}
-                            <option value="{{ tile.size_width }}, {{ tile.size_height }}"
+                            <option value="{{ tile.size_width }},{{ tile.size_height }}"
                                 {% if request.query_params.get('size') == tile.size_width ~ ',' ~ tile.size_height %}selected{% endif %}>
-                                {{ tile.size_width }}x{{  tile.size_height }}
+                                {{ tile.size_width }}x{{ tile.size_height }}
                             </option>
                             {% endfor %}
                         </select>
@@ -91,7 +91,57 @@
                 </div>
                 {% endif %}
             </div>
+
+            <!-- ================= ПАГИНАЦИЯ ================= -->
+            {# ==== 1. Собираем строку запроса без page ==== #}
+            {% set base_query = [] %}
+            {% for k, v in request.query_params.items() %}
+                {% if k != 'page' and v %}
+                    {% set _ = base_query.append(k ~ '=' ~ v) %}
+                {% endif %}
+            {% endfor %}
+            {% set base_query = '&'.join(base_query) %}
+            {% set sep = '&' if base_query else '' %}
+
+            {# ==== 2. ПАГИНАЦИЯ ==== #}
+            <div class="pagination">
+
+                {# ← Назад #}
+                {% if page > 1 %}
+                    <a class="page-btn" href="?{{ base_query }}{{ sep }}page={{ page - 1 }}">« Назад</a>
+                {% endif %}
+
+                {# ← Номера страниц #}
+                {% for p in range(1, total_pages + 1) %}
+                    {% if p == page %}
+                        <span class="page-current">{{ p }}</span>
+                    {% else %}
+                        <a class="page-btn" href="?{{ base_query }}{{ sep }}page={{ p }}">{{ p }}</a>
+                    {% endif %}
+                {% endfor %}
+
+                {# → Вперёд #}
+                {% if page < total_pages %}
+                    <a class="page-btn" href="?{{ base_query }}{{ sep }}page={{ page + 1 }}">Вперёд »</a>
+                {% endif %}
+
+            </div>
+
+
         </section>
     </div>
 </main>
+
+<!-- JS для отправки только заполненных фильтров -->
+<script>
+document.getElementById('filtersForm').addEventListener('submit', function(event) {
+    const form = event.target;
+    const inputs = Array.from(form.elements);
+    inputs.forEach(input => {
+        if ((input.tagName === 'INPUT' || input.tagName === 'SELECT') && !input.value) {
+            input.disabled = true;
+        }
+    });
+});
+</script>
 {% endblock %}

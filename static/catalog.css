@@ -403,3 +403,86 @@
     gap: 8px;
     align-items: center;
 }
+
+/* Контейнер пагинации */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin: 40px 0 20px;
+    flex-wrap: wrap;
+}
+
+/* Кнопка страницы */
+.page-btn {
+    padding: 10px 16px;
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    text-decoration: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+    transition: all 0.25s ease;
+}
+
+.page-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 18px rgba(52, 152, 219, 0.45);
+}
+
+/* Активная страница */
+.page-current {
+    padding: 10px 16px;
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    color: white;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 14px;
+    box-shadow: 0 4px 15px rgba(46, 204, 113, 0.35);
+}
+
+/* Неактивная кнопка (когда назад/вперёд нельзя нажать) */
+.page-disabled {
+    padding: 10px 16px;
+    background: rgba(189, 195, 199, 0.5);
+    color: white;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+/* Стрелки */
+.page-arrow {
+    padding: 10px 14px;
+    background: linear-gradient(135deg, #34495e, #2c3e50);
+    color: white;
+    text-decoration: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 15px rgba(44, 62, 80, 0.3);
+}
+
+.page-arrow:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 18px rgba(44, 62, 80, 0.45);
+}
+
+/* Адаптивность пагинации */
+@media (max-width: 600px) {
+    .pagination {
+        gap: 8px;
+    }
+
+    .page-btn,
+    .page-current,
+    .page-arrow {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+}
