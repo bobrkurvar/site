@@ -129,16 +129,40 @@ async def add_tile(
         return tile_record
 
 
+async def delete_tile_size(tiles: list, height: float, width: float, manager, session):
+    tiles = [
+        tile
+        for tile in tiles
+        if tile.get("size_height") == height and tile.get("size_width") == width
+    ]
+    if not tiles:
+        log.debug("%s, %s удаляется из справочника", height, width)
+        await manager.delete(TileSize, height=height, width=width, session=session)
+
+
+async def delete_tile_color(tiles: list, color_name: str, manager, session):
+    tiles = [tile for tile in tiles if tile.get("color_name") == color_name]
+    if not tiles:
+        log.debug("%s удаляется из справочника", color_name)
+        await manager.delete(TileColor, name=color_name, session=session)
+
+
 async def delete_tile(manager, **filters):
 
     async with UnitOfWork(manager._session_factory) as uow:
         tiles = await manager.read(Tile, session=uow.session, **filters)
-
         files_deleted = 0
 
         await manager.delete(Tile, session=uow.session, **filters)
+        all_tiles = await manager.read(Tile, session=uow.session)
 
         for tile in tiles:
+            await delete_tile_size(
+                all_tiles, tile.get("size_height"), tile.get("size_width"), manager, uow.session
+            )
+            await delete_tile_color(
+                all_tiles, tile.get("color_name"), manager, uow.session
+            )
             image_path = Path(tile["image_path"])
             log.debug("for delete image_path: %s", image_path)
             if image_path.exists():

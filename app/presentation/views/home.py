@@ -4,7 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Request
 from fastapi.templating import Jinja2Templates
 
-from domain.tile import Tile
+from domain.tile import Producer
 from repo import Crud, get_db_manager
 
 router = APIRouter()
@@ -16,8 +16,11 @@ log = logging.getLogger(__name__)
 
 @router.get("/")
 async def get_main_page(request: Request, manager: dbManagerDep):
-    products = await manager.read(Tile, to_join=["color"])
-    log.debug(products)
+    producers = await manager.read(Producer)
     return templates.TemplateResponse(
-        "home.html", {"request": request, "featured_tiles": products}
+        "home.html",
+        {
+            "request": request,
+            "producers": producers
+        }
     )

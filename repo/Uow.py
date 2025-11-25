@@ -10,3 +10,6 @@ class UnitOfWork:
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self.session_ctx.__aexit__(exc_type, exc_val, exc_tb)
         self.session = None
+
+    async def flush(self):
+        await self.session.flush()

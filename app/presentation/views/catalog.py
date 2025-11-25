@@ -4,7 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Request
 from fastapi.templating import Jinja2Templates
 
-from domain import Tile, TileColor
+from domain import Tile, TileColor, TileSize
 from repo import Crud, get_db_manager
 
 router = APIRouter(tags=["presentation"], prefix="/catalog")
@@ -41,6 +41,10 @@ async def get_catalog_page(
         Tile, to_join=["color"], offset=offset, limit=limit, **filters
     )
 
+
+    sizes = await manager.read(TileSize)
+    colors = await manager.read(TileColor)
+
     total_count = len(await manager.read(Tile, **filters))
     total_pages = max((total_count + limit - 1) // limit, 1)
 
@@ -49,6 +53,8 @@ async def get_catalog_page(
         {
             "request": request,
             "tiles": tiles,
+            "colors": colors,
+            "sizes": sizes,
             "page": page,
             "total_pages": total_pages,
             "total_count": total_count,
@@ -58,7 +64,7 @@ async def get_catalog_page(
 
 @router.get("/{tile_id}")
 async def get_tile_page(request: Request, tile_id: int, manager: dbManagerDep):
-    tile = await manager.read(Tile, id=tile_id, to_join=["color"])
+    tile = await manager.read(Tile, id=tile_id, to_join=["color", "box", "pallet"])
     tile = tile[0] if tile else {}
     return templates.TemplateResponse(
         "tile_detail.html",

@@ -56,11 +56,9 @@
             <div class="producers-list">
                 <h3>Производители</h3>
                 <ul>
-                    <li>Atlas Concorde</li>
-                    <li>Kerama Marazzi</li>
-                    <li>Ceramica Classic</li>
-                    <li>Porcelanosa</li>
-                    <li>Roca</li>
+                    {% for producer in producers %}
+                        <li>{{ producer.name }}</li>
+                    {% endfor %}
                 </ul>
             </div>
         </div>
