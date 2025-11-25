@@ -22,6 +22,49 @@ async def admin_page(request: Request, manager: dbManagerDep):
     surfaces = await manager.read(TileSurface)
     pallets = await manager.read(Pallet)
     boxes = await manager.read(Box)
+    material = await manager.read(TileMaterial)
+    producers = await manager.read(Producer)
+
+    unique_color = set()
+    unique_feature = set()
+    tile_colors_unique_color = []
+    tile_colors_unique_feature = []
+    for color in tile_colors:
+        if color.get("color_name") not in unique_color:
+            tile_colors_unique_color.append(color)
+            unique_color.add(color.get("color_name"))
+
+        if color.get("feature_name") not in unique_feature:
+            tile_colors_unique_feature.append(color)
+            unique_feature.add(color.get("feature_name"))
+
+    unique_weight = set()
+    unique_area = set()
+    boxes_unique_weight = []
+    boxes_unique_area = []
+
+    for box in boxes:
+        if box.get("weight") not in unique_weight:
+            boxes_unique_weight.append(box)
+            unique_weight.add(box.get("weight"))
+
+        if box.get("area") not in unique_area:
+            boxes_unique_area.append(box)
+            unique_area.add(box.get("area"))
+
+    unique_weight.clear()
+    unique_area.clear()
+    pallet_unique_weight = []
+    pallet_unique_area = []
+
+    for pallet in pallets:
+        if pallet.get("weight") not in unique_weight:
+            pallet_unique_weight.append(pallet)
+            unique_weight.add(pallet.get("weight"))
+
+        if pallet.get("area") not in unique_area:
+            pallet_unique_area.append(pallet)
+            unique_area.add(pallet.get("area"))
 
     return templates.TemplateResponse(
         "admin.html",
@@ -33,5 +76,13 @@ async def admin_page(request: Request, manager: dbManagerDep):
             "tile_surfaces": surfaces,
             "pallets": pallets,
             "boxes": boxes,
+            "material": material,
+            "producers": producers,
+            "colors_unique_color": tile_colors_unique_color,
+            "colors_unique_feature": tile_colors_unique_feature,
+            "boxes_unique_weight": boxes_unique_weight,
+            "boxes_unique_area": boxes_unique_area,
+            "pallet_unique_weight": pallet_unique_weight,
+            "pallet_unique_area": pallet_unique_area,
         },
     )

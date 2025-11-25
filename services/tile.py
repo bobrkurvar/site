@@ -57,7 +57,7 @@ async def add_box(box_weight: Decimal, box_area: Decimal, manager, session):
             Box, weight=box_weight, area=box_area, session=session
         )
     else:
-        return box
+        return box[0]
 
 
 async def add_pallet(pallet_weight: Decimal, pallet_area: Decimal, manager, session):
@@ -144,11 +144,11 @@ async def delete_tile_size(tiles: list, height: float, width: float, manager, se
         await manager.delete(TileSize, height=height, width=width, session=session)
 
 
-async def delete_tile_color(tiles: list, color_name: str, manager, session):
-    tiles = [tile for tile in tiles if tile.get("color_name") == color_name]
+async def delete_tile_color(tiles: list, color_name: str, feature_name: str, manager, session):
+    tiles = [tile for tile in tiles if tile.get("color_name") == color_name and tile.get("feature_name") == feature_name]
     if not tiles:
         log.debug("%s удаляется из справочника", color_name)
-        await manager.delete(TileColor, name=color_name, session=session)
+        await manager.delete(TileColor, color_name=color_name, feature_name=feature_name, session=session)
 
 
 async def delete_tile(manager, **filters):
@@ -169,7 +169,7 @@ async def delete_tile(manager, **filters):
                 uow.session,
             )
             await delete_tile_color(
-                all_tiles, tile.get("color_name"), manager, uow.session
+                all_tiles, tile.get("color_name"), tile.get("feature_name"), manager, uow.session
             )
             image_path = Path(tile["image_path"])
             log.debug("for delete image_path: %s", image_path)

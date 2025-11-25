@@ -54,22 +54,23 @@
                 </datalist>
                 <small class="input-hint">Формат: ширина высота (например: 100 150)</small>
             </div>
+
             <!-- Цвет -->
             <div class="form-group">
                 <h3>Цвет</h3>
                 <div class="color-inputs">
                     <input type="text" name="color_name" placeholder="Название цвета" required list="color-name-list">
                     <datalist id="color-name-list">
-                        {% for color in tile_colors %}
-                        <option value="{{ color.name }}">
+                        {% for color in tile_colors_unique_color %}
+                        <option value="{{ color.color_name }}">
                         {% endfor %}
                     </datalist>
 
                     <!-- Исправлено: добавил datalist для свойства цвета -->
                     <input type="text" name="color_feature" placeholder="Свойство цвета" required list="color-feature-list">
                     <datalist id="color-feature-list">
-                        {% for property in color_properties %}
-                        <option value="{{ property.name }}">
+                        {% for color in tile_colors_unique_feature %}
+                        <option value="{{ color.feature_name }}">
                         {% endfor %}
                     </datalist>
                 </div>
@@ -114,7 +115,7 @@
                 <input type="number" step="0.01" name="box_weight" placeholder="Выберите вес коробки" required
                        list="box-weight-list">
                 <datalist id="box-weight-list">
-                    {% for box in boxes %}
+                    {% for box in boxes_unique_weight %}
                     <option value="{{ box.weight }}">
                     {% endfor %}
                 </datalist>
@@ -126,7 +127,7 @@
                 <input type="number" step="0.01" name="box_area" placeholder="Выберете метры" required
                        list="box-area-list">
                 <datalist id="box-area-list">
-                    {% for box in boxes %}
+                    {% for box in boxes_unique_area %}
                     <option value="{{ box.area }}">
                     {% endfor %}
                 </datalist>
@@ -138,7 +139,7 @@
                 <input type="number" step="0.01" name="pallet_weight" placeholder="Выберите вес паллеты" required
                        list="pallet-weight-list">
                 <datalist id="pallet-weight-list">
-                    {% for pallet in pallets %}
+                    {% for pallet in pallet_unique_weight %}
                     <option value="{{ pallet.weight }}">
                     {% endfor %}
                 </datalist>
@@ -150,7 +151,7 @@
                 <input type="number" step="0.01" name="pallet_area" placeholder="Выберите Метры паллеты" required
                        list="pallet-area-list">
                 <datalist id="pallet-area-list">
-                    {% for pallet in pallets %}
+                    {% for pallet in pallet_unique_area %}
                     <option value="{{ pallet.area }}">
                     {% endfor %}
                 </datalist>
@@ -229,9 +230,10 @@
             <div class="characteristics-list">
                 {% for color in tile_colors %}
                 <div class="characteristic-item">
-                    <span>{{ color.name }} ({{ color.feature_name }})</span>
+                    <span>{{ color.color_name }} ({{ color.feature_name }})</span>
                     <form method="post" action="/admin/tiles/color/delete">
-                        <input type="hidden" name="color_id" value="{{ color.id }}">
+                        <input type="hidden" name="color_name" value="{{ color.color_name }}">
+                        <input type="hidden" name="feature_name" value="{{ color.feature_name }}">
                         <button type="submit" class="delete-btn"
                                 onclick="return confirm('Удалить цвет?')">
                             Удалить
@@ -250,7 +252,7 @@
                 <div class="characteristic-item">
                     <span>{{ surface.name }}</span>
                     <form method="post" action="/admin/tiles/surface/delete">
-                        <input type="hidden" name="surface_id" value="{{ surface.id }}">
+                        <input type="hidden" name="surface" value="{{ surface.name }}">
                         <button type="submit" class="delete-btn"
                                 onclick="return confirm('Удалить поверхность?')">
                             Удалить
@@ -260,6 +262,67 @@
                 {% endfor %}
             </div>
         </div>
+
+        <!-- Производители -->
+        <div class="characteristics-group">
+            <h3 data-count="{{ producers|length }} шт.">Производители</h3>
+            <div class="characteristics-list">
+                {% for producer in producers %}
+                <div class="characteristic-item">
+                    <span>{{ producer.name }}</span>
+                    <form method="post" action="/admin/tiles/producers/delete">
+                        <input type="hidden" name="name" value="{{ producer.name }}">
+                        <button type="submit" class="delete-btn"
+                                onclick="return confirm('Удалить производителя?')">
+                            Удалить
+                        </button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Веса и метры коробок -->
+        <div class="characteristics-group">
+            <h3 data-count="{{ boxes|length }} шт.">Коробки</h3>
+            <div class="characteristics-list">
+                {% for box in boxes %}
+                <div class="characteristic-item">
+                    <span>{{ box.weight }}кг {{ box.area }}м²</span>
+                    <form method="post" action="/admin/tiles/boxes/delete">
+                        <input type="hidden" name="weight" value="{{ box.weight }}">
+                        <input type="hidden" name="area" value="{{ box.area }}">
+                        <button type="submit" class="delete-btn"
+                                onclick="return confirm('Удалить данные коробки?')">
+                            Удалить
+                        </button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Веса и метры паллетов -->
+        <div class="characteristics-group">
+            <h3 data-count="{{ pallets|length }} шт.">Паллеты</h3>
+            <div class="characteristics-list">
+                {% for pallet in pallets %}
+                <div class="characteristic-item">
+                    <span>{{ pallet.weight }}кг {{ pallet.area }}м²</span>
+                    <form method="post" action="/admin/tiles/pallets/delete">
+                        <input type="hidden" name="weight" value="{{ pallet.weight }}">
+                        <input type="hidden" name="area" value="{{ pallet.area }}">
+                        <button type="submit" class="delete-btn"
+                                onclick="return confirm('Удалить данные паллета?')">
+                            Удалить
+                        </button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+
     </section>
 
     <!-- Массовое удаление -->

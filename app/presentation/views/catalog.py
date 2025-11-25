@@ -47,6 +47,8 @@ async def get_catalog_page(
     sizes = await manager.read(TileSize)
     colors = await manager.read(TileColor)
 
+
+
     total_count = len(await manager.read(Tile, **filters))
     total_pages = max((total_count + limit - 1) // limit, 1)
 

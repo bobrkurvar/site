@@ -32,47 +32,47 @@
 }
 
 .filters-panel {
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(245, 245, 220, 0.95); /* Бежевый фон как в шапке */
     backdrop-filter: blur(10px);
     border-radius: 15px;
     padding: 25px;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
-    border: 1px solid rgba(255,255,255,0.2);
-    width: 100%; /* Добавлено */
-    box-sizing: border-box; /* Важно! */
+    box-shadow: 0 15px 35px rgba(93, 64, 55, 0.15); /* Тени в коричневой гамме */
+    border: 1px solid rgba(188, 170, 164, 0.4); /* Граница как в шапке */
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .filters-panel h3 {
     margin: 0 0 20px 0;
-    color: #2c3e50;
+    color: #5d4037; /* Коричневый цвет как в шапке */
     font-size: 1.4em;
     text-align: center;
     font-weight: 600;
-    background: linear-gradient(135deg, #3498db, #2c3e50);
+    background: linear-gradient(135deg, #8d6e63, #5d4037); /* Коричневый градиент */
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     padding-bottom: 15px;
-    border-bottom: 2px solid #ecf0f1;
+    border-bottom: 2px solid rgba(188, 170, 164, 0.3); /* Светло-коричневая граница */
 }
 
 .filters-form {
     display: flex;
     flex-direction: column;
     gap: 20px;
-    width: 100%; /* Добавлено */
+    width: 100%;
 }
 
 .filter-group {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    width: 100%; /* Добавлено */
+    width: 100%;
 }
 
 .filter-group label {
     font-weight: 600;
-    color: #2c3e50;
+    color: #5d4037; /* Коричневый цвет */
     font-size: 14px;
     margin-bottom: 5px;
 }
@@ -80,26 +80,27 @@
 .filter-group input,
 .filter-group select {
     padding: 12px 14px;
-    border: 2px solid #bdc3c7;
+    border: 2px solid #bcaaa4; /* Светло-коричневая граница */
     border-radius: 8px;
     font-size: 14px;
     transition: all 0.3s ease;
     background: white;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    width: 100%; /* Изменено с 100% на calc(100% - 28px) */
-    box-sizing: border-box; /* Важно! */
-    max-width: 100%; /* Добавлено */
+    box-shadow: 0 2px 8px rgba(93, 64, 55, 0.05); /* Коричневые тени */
+    width: 100%;
+    box-sizing: border-box;
+    max-width: 100%;
+    color: #5d4037; /* Коричневый текст */
 }
 
 .filter-group input:focus,
 .filter-group select:focus {
     outline: none;
-    border-color: #3498db;
-    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.2);
+    border-color: #8d6e63; /* Средне-коричневый при фокусе */
+    box-shadow: 0 4px 15px rgba(141, 110, 99, 0.2); /* Коричневые тени */
 }
 
 .filter-group input::placeholder {
-    color: #95a5a6;
+    color: #a1887f; /* Светло-коричневый плейсхолдер */
 }
 
 .filter-actions {
@@ -107,12 +108,12 @@
     flex-direction: column;
     gap: 12px;
     margin-top: 10px;
-    width: 100%; /* Добавлено */
+    width: 100%;
 }
 
 .filter-btn {
     padding: 12px 20px;
-    background: linear-gradient(135deg, #3498db, #2980b9);
+    background: linear-gradient(135deg, #8d6e63, #5d4037); /* Коричневый градиент */
     color: white;
     border: none;
     border-radius: 8px;
@@ -120,18 +121,19 @@
     font-size: 14px;
     font-weight: 600;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
-    width: 100%; /* Добавлено */
-    box-sizing: border-box; /* Добавлено */
+    box-shadow: 0 4px 15px rgba(93, 64, 55, 0.3); /* Коричневые тени */
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .filter-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+    box-shadow: 0 6px 20px rgba(93, 64, 55, 0.4);
+    background: linear-gradient(135deg, #7d5e53, #4d3027); /* Более темный градиент при hover */
 }
 
 .clear-filters {
-    color: #e74c3c;
+    color: #5d4037; /* Коричневый цвет */
     text-decoration: none;
     font-size: 13px;
     font-weight: 500;
@@ -139,14 +141,16 @@
     border-radius: 6px;
     transition: all 0.3s ease;
     text-align: center;
-    border: 1px solid #e74c3c;
-    width: 100%; /* Добавлено */
-    box-sizing: border-box; /* Добавлено */
+    border: 1px solid #8d6e63; /* Коричневая граница */
+    width: 100%;
+    box-sizing: border-box;
+    background: rgba(141, 110, 99, 0.1); /* Светло-коричневый фон */
 }
 
 .clear-filters:hover {
-    background: rgba(231, 76, 60, 0.1);
+    background: rgba(141, 110, 99, 0.2); /* Темнее при hover */
     text-decoration: none;
+    color: #4d3027; /* Темнее текст */
 }
 
 /* Секция с товарами */
@@ -164,17 +168,39 @@
 
 /* Карточка товара */
 .tile-card {
-    background: white;
+    background: rgba(245, 245, 220, 0.95);
     border-radius: 15px;
     overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    box-shadow: 0 10px 30px rgba(93, 64, 55, 0.15);
     transition: all 0.3s ease;
     position: relative;
+    border: 1px solid rgba(188, 170, 164, 0.3);
+    height: 100%;
 }
 
 .tile-card:hover {
     transform: translateY(-8px);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    box-shadow: 0 20px 40px rgba(93, 64, 55, 0.25);
+    border-color: rgba(141, 110, 99, 0.5);
+}
+
+.tile-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    height: 100%;
+}
+
+.tile-header {
+    padding: 15px 15px 0 15px;
+}
+
+.tile-title {
+    margin: 0 0 15px 0;
+    font-size: 1.2em;
+    color: #5d4037;
+    font-weight: 600;
+    text-align: center;
 }
 
 .tile-image-container {
@@ -197,7 +223,7 @@
 .no-image {
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, #34495e, #2c3e50);
+    background: linear-gradient(135deg, #8d6e63, #5d4037);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -205,69 +231,44 @@
     font-weight: 500;
 }
 
-.tile-content {
-    padding: 20px;
-    text-align: center;
-}
-
-.tile-title {
-    margin: 0 0 15px 0;
-    font-size: 1.2em;
-    color: #2c3e50;
-    font-weight: 600;
-}
-
-.size-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 14px;
-    background: linear-gradient(135deg, #3498db, #2980b9);
-    color: white;
-    border-radius: 18px;
-    font-size: 13px;
-    font-weight: 500;
-    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
-    margin: 3px;
-}
-
-.color-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 14px;
-    background: linear-gradient(135deg, #e74c3c, #c0392b);
-    color: white;
-    border-radius: 18px;
-    font-size: 13px;
-    font-weight: 500;
-    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
-    margin: 3px;
-}
-
-.size-icon,
-.color-icon {
-    font-size: 12px;
-}
-
-.tile-content {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    align-items: center;
-}
-
+/* Сообщение об отсутствии товаров */
 .empty-catalog {
     grid-column: 1 / -1;
     text-align: center;
-    padding: 60px 20px;
-    color: white;
+    padding: 40px 20px;
 }
 
 .empty-catalog p {
     font-size: 1.3em;
     margin-bottom: 20px;
+    color: #5d4037;
     opacity: 0.9;
+}
+
+/* Кнопка в пустом каталоге */
+.empty-catalog .clear-filters {
+    display: inline-block;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #8d6e63, #5d4037);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1em;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(93, 64, 55, 0.3);
+    border: none;
+    width: auto; /* Убираем ширину 100% */
+    max-width: 200px; /* Ограничиваем максимальную ширину */
+    margin: 0 auto; /* Центрируем */
+}
+
+.empty-catalog .clear-filters:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(93, 64, 55, 0.4);
+    background: linear-gradient(135deg, #7d5e53, #4d3027);
+    color: white;
+    text-decoration: none;
 }
 
 /* Адаптивность каталога */

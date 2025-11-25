@@ -24,7 +24,7 @@
 /* Чек-лист преимуществ */
 .features-checklist h3 {
     font-size: 1.3em;
-    margin-bottom: 16px;
+    margin-bottom: 60px;
     color: #2c3e50;
     border-bottom: 2px solid #3498db;
     padding-bottom: 6px;
@@ -39,7 +39,7 @@
 .features-checklist li {
     position: relative;
     padding-left: 28px;
-    margin-bottom: 12px;
+    margin-bottom: 60px;
     font-size: 1em;
     color: #34495e;
     line-height: 1.5;
@@ -47,7 +47,6 @@
 }
 
 .features-checklist li::before {
-    content: "✔";  /* галочка */
     position: absolute;
     left: 0;
     top: 0;
