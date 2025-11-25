@@ -1,4 +1,5 @@
 import logging
+from decimal import Decimal
 from pathlib import Path
 
 import aiofiles
@@ -6,8 +7,6 @@ import aiofiles
 from core import config
 from domain.tile import *
 from repo.Uow import UnitOfWork
-from decimal import Decimal
-
 
 log = logging.getLogger(__name__)
 
@@ -27,7 +26,9 @@ async def add_tile_size(height: Decimal, width: Decimal, manager, session):
 
 
 async def add_tile_color(color_name: str, feature_name: str, manager, session):
-    tile_color = await manager.read(TileColor, color_name=color_name, feature_name=feature_name, session=session)
+    tile_color = await manager.read(
+        TileColor, color_name=color_name, feature_name=feature_name, session=session
+    )
     log.debug("tile_color: %s", tile_color)
     if not tile_color:
         await manager.create(
@@ -52,15 +53,21 @@ async def add_producer(producer_name: str, manager, session):
 async def add_box(box_weight: Decimal, box_area: Decimal, manager, session):
     box = await manager.read(Box, weight=box_weight, area=box_area, session=session)
     if not box:
-        return await manager.create(Box, weight=box_weight, area=box_area, session=session)
+        return await manager.create(
+            Box, weight=box_weight, area=box_area, session=session
+        )
     else:
         return box
 
 
 async def add_pallet(pallet_weight: Decimal, pallet_area: Decimal, manager, session):
-    pallet = await manager.read(Pallet, weight=pallet_weight, area=pallet_area, session=session)
+    pallet = await manager.read(
+        Pallet, weight=pallet_weight, area=pallet_area, session=session
+    )
     if not pallet:
-        return await manager.create(Pallet, weight=pallet_weight, area=pallet_area, session=session)
+        return await manager.create(
+            Pallet, weight=pallet_weight, area=pallet_area, session=session
+        )
     else:
         return pallet[0]
 
@@ -106,8 +113,8 @@ async def add_tile(
             surface_name=surface,
             material_name=material,
             producer_name=producer,
-            box_weight = box.get("weight"),
-            box_area = box.get("area"),
+            box_weight=box.get("weight"),
+            box_area=box.get("area"),
             pallet_weight=pallet.get("weight"),
             pallet_area=pallet.get("area"),
             image_path=str(image_path),
@@ -122,7 +129,7 @@ async def add_tile(
             log.debug("путь %s уже занять", image_path)
             raise
 
-        #tile_record = [map_to_tile_domain(tile) for tile in tile_record]
+        # tile_record = [map_to_tile_domain(tile) for tile in tile_record]
         return tile_record
 
 
@@ -155,7 +162,11 @@ async def delete_tile(manager, **filters):
 
         for tile in tiles:
             await delete_tile_size(
-                all_tiles, tile.get("size_height"), tile.get("size_width"), manager, uow.session
+                all_tiles,
+                tile.get("size_height"),
+                tile.get("size_width"),
+                manager,
+                uow.session,
             )
             await delete_tile_color(
                 all_tiles, tile.get("color_name"), manager, uow.session

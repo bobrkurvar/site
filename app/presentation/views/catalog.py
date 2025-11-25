@@ -15,6 +15,7 @@ log = logging.getLogger(__name__)
 
 ITEMS_PER_PAGE = 20
 
+
 @router.get("")
 async def get_catalog_page(
     request: Request,
@@ -38,7 +39,7 @@ async def get_catalog_page(
     offset = (page - 1) * limit
 
     tiles = await manager.read(
-        Tile, to_join=["color", 'box', 'pallet'], offset=offset, limit=limit, **filters
+        Tile, to_join=["color", "box", "pallet"], offset=offset, limit=limit, **filters
     )
 
     tiles = [map_to_tile_domain(tile) for tile in tiles]

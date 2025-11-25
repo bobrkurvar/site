@@ -20,5 +20,5 @@ async def get_main_page(request: Request, manager: dbManagerDep):
         "home.html",
         {
             "request": request,
-        }
+        },
     )

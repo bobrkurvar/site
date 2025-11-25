@@ -1,5 +1,6 @@
 from decimal import Decimal
 
+
 class TileSize:
     def __init__(self, height: Decimal, width: Decimal):
         self.height = height
@@ -74,7 +75,7 @@ class Tile:
         pallet: Pallet,
         producer: Producer,
         article: int,
-        image_path: str
+        image_path: str,
     ):
         self.name = name
         self.color = color
@@ -101,9 +102,8 @@ def map_to_tile_domain(tile_dict: dict) -> Tile:
     surface = TileSurface(name=tile_dict["surface_name"])
     material = TileMaterial(name=tile_dict["material_name"])
     producer = Producer(name=tile_dict["producer_name"])
-    box = Box(weight=tile_dict["box_weight"], area=tile_dict['box_area'])
-    pallet = Pallet(weight=tile_dict["pallet_weight"], area=tile_dict['pallet_area'])
-
+    box = Box(weight=tile_dict["box_weight"], area=tile_dict["box_area"])
+    pallet = Pallet(weight=tile_dict["pallet_weight"], area=tile_dict["pallet_area"])
 
     return Tile(
         size=size,
@@ -115,5 +115,5 @@ def map_to_tile_domain(tile_dict: dict) -> Tile:
         pallet=pallet,
         producer=producer,
         article=tile_dict["id"],
-        image_path=tile_dict['image_path']
+        image_path=tile_dict["image_path"],
     )

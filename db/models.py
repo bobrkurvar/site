@@ -1,8 +1,9 @@
+from decimal import Decimal
+
 from sqlalchemy import ForeignKey, ForeignKeyConstraint
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.types import DECIMAL
-from decimal import Decimal
 
 from core import config
 
@@ -36,9 +37,7 @@ class Catalog(Base):
     )
     producer: Mapped["Producer"] = relationship("Producer", back_populates="tiles")
     box: Mapped["Box"] = relationship("Box", back_populates="tiles")
-    pallet: Mapped["Pallet"] = relationship(
-        "Pallet", back_populates="tiles"
-    )
+    pallet: Mapped["Pallet"] = relationship("Pallet", back_populates="tiles")
 
     __table_args__ = (
         ForeignKeyConstraint(

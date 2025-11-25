@@ -32,6 +32,6 @@ async def admin_page(request: Request, manager: dbManagerDep):
             "tile_colors": tile_colors,
             "tile_surfaces": surfaces,
             "pallets": pallets,
-            "boxes": boxes
+            "boxes": boxes,
         },
     )
