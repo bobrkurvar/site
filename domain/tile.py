@@ -1,5 +1,7 @@
+from decimal import Decimal
+
 class TileSize:
-    def __init__(self, height: int, width: int):
+    def __init__(self, height: Decimal, width: Decimal):
         self.height = height
         self.width = width
 
@@ -48,19 +50,21 @@ class Producer:
         return f"{self.name}"
 
 
-class BoxWeight:
+class Box:
 
-    def __init__(self, weight: float):
+    def __init__(self, weight: Decimal, area: Decimal):
         self.weight = weight
+        self.area = area
 
     def __str__(self):
         return str(self.weight)
 
 
-class PalletWeight:
+class Pallet:
 
-    def __init__(self, weight: float):
+    def __init__(self, weight: Decimal, area: Decimal):
         self.weight = weight
+        self.area = area
 
     def __str__(self):
         return str(self.weight)
@@ -74,8 +78,8 @@ class Tile:
         name: str,
         surface: TileSurface,
         material: TileMaterial,
-        box_weight: BoxWeight,
-        pallet_weight: PalletWeight,
+        box: Box,
+        pallet: Pallet,
         producer: Producer,
         article: int,
         image_path: str
@@ -85,8 +89,8 @@ class Tile:
         self.size = size
         self.surface = surface
         self.material = material
-        self.box_weight = box_weight
-        self.pallet_weight = pallet_weight
+        self.box = box
+        self.pallet = pallet
         self.producer = producer
         self.article = article
         self.image_path = image_path
@@ -106,8 +110,8 @@ def map_to_tile_domain(tile_dict: dict) -> Tile:
     surface = TileSurface(name=tile_dict["surface_name"])
     material = TileMaterial(name=tile_dict["material_name"])
     producer = Producer(name=tile_dict["producer_name"])
-    box_weight = BoxWeight(weight=tile_dict["box_weight"])
-    pallet_weight = PalletWeight(weight=tile_dict["pallet_weight"])
+    box = Box(weight=tile_dict["box_weight"], area=tile_dict['box_area'])
+    pallet = Pallet(weight=tile_dict["pallet_weight"], area=tile_dict['pallet_area'])
 
 
     return Tile(
@@ -116,8 +120,8 @@ def map_to_tile_domain(tile_dict: dict) -> Tile:
         name=tile_dict["name"],
         surface=surface,
         material=material,
-        box_weight=box_weight,
-        pallet_weight=pallet_weight,
+        box=box,
+        pallet=pallet,
         producer=producer,
         article=tile_dict["id"],
         image_path=tile_dict['image_path']

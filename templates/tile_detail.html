@@ -53,65 +53,43 @@
             <div class="specs-panel">
                 <h2 class="specs-title">Технические характеристики</h2>
 
-                <div class="specs-list">
+                   {% if tile.producer %}
                     <div class="spec-item">
-                        <span class="spec-label">Размер:</span>
-                        <span class="spec-value">{{ tile.size }} см</span>
-                    </div>
-
-                    <div class="spec-item">
-                        <span class="spec-label">Цвет:</span>
-                        <span class="spec-value">{{ tile.color }}</span>
-                    </div>
-
-
-                    {% if tile.material %}
-                    <div class="spec-item">
-                        <span class="spec-label">Материал:</span>
-                        <span class="spec-value">{{ tile.material }}</span>
+                        <span class="spec-label">Производитель:</span>
+                        <span class="spec-value">{{ tile.producer }}</span>
                     </div>
                     {% endif %}
 
-                    {% if tile.surface %}
-                    <div class="spec-item">
-                        <span class="spec-label">Поверхность:</span>
-                        <span class="spec-value">{{ tile.surface }}</span>
-                    </div>
-                    {% endif %}
 
-                    {% if tile.box_weight %}
+                    {% if tile.box.weight %}
                     <div class="spec-item">
                         <span class="spec-label">Вес коробки:</span>
-                        <span class="spec-value">{{ tile.box_weight }} кг</span>
+                        <span class="spec-value">{{ tile.box.weight }} кг</span>
                     </div>
                     {% endif %}
 
+                    {% if tile.box.area %}
+                    <div class="spec-item">
+                        <span class="spec-label">Количество в коробке:</span>
+                        <span class="spec-value">{{ tile.box.area }} м²</span>
+                    </div>
+                    {% endif %}
 
-                    {% if tile.pallet_weight %}
+                    {% if tile.pallet.weight %}
                     <div class="spec-item">
                         <span class="spec-label">Вес паллета:</span>
-                        <span class="spec-value">{{ tile.pallet_weight }} кг/м²</span>
+                        <span class="spec-value">{{ tile.pallet.weight }} кг</span>
                     </div>
                     {% endif %}
 
-                    {% if tile.abrasion_resistance %}
+                    {% if tile.pallet.area %}
                     <div class="spec-item">
-                        <span class="spec-label">Сопротивление истиранию:</span>
-                        <span class="spec-value">{{ tile.abrasion_resistance }}</span>
+                        <span class="spec-label">Количество на паллете:</span>
+                        <span class="spec-value">{{ tile.pallet.area }} м²</span>
                     </div>
                     {% endif %}
 
 
-                    <!-- Стандартные поля -->
-                    <div class="spec-item">
-                        <span class="spec-label">Артикул:</span>
-                        <span class="spec-value">#{{ tile.article }}</span>
-                    </div>
-
-                    <div class="spec-item">
-                        <span class="spec-label">Категория:</span>
-                        <span class="spec-value">Керамическая плитка</span>
-                    </div>
                 </div>
 
 

@@ -6,6 +6,7 @@ from fastapi.responses import RedirectResponse
 
 from repo import Crud, get_db_manager
 from services.tile import add_tile, delete_tile
+from decimal import Decimal
 
 router = APIRouter(prefix="/admin/tiles")
 dbManagerDep = Annotated[Crud, Depends(get_db_manager)]
@@ -37,15 +38,17 @@ async def admin_create_tile(
     surface: Annotated[str, Form()],
     material: Annotated[str, Form()],
     producer: Annotated[str, Form()],
-    box_weight: Annotated[float, Form()],
-    pallet_weight: Annotated[float, Form()],
+    box_weight: Annotated[Decimal, Form()],
+    pallet_weight: Annotated[Decimal, Form()],
+    box_area: Annotated[Decimal, Form()],
+    pallet_area: Annotated[Decimal, Form()],
     image: Annotated[UploadFile, File()],
     manager: dbManagerDep,
 ):
     bytes_image = await image.read()
     height_str, width_str = size.split()
-    height = float(height_str)
-    width = float(width_str)
+    height = Decimal(height_str)
+    width = Decimal(width_str)
     log.debug(
         "height: %s, width: %s, color: %s, color_feature: %s, surface: %s, material: %s, producer: %s",
         height,
@@ -67,6 +70,8 @@ async def admin_create_tile(
         producer,
         box_weight,
         pallet_weight,
+        box_area,
+        pallet_area,
         bytes_image,
         manager,
     )

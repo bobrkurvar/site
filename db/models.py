@@ -1,6 +1,8 @@
 from sqlalchemy import ForeignKey, ForeignKeyConstraint
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy.types import DECIMAL
+from decimal import Decimal
 
 from core import config
 
@@ -15,15 +17,15 @@ class Catalog(Base):
     name: Mapped[str] = mapped_column(unique=True)
     color_name: Mapped[str] = mapped_column(ForeignKey("tile_colors.name"))
     image_path: Mapped[str] = mapped_column(default=config.image_path)
-    size_height: Mapped[float]
-    size_width: Mapped[float]
+    size_height: Mapped[Decimal] = mapped_column(DECIMAL(8, 2))
+    size_width: Mapped[Decimal] = mapped_column(DECIMAL(8, 2))
+    box_weight: Mapped[Decimal] = mapped_column(DECIMAL(8, 2))
+    box_area: Mapped[Decimal] = mapped_column(DECIMAL(8, 2))
+    pallet_weight: Mapped[Decimal] = mapped_column(DECIMAL(8, 2))
+    pallet_area: Mapped[Decimal] = mapped_column(DECIMAL(8, 2))
     surface_name: Mapped[str] = mapped_column(ForeignKey("tile_surface.name"))
     material_name: Mapped[str] = mapped_column(ForeignKey("tile_materials.name"))
     producer_name: Mapped[str] = mapped_column(ForeignKey("producers.name"))
-    box_weight_id: Mapped[int] = mapped_column(ForeignKey("box_weights.box_weight_id"))
-    pallet_weight_id: Mapped[int] = mapped_column(
-        ForeignKey("pallet_weights.pallet_weight_id")
-    )
 
     color: Mapped["TileColor"] = relationship("TileColor", back_populates="tiles")
     size: Mapped["TileSize"] = relationship("TileSize", back_populates="tiles")
@@ -32,15 +34,23 @@ class Catalog(Base):
         "TileMaterial", back_populates="tiles"
     )
     producer: Mapped["Producer"] = relationship("Producer", back_populates="tiles")
-    box: Mapped["BoxWeight"] = relationship("BoxWeight", back_populates="tiles")
-    pallet: Mapped["PalletWeight"] = relationship(
-        "PalletWeight", back_populates="tiles"
+    box: Mapped["Box"] = relationship("Box", back_populates="tiles")
+    pallet: Mapped["Pallet"] = relationship(
+        "Pallet", back_populates="tiles"
     )
 
     __table_args__ = (
         ForeignKeyConstraint(
             ["size_height", "size_width"],
             ["tile_sizes.height", "tile_sizes.width"],
+        ),
+        ForeignKeyConstraint(
+            ["box_weight", "box_area"],
+            ["boxes.weight", "boxes.area"],
+        ),
+        ForeignKeyConstraint(
+            ["pallet_weight", "pallet_area"],
+            ["pallets.weight", "pallets.area"],
         ),
     )
 
@@ -54,19 +64,17 @@ class Catalog(Base):
             "surface_name": self.surface_name,
             "material_name": self.material_name,
             "producer_name": self.producer_name,
+            "box_weight": self.box_weight,
+            "box_area": self.box_area,
+            "pallet_weight": self.pallet_weight,
+            "pallet_area": self.pallet_area,
             "image_path": self.image_path,
         }
 
         try:
-            feature_name = getattr(self.color, "feature_name", None)
-            box_weight = getattr(self.box, "weight", None)
-            pallet_weight = getattr(self.pallet, "weight", None)
-            if feature_name is not None:
-                data["feature_name"] = feature_name
-            if box_weight is not None:
-                data["box_weight"] = box_weight
-            if pallet_weight is not None:
-                data["pallet_weight"] = pallet_weight
+            if self.color and self.color.feature_name:
+                data["feature_name"] = self.color.feature_name
+            return data
         except Exception:
             pass
 
@@ -75,8 +83,8 @@ class Catalog(Base):
 
 class TileSize(Base):
     __tablename__ = "tile_sizes"
-    height: Mapped[float] = mapped_column(primary_key=True)
-    width: Mapped[float] = mapped_column(primary_key=True)
+    height: Mapped[Decimal] = mapped_column(DECIMAL(8, 2), primary_key=True)
+    width: Mapped[Decimal] = mapped_column(DECIMAL(8, 2), primary_key=True)
     tiles: Mapped[list["Catalog"]] = relationship(
         "Catalog",
         back_populates="size",
@@ -150,21 +158,21 @@ class Producer(Base):
         return {"name": self.name}
 
 
-class BoxWeight(Base):
-    __tablename__ = "box_weights"
-    box_weight_id: Mapped[int] = mapped_column(primary_key=True)
-    weight: Mapped[float] = mapped_column(unique=True)
+class Box(Base):
+    __tablename__ = "boxes"
+    weight: Mapped[Decimal] = mapped_column(DECIMAL(8, 2), primary_key=True)
+    area: Mapped[Decimal] = mapped_column(DECIMAL(8, 2), primary_key=True)
     tiles: Mapped[list["Catalog"]] = relationship("Catalog", back_populates="box")
 
     def model_dump(self):
-        return {"weight": self.weight, "box_weight_id": self.box_weight_id}
+        return {"weight": self.weight, "area": self.area}
 
 
-class PalletWeight(Base):
-    __tablename__ = "pallet_weights"
-    pallet_weight_id: Mapped[int] = mapped_column(primary_key=True)
-    weight: Mapped[float] = mapped_column(unique=True)
+class Pallet(Base):
+    __tablename__ = "pallets"
+    weight: Mapped[Decimal] = mapped_column(DECIMAL(8, 2), primary_key=True)
+    area: Mapped[Decimal] = mapped_column(DECIMAL(8, 2), primary_key=True)
     tiles: Mapped[list["Catalog"]] = relationship("Catalog", back_populates="pallet")
 
     def model_dump(self):
-        return {"weight": self.weight, "pallet_weight_id": self.pallet_weight_id}
+        return {"weight": self.weight, "area": self.area}

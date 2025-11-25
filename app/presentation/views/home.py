@@ -16,11 +16,9 @@ log = logging.getLogger(__name__)
 
 @router.get("/")
 async def get_main_page(request: Request, manager: dbManagerDep):
-    producers = await manager.read(Producer)
     return templates.TemplateResponse(
         "home.html",
         {
             "request": request,
-            "producers": producers
         }
     )

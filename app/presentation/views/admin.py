@@ -21,6 +21,8 @@ async def admin_page(request: Request, manager: dbManagerDep):
     tile_colors = await manager.read(TileColor)
     color_properties = await manager.read(TileColorFeature)
     surfaces = await manager.read(TileSurface)
+    pallets = await manager.read(Pallet)
+    boxes = await manager.read(Box)
 
     return templates.TemplateResponse(
         "admin.html",
@@ -31,5 +33,7 @@ async def admin_page(request: Request, manager: dbManagerDep):
             "tile_colors": tile_colors,
             "color_properties": color_properties,
             "tile_surfaces": surfaces,
+            "pallets": pallets,
+            "boxes": boxes
         },
     )

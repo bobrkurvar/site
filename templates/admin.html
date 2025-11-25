@@ -114,8 +114,20 @@
                 <input type="number" step="0.01" name="box_weight" placeholder="Выберите вес коробки" required
                        list="box-weight-list">
                 <datalist id="box-weight-list">
-                    {% for box in box_weights %}
+                    {% for box in boxes %}
                     <option value="{{ box.weight }}">
+                    {% endfor %}
+                </datalist>
+            </div>
+
+            <!-- Метры коробки -->
+            <div class="form-group">
+                <h3>Количество метров</h3>
+                <input type="number" step="0.01" name="box_area" placeholder="Выберете метры" required
+                       list="box-area-list">
+                <datalist id="box-area-list">
+                    {% for box in boxes %}
+                    <option value="{{ box.area }}">
                     {% endfor %}
                 </datalist>
             </div>
@@ -126,8 +138,20 @@
                 <input type="number" step="0.01" name="pallet_weight" placeholder="Выберите вес паллеты" required
                        list="pallet-weight-list">
                 <datalist id="pallet-weight-list">
-                    {% for pallet in pallet_weights %}
+                    {% for pallet in pallets %}
                     <option value="{{ pallet.weight }}">
+                    {% endfor %}
+                </datalist>
+            </div>
+
+            <!-- Метры паллеты -->
+            <div class="form-group">
+                <h3>Метры паллеты</h3>
+                <input type="number" step="0.01" name="pallet_area" placeholder="Выберите Метры паллеты" required
+                       list="pallet-area-list">
+                <datalist id="pallet-area-list">
+                    {% for pallet in pallets %}
+                    <option value="{{ pallet.area }}">
                     {% endfor %}
                 </datalist>
             </div>
