@@ -3,7 +3,7 @@ import logging
 from fastapi import Request, status
 from fastapi.templating import Jinja2Templates
 
-from domain import Tile, TileColor, TileColorFeature, TileSize, TileSurface
+from domain import Tile, TileColor, TileSize, TileSurface
 from repo import get_db_manager
 from repo.exceptions import (AlreadyExistsError,
                              CustomForeignKeyViolationError, DatabaseError,
@@ -17,11 +17,10 @@ async def admin_not_found_handler(request: Request, exc: NotFoundError):
     log.error("Ошибка поиска в базе данных: %s", exc)
 
     manager = get_db_manager()
-    tiles = await manager.read(Tile, to_join=["color"])
+    tiles = await manager.read(Tile)
 
     tile_sizes = await manager.read(TileSize)
     tile_colors = await manager.read(TileColor)
-    color_properties = await manager.read(TileColorFeature)
     surfaces = await manager.read(TileSurface)
 
     return templates.TemplateResponse(
@@ -31,7 +30,6 @@ async def admin_not_found_handler(request: Request, exc: NotFoundError):
             "tiles": tiles,
             "tile_sizes": tile_sizes,
             "tile_colors": tile_colors,
-            "color_properties": color_properties,
             "tile_surfaces": surfaces,
             "error": f"Произошла ошибка: {exc}",
         },
@@ -43,11 +41,10 @@ async def admin_already_exists_handler(request: Request, exc: AlreadyExistsError
     log.error("Ошибка создания в базе данных: %s", exc)
 
     manager = get_db_manager()
-    tiles = await manager.read(Tile, to_join=["color"])
+    tiles = await manager.read(Tile)
 
     tile_sizes = await manager.read(TileSize)
     tile_colors = await manager.read(TileColor)
-    color_properties = await manager.read(TileColorFeature)
     surfaces = await manager.read(TileSurface)
 
     return templates.TemplateResponse(
@@ -57,7 +54,6 @@ async def admin_already_exists_handler(request: Request, exc: AlreadyExistsError
             "tiles": tiles,
             "tile_sizes": tile_sizes,
             "tile_colors": tile_colors,
-            "color_properties": color_properties,
             "tile_surfaces": surfaces,
             "error": f"Произошла ошибка: {exc}",
         },
@@ -71,11 +67,10 @@ async def admin_foreign_key_handler(
     log.error("Ошибка создания внешнего ключа: %s", exc)
 
     manager = get_db_manager()
-    tiles = await manager.read(Tile, to_join=["color"])
+    tiles = await manager.read(Tile)
 
     tile_sizes = await manager.read(TileSize)
     tile_colors = await manager.read(TileColor)
-    color_properties = await manager.read(TileColorFeature)
     surfaces = await manager.read(TileSurface)
 
     return templates.TemplateResponse(
@@ -85,7 +80,6 @@ async def admin_foreign_key_handler(
             "tiles": tiles,
             "tile_sizes": tile_sizes,
             "tile_colors": tile_colors,
-            "color_properties": color_properties,
             "tile_surfaces": surfaces,
             "error": f"Произошла ошибка: {exc}",
         },
@@ -97,11 +91,10 @@ async def admin_database_error_handler(request: Request, exc: DatabaseError):
     log.error("Ошибка базы данных: %s", exc)
 
     manager = get_db_manager()
-    tiles = await manager.read(Tile, to_join=["color"])
+    tiles = await manager.read(Tile)
 
     tile_sizes = await manager.read(TileSize)
     tile_colors = await manager.read(TileColor)
-    color_properties = await manager.read(TileColorFeature)
     surfaces = await manager.read(TileSurface)
 
     return templates.TemplateResponse(
@@ -111,7 +104,6 @@ async def admin_database_error_handler(request: Request, exc: DatabaseError):
             "tiles": tiles,
             "tile_sizes": tile_sizes,
             "tile_colors": tile_colors,
-            "color_properties": color_properties,
             "tile_surfaces": surfaces,
             "error": f"Произошла ошибка: {exc}",
         },
@@ -122,11 +114,10 @@ async def admin_database_error_handler(request: Request, exc: DatabaseError):
 async def admin_global_error_handler(request: Request, exc: Exception):
     log.error("Глобальная ошибка: %s", exc)
     manager = get_db_manager()
-    tiles = await manager.read(Tile, to_join=["color"])
+    tiles = await manager.read(Tile)
 
     tile_sizes = await manager.read(TileSize)
     tile_colors = await manager.read(TileColor)
-    color_properties = await manager.read(TileColorFeature)
     surfaces = await manager.read(TileSurface)
 
     return templates.TemplateResponse(
@@ -136,7 +127,6 @@ async def admin_global_error_handler(request: Request, exc: Exception):
             "tiles": tiles,
             "tile_sizes": tile_sizes,
             "tile_colors": tile_colors,
-            "color_properties": color_properties,
             "tile_surfaces": surfaces,
             "error": f"Произошла ошибка: {exc}",
         },

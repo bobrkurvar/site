@@ -27,18 +27,11 @@ async def add_tile_size(height: Decimal, width: Decimal, manager, session):
 
 
 async def add_tile_color(color_name: str, feature_name: str, manager, session):
-    tile_color_feature = await manager.read(
-        TileColorFeature, name=feature_name, session=session
-    )
-    log.debug("tile_color_feature: %s", tile_color_feature)
-    if not tile_color_feature:
-        await manager.create(TileColorFeature, name=feature_name, session=session)
-
-    tile_color = await manager.read(TileColor, name=color_name, session=session)
+    tile_color = await manager.read(TileColor, color_name=color_name, feature_name=feature_name, session=session)
     log.debug("tile_color: %s", tile_color)
     if not tile_color:
         await manager.create(
-            TileColor, name=color_name, feature_name=feature_name, session=session
+            TileColor, color_name=color_name, feature_name=feature_name, session=session
         )
 
 
@@ -109,6 +102,7 @@ async def add_tile(
             size_height=height,
             size_width=width,
             color_name=color,
+            feature_name=color_feature,
             surface_name=surface,
             material_name=material,
             producer_name=producer,

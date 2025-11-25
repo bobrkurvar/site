@@ -9,21 +9,13 @@ class TileSize:
         return f"{self.height} × {self.width}(мм)"
 
 
-class TileColorFeature:
-    def __init__(self, name: str):
-        self.name = name
-
-    def __str__(self):
-        return f"{self.name}"
-
-
 class TileColor:
-    def __init__(self, name: str, feature: TileColorFeature):
+    def __init__(self, name: str, feature: str):
         self.name = name
         self.feature = feature
 
     def __str__(self):
-        return f"{self.name} {str(self.feature)}"
+        return f"{self.name} {self.feature}"
 
 
 class TileSurface:
@@ -105,8 +97,7 @@ class Tile:
 
 def map_to_tile_domain(tile_dict: dict) -> Tile:
     size = TileSize(height=tile_dict["size_height"], width=tile_dict["size_width"])
-    color_feature = TileColorFeature(name=tile_dict.get("feature_name"))
-    color = TileColor(name=tile_dict["color_name"], feature=color_feature)
+    color = TileColor(name=tile_dict["color_name"], feature=tile_dict["feature_name"])
     surface = TileSurface(name=tile_dict["surface_name"])
     material = TileMaterial(name=tile_dict["material_name"])
     producer = Producer(name=tile_dict["producer_name"])

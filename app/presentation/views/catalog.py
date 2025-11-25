@@ -65,7 +65,7 @@ async def get_catalog_page(
 
 @router.get("/{tile_id}")
 async def get_tile_page(request: Request, tile_id: int, manager: dbManagerDep):
-    tile = await manager.read(Tile, id=tile_id, to_join=["color", "box", "pallet"])
+    tile = await manager.read(Tile, id=tile_id)
     tile = tile[0] if tile else {}
     tile = map_to_tile_domain(tile)
     return templates.TemplateResponse(

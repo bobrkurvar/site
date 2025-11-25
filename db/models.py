@@ -15,7 +15,8 @@ class Catalog(Base):
     __tablename__ = "catalog"
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(unique=True)
-    color_name: Mapped[str] = mapped_column(ForeignKey("tile_colors.name"))
+    color_name: Mapped[str]
+    feature_name: Mapped[str]
     image_path: Mapped[str] = mapped_column(default=config.image_path)
     size_height: Mapped[Decimal] = mapped_column(DECIMAL(8, 2))
     size_width: Mapped[Decimal] = mapped_column(DECIMAL(8, 2))
@@ -52,6 +53,10 @@ class Catalog(Base):
             ["pallet_weight", "pallet_area"],
             ["pallets.weight", "pallets.area"],
         ),
+        ForeignKeyConstraint(
+            ["color_name", "feature_name"],
+            ["tile_colors.color_name", "tile_colors.feature_name"],
+        ),
     )
 
     def model_dump(self):
@@ -61,6 +66,7 @@ class Catalog(Base):
             "size_height": self.size_height,
             "size_width": self.size_width,
             "color_name": self.color_name,
+            "feature_name": self.feature_name,
             "surface_name": self.surface_name,
             "material_name": self.material_name,
             "producer_name": self.producer_name,
@@ -70,13 +76,6 @@ class Catalog(Base):
             "pallet_area": self.pallet_area,
             "image_path": self.image_path,
         }
-
-        try:
-            if self.color and self.color.feature_name:
-                data["feature_name"] = self.color.feature_name
-            return data
-        except Exception:
-            pass
 
         return data
 
@@ -94,32 +93,17 @@ class TileSize(Base):
         return {"height": self.height, "width": self.width}
 
 
-class TileColorFeature(Base):
-    __tablename__ = "tile_color_features"
-    name: Mapped[str] = mapped_column(primary_key=True)
-    colors: Mapped[list["TileColor"]] = relationship(
-        "TileColor",
-        back_populates="feature",
-    )
-
-    def model_dump(self):
-        return {"name": self.name}
-
-
 class TileColor(Base):
     __tablename__ = "tile_colors"
-    name: Mapped[str] = mapped_column(primary_key=True)
-    feature_name: Mapped[str] = mapped_column(ForeignKey("tile_color_features.name"))
-    feature: Mapped["TileColorFeature"] = relationship(
-        "TileColorFeature", back_populates="colors"
-    )
+    color_name: Mapped[str] = mapped_column(primary_key=True)
+    feature_name: Mapped[str] = mapped_column(primary_key=True)
     tiles: Mapped[list["Catalog"]] = relationship(
         "Catalog",
         back_populates="color",
     )
 
     def model_dump(self):
-        return {"name": self.name, "feature_name": self.feature_name}
+        return {"color_name": self.color_name, "feature_name": self.feature_name}
 
 
 class TileSurface(Base):

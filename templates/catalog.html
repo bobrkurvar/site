@@ -45,7 +45,7 @@
                         <select name="color">
                             <option value="">Все цвета</option>
                             {% for color in colors %}
-                            <option value="{{ color.name }}"
+                            <option value="{{ color.color_name }}"
                                 {% if request.query_params.get('color') == color.name %}selected{% endif %}>
                                 {{ color.name }}
                             </option>
