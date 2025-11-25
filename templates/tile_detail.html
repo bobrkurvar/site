@@ -17,7 +17,7 @@
         <!-- Левая часть - изображение и название -->
         <section class="tile-visual-section">
             <div class="tile-header">
-                <h1 class="tile-main-title">{{ tile.name }}</h1>
+                <h1 class="tile-main-title">{{ tile.present }}</h1>
             </div>
 
             <div class="tile-image-main">
@@ -56,20 +56,14 @@
                 <div class="specs-list">
                     <div class="spec-item">
                         <span class="spec-label">Размер:</span>
-                        <span class="spec-value">{{ tile.size_width }} × {{ tile.size_height }} см</span>
+                        <span class="spec-value">{{ tile.size }} см</span>
                     </div>
 
                     <div class="spec-item">
                         <span class="spec-label">Цвет:</span>
-                        <span class="spec-value">{{ tile.color_name or 'Не указан' }}</span>
+                        <span class="spec-value">{{ tile.color }}</span>
                     </div>
 
-                    {% if tile.feature_name %}
-                    <div class="spec-item">
-                        <span class="spec-label">Свойство цвета:</span>
-                        <span class="spec-value">{{ tile.feature_name }}</span>
-                    </div>
-                    {% endif %}
 
                     {% if tile.material %}
                     <div class="spec-item">
@@ -81,7 +75,7 @@
                     {% if tile.surface %}
                     <div class="spec-item">
                         <span class="spec-label">Поверхность:</span>
-                        <span class="spec-value">{{ tile.surface_name }}</span>
+                        <span class="spec-value">{{ tile.surface }}</span>
                     </div>
                     {% endif %}
 
@@ -107,17 +101,11 @@
                     </div>
                     {% endif %}
 
-                    {% if tile.thickness %}
-                    <div class="spec-item">
-                        <span class="spec-label">Толщина:</span>
-                        <span class="spec-value">{{ tile.thickness }} мм</span>
-                    </div>
-                    {% endif %}
 
                     <!-- Стандартные поля -->
                     <div class="spec-item">
                         <span class="spec-label">Артикул:</span>
-                        <span class="spec-value">#{{ tile.id }}</span>
+                        <span class="spec-value">#{{ tile.article }}</span>
                     </div>
 
                     <div class="spec-item">

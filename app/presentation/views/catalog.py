@@ -38,11 +38,10 @@ async def get_catalog_page(
     offset = (page - 1) * limit
 
     tiles = await manager.read(
-        Tile, to_join=["color"], offset=offset, limit=limit, **filters
+        Tile, to_join=["color", 'box', 'pallet'], offset=offset, limit=limit, **filters
     )
 
     tiles = [map_to_tile_domain(tile) for tile in tiles]
-
 
     sizes = await manager.read(TileSize)
     colors = await manager.read(TileColor)
@@ -68,6 +67,7 @@ async def get_catalog_page(
 async def get_tile_page(request: Request, tile_id: int, manager: dbManagerDep):
     tile = await manager.read(Tile, id=tile_id, to_join=["color", "box", "pallet"])
     tile = tile[0] if tile else {}
+    tile = map_to_tile_domain(tile)
     return templates.TemplateResponse(
         "tile_detail.html",
         {

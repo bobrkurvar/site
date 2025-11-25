@@ -4,7 +4,7 @@ class TileSize:
         self.width = width
 
     def __str__(self):
-        return f"{self.height} x {self.width}"
+        return f"{self.height} × {self.width}"
 
 
 class TileColorFeature:
@@ -53,11 +53,17 @@ class BoxWeight:
     def __init__(self, weight: float):
         self.weight = weight
 
+    def __str__(self):
+        return str(self.weight)
+
 
 class PalletWeight:
 
     def __init__(self, weight: float):
         self.weight = weight
+
+    def __str__(self):
+        return str(self.weight)
 
 
 class Tile:
@@ -71,7 +77,8 @@ class Tile:
         box_weight: BoxWeight,
         pallet_weight: PalletWeight,
         producer: Producer,
-        tile_id: int | None = None,
+        article: int,
+        image_path: str
     ):
         self.name = name
         self.color = color
@@ -81,19 +88,20 @@ class Tile:
         self.box_weight = box_weight
         self.pallet_weight = pallet_weight
         self.producer = producer
-        self.article = tile_id
+        self.article = article
+        self.image_path = image_path
 
     @property
     def present(self):
         return f"{str(self.material)} {self.name} {str(self.size)} {str(self.color)} {str(self.surface)} ({self.article})"
 
     def __str__(self):
-        return f"{str(self.color)} {str(self.surface)} {self.name}"
+        return f"{self.article} {str(self.color)} {str(self.surface)} {self.name}"
 
 
 def map_to_tile_domain(tile_dict: dict) -> Tile:
     size = TileSize(height=tile_dict["size_height"], width=tile_dict["size_width"])
-    color_feature = TileColorFeature(name=tile_dict.get("color_feature"))
+    color_feature = TileColorFeature(name=tile_dict.get("feature_name"))
     color = TileColor(name=tile_dict["color_name"], feature=color_feature)
     surface = TileSurface(name=tile_dict["surface_name"])
     material = TileMaterial(name=tile_dict["material_name"])
@@ -111,5 +119,6 @@ def map_to_tile_domain(tile_dict: dict) -> Tile:
         box_weight=box_weight,
         pallet_weight=pallet_weight,
         producer=producer,
-        tile_id=tile_dict.get("tile_id"),
+        article=tile_dict["id"],
+        image_path=tile_dict['image_path']
     )
