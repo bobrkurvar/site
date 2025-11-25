@@ -6,7 +6,7 @@ class TileSize:
         self.width = width
 
     def __str__(self):
-        return f"{self.height} × {self.width}"
+        return f"{self.height} × {self.width}(мм)"
 
 
 class TileColorFeature:

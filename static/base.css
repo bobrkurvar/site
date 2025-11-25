@@ -75,7 +75,30 @@ body {
 .contact-item:hover {
     opacity: 0.7;
 }
+/* Стили для кликабельного логотипа */
+.logo-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+    transition: opacity 0.2s ease;
+}
 
+.logo-link:hover {
+    opacity: 0.8;
+}
+
+/* Остальные существующие стили */
+.header-left {
+    display: flex;
+    align-items: center;
+}
+
+
+.site-name {
+    font-size: 1.5em;
+    font-weight: bold;
+}
 
 /* Нижнее меню */
 .header-menu {
