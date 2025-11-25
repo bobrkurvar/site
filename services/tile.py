@@ -126,6 +126,7 @@ async def add_tile(
             log.debug("путь %s уже занять", image_path)
             raise
 
+        #tile_record = [map_to_tile_domain(tile) for tile in tile_record]
         return tile_record
 
 

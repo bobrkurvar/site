@@ -4,7 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Request
 from fastapi.templating import Jinja2Templates
 
-from domain import Tile, TileColor, TileSize
+from domain import Tile, TileColor, TileSize, map_to_tile_domain
 from repo import Crud, get_db_manager
 
 router = APIRouter(tags=["presentation"], prefix="/catalog")
@@ -40,6 +40,8 @@ async def get_catalog_page(
     tiles = await manager.read(
         Tile, to_join=["color"], offset=offset, limit=limit, **filters
     )
+
+    tiles = [map_to_tile_domain(tile) for tile in tiles]
 
 
     sizes = await manager.read(TileSize)

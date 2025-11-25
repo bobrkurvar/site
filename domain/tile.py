@@ -68,10 +68,8 @@ class Tile:
         name: str,
         surface: TileSurface,
         material: TileMaterial,
-        box_weight: float,
-        box_area: float,
-        pallet_weight: float,
-        pallet_area: float,
+        box_weight: BoxWeight,
+        pallet_weight: PalletWeight,
         producer: Producer,
         tile_id: int | None = None,
     ):
@@ -81,9 +79,7 @@ class Tile:
         self.surface = surface
         self.material = material
         self.box_weight = box_weight
-        self.box_area = box_area
         self.pallet_weight = pallet_weight
-        self.pallet_area = pallet_area
         self.producer = producer
         self.article = tile_id
 
@@ -93,3 +89,27 @@ class Tile:
 
     def __str__(self):
         return f"{str(self.color)} {str(self.surface)} {self.name}"
+
+
+def map_to_tile_domain(tile_dict: dict) -> Tile:
+    size = TileSize(height=tile_dict["size_height"], width=tile_dict["size_width"])
+    color_feature = TileColorFeature(name=tile_dict.get("color_feature"))
+    color = TileColor(name=tile_dict["color_name"], feature=color_feature)
+    surface = TileSurface(name=tile_dict["surface_name"])
+    material = TileMaterial(name=tile_dict["material_name"])
+    producer = Producer(name=tile_dict["producer_name"])
+    box_weight = BoxWeight(weight=tile_dict["box_weight"])
+    pallet_weight = PalletWeight(weight=tile_dict["pallet_weight"])
+
+
+    return Tile(
+        size=size,
+        color=color,
+        name=tile_dict["name"],
+        surface=surface,
+        material=material,
+        box_weight=box_weight,
+        pallet_weight=pallet_weight,
+        producer=producer,
+        tile_id=tile_dict.get("tile_id"),
+    )
