@@ -16,7 +16,8 @@ log = logging.getLogger(__name__)
 @router.get("")
 async def admin_page(request: Request, manager: dbManagerDep):
     tiles = await manager.read(Tile, to_join=["images"])
-
+    for t in tiles:
+        log.debug("images: %s", t['images_paths'])
     tile_sizes = await manager.read(TileSize)
     tile_colors = await manager.read(TileColor)
     surfaces = await manager.read(TileSurface)

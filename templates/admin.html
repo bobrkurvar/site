@@ -128,7 +128,7 @@
                        list="box-area-list">
                 <datalist id="box-area-list">
                     {% for box in boxes_unique_area %}
-                    <option value="{{ box.area }}">
+                        <option value="{{ box.area }}">
                     {% endfor %}
                 </datalist>
             </div>
@@ -140,7 +140,7 @@
                        list="box-area-list">
                 <datalist id="boxes-counts-list">
                     {% for tile in tiles %}
-                    <option value="{{ tile.boxes_count }}">
+                        <option value="{{ tile.boxes_count }}">
                     {% endfor %}
                 </datalist>
             </div>
@@ -162,17 +162,22 @@
                     <strong>{{ tile.name }}</strong>
                     <span>Размер: {{ tile.size_width }}x{{ tile.size_height }}</span>
                     {% if tile.feature_name %}
-                    <span>Цвет: {{ tile.color_name }} ({{ tile.feature_name }})</span>
+                        <span>Цвет: {{ tile.color_name }} ({{ tile.feature_name }})</span>
                     {% else %}
-                    <span>Цвет: {{ tile.color_name }}</span>
+                        <span>Цвет: {{ tile.color_name }}</span>
                     {% endif %}
                     {% if tile.surface_name %}
-                    <span>Поверхность: {{ tile.surface_name }}</span>
+                        <span>Поверхность: {{ tile.surface_name }}</span>
                     {% endif %}
-                    <img src="/static/images/tiles/{{ tile.id }}"
-                         alt="{{ tile.name }}"
-                         class="tile-image">
-                    <span class="no-image">Нет изображения</span>
+                    {% if tile.images_paths %}
+                        {% for img in tile.images_paths %}
+                        <img src="{{ img }}"
+                             alt="{{ tile.name }}"
+                             class="tile-image">
+                        {% else %}
+                        <span class="no-image">Нет изображения</span>
+                        {% endfor %}
+                    {% endif %}
                 </div>
                 <div class="tile-actions">
                     <a href="/admin/edit/{{ tile.id }}" class="edit-btn">Редактировать</a>
@@ -187,7 +192,7 @@
             </div>
             {% endfor %}
             {% if not tiles %}
-            <p class="no-items">Товаров нет</p>
+                <p class="no-items">Товаров нет</p>
             {% endif %}
         </div>
     </section>
@@ -295,24 +300,6 @@
         </div>
 
         <!-- Веса и метры паллетов -->
-        <div class="characteristics-group">
-            <h3 data-count="{{ pallets|length }} шт.">Паллеты</h3>
-            <div class="characteristics-list">
-                {% for pallet in pallets %}
-                <div class="characteristic-item">
-                    <span>{{ pallet.weight }}кг {{ pallet.area }}м²</span>
-                    <form method="post" action="/admin/tiles/pallets/delete">
-                        <input type="hidden" name="weight" value="{{ pallet.weight }}">
-                        <input type="hidden" name="area" value="{{ pallet.area }}">
-                        <button type="submit" class="delete-btn"
-                                onclick="return confirm('Удалить данные паллета?')">
-                            Удалить
-                        </button>
-                    </form>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
 
 
     </section>

@@ -78,7 +78,7 @@ class Tile:
 
     @property
     def present(self):
-        return f"{str(self.material)} {self.name} {str(self.size)} {str(self.color)} {str(self.surface)} ({self.article})"
+        return f"{self.material or ''} {self.name} {self.size} {self.color} {self.surface or ''} ({self.article})"
 
     def __str__(self):
         return f"{self.article} {str(self.color)} {str(self.surface)} {self.name}"
@@ -92,8 +92,8 @@ class TileImages:
 def map_to_tile_domain(tile_dict: dict) -> Tile:
     size = TileSize(height=tile_dict["size_height"], width=tile_dict["size_width"])
     color = TileColor(name=tile_dict["color_name"], feature=tile_dict["feature_name"])
-    surface = TileSurface(name=tile_dict["surface_name"])
-    material = TileMaterial(name=tile_dict["material_name"])
+    surface = TileSurface(name=tile_dict["surface_name"]) if tile_dict["surface_name"] else None
+    material = TileMaterial(name=tile_dict["material_name"]) if tile_dict["material_name"] else None
     producer = Producer(name=tile_dict["producer_name"])
     box = Box(weight=tile_dict["box_weight"], area=tile_dict["box_area"])
 

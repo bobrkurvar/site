@@ -4,6 +4,7 @@ from sqlalchemy import ForeignKey, ForeignKeyConstraint
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.types import DECIMAL
+from pathlib import Path
 
 from core import config
 
@@ -75,7 +76,10 @@ class Catalog(Base):
 
         try:
             if self.images:
-                data["images_paths"] = [path.image_path for path in self.images]
+                data["images_paths"] = [
+                    "/static/images/tiles/" + Path(p.image_path).name
+                    for p in self.images
+                ]
         except Exception:
             pass
 

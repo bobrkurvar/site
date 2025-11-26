@@ -21,11 +21,13 @@
             </div>
 
             <div class="tile-image-main">
-                {% if tile.image_path %}
-                <img src="/static/images/tiles/{{ tile.name }}"
-                     alt="{{ tile.name }}"
-                     class="tile-detail-image"
-                     loading="eager">
+                {% if tile.images_paths %}
+                    {% for img in tile.images_paths %}
+                    <img src="{{ img }}"
+                         alt="{{ tile.name }}"
+                         class="tile-detail-image"
+                         loading="eager">
+                    {% endfor %}
                 {% else %}
                 <div class="no-image-large">
                     <div class="no-image-icon">🖼️</div>
@@ -75,19 +77,13 @@
                     </div>
                     {% endif %}
 
-                    {% if tile.pallet.weight %}
+                    {% if tile.boxes_count %}
                     <div class="spec-item">
-                        <span class="spec-label">Вес паллета:</span>
-                        <span class="spec-value">{{ tile.pallet.weight }} кг</span>
+                        <span class="spec-label">Количество коробок в паллете:</span>
+                        <span class="spec-value">{{ tile.boxes_count }}</span>
                     </div>
                     {% endif %}
 
-                    {% if tile.pallet.area %}
-                    <div class="spec-item">
-                        <span class="spec-label">Количество на паллете:</span>
-                        <span class="spec-value">{{ tile.pallet.area }} м²</span>
-                    </div>
-                    {% endif %}
 
 
                 </div>

@@ -39,8 +39,14 @@ async def get_catalog_page(
     offset = (page - 1) * limit
 
     tiles = await manager.read(
-        Tile, offset=offset, limit=limit, **filters
+        Tile, to_join=["images"], offset=offset, limit=limit, **filters
     )
+    for t in tiles:
+        log.debug("images: %s", t['images_paths'])
+
+    if tiles:
+        main_img = tiles[0]['images_paths'][0]
+        main_img = main_img[:-2] + '-0'
 
     tiles = [map_to_tile_domain(tile) for tile in tiles]
 
@@ -62,6 +68,7 @@ async def get_catalog_page(
             "page": page,
             "total_pages": total_pages,
             "total_count": total_count,
+            "main_img": main_img
         },
     )
 
