@@ -68,8 +68,9 @@ async def add_tile(
     box_weight: Decimal,
     box_area: Decimal,
     boxes_count: int,
-    images: list[bytes],
+    main_image: bytes,
     manager,
+    images: list[bytes] | list,
     color_feature: str = "",
     surface: str | None = None,
     material: str | None = None,
@@ -105,6 +106,7 @@ async def add_tile(
         path = config.image_path
         upload_dir = Path(path)
         upload_dir.mkdir(parents=True, exist_ok=True)
+        images.insert(0, main_image)
         for n, img in enumerate(images):
             name = Path(str(tile_record['id']) + '-' + str(n)).name
             image_path = upload_dir / name

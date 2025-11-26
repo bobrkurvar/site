@@ -38,13 +38,15 @@ async def admin_create_tile(
     box_weight: Annotated[Decimal, Form()],
     box_area: Annotated[Decimal, Form()],
     boxes_count: Annotated[int, Form()],
-    images: Annotated[list[UploadFile], File()],
+    main_image: Annotated[UploadFile, File()],
     manager: dbManagerDep,
     color_feature: Annotated[str, Form()] = "",
     surface: Annotated[str, Form()] = "",
     material: Annotated[str, Form()] = "",
+    images: Annotated[list[UploadFile], File()] = None,
 ):
-    bytes_images = [await img.read() for img in images]
+    bytes_images = [await img.read() for img in images] if images else []
+    bytes_main_image = await main_image.read()
     height_str, width_str = size.split()
     height = Decimal(height_str)
     width = Decimal(width_str)
@@ -59,8 +61,9 @@ async def admin_create_tile(
         box_weight,
         box_area,
         boxes_count,
-        bytes_images,
+        bytes_main_image,
         manager,
+        bytes_images,
         color_feature,
         surface,
         material
