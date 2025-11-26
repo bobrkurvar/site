@@ -39,7 +39,7 @@ async def get_catalog_page(
     offset = (page - 1) * limit
 
     tiles = await manager.read(
-        Tile, to_join=["color", "box", "pallet"], offset=offset, limit=limit, **filters
+        Tile, offset=offset, limit=limit, **filters
     )
 
     tiles = [map_to_tile_domain(tile) for tile in tiles]

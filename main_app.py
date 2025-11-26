@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
-#from fastapi.staticfiles import StaticFiles
+from fastapi.staticfiles import StaticFiles
 
 import core.logger
 from app.api import api_router
@@ -25,7 +25,7 @@ log = logging.getLogger(__name__)
 app = FastAPI(lifespan=lifespan)
 
 BASE_DIR = Path(__file__).resolve().parent
-#app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
+app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
 app.include_router(api_router)
 app.include_router(presentation_router)

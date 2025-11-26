@@ -11,7 +11,7 @@ class TileSize:
 
 
 class TileColor:
-    def __init__(self, name: str, feature: str):
+    def __init__(self, name: str, feature: str = ""):
         self.name = name
         self.feature = feature
 
@@ -53,29 +53,18 @@ class Box:
         return str(self.weight)
 
 
-class Pallet:
-
-    def __init__(self, weight: Decimal, area: Decimal):
-        self.weight = weight
-        self.area = area
-
-    def __str__(self):
-        return str(self.weight)
-
-
 class Tile:
     def __init__(
         self,
         size: TileSize,
         color: TileColor,
         name: str,
-        surface: TileSurface,
-        material: TileMaterial,
         box: Box,
-        pallet: Pallet,
+        boxes_count: int,
         producer: Producer,
         article: int,
-        image_path: str,
+        surface: TileSurface | None = None,
+        material: TileMaterial | None = None,
     ):
         self.name = name
         self.color = color
@@ -83,10 +72,9 @@ class Tile:
         self.surface = surface
         self.material = material
         self.box = box
-        self.pallet = pallet
+        self.boxes_count = boxes_count
         self.producer = producer
         self.article = article
-        self.image_path = image_path
 
     @property
     def present(self):
@@ -94,6 +82,11 @@ class Tile:
 
     def __str__(self):
         return f"{self.article} {str(self.color)} {str(self.surface)} {self.name}"
+
+class TileImages:
+
+    def __init__(self, images: list[bytes]):
+        self.images = images
 
 
 def map_to_tile_domain(tile_dict: dict) -> Tile:
@@ -103,7 +96,6 @@ def map_to_tile_domain(tile_dict: dict) -> Tile:
     material = TileMaterial(name=tile_dict["material_name"])
     producer = Producer(name=tile_dict["producer_name"])
     box = Box(weight=tile_dict["box_weight"], area=tile_dict["box_area"])
-    pallet = Pallet(weight=tile_dict["pallet_weight"], area=tile_dict["pallet_area"])
 
     return Tile(
         size=size,
@@ -112,8 +104,7 @@ def map_to_tile_domain(tile_dict: dict) -> Tile:
         surface=surface,
         material=material,
         box=box,
-        pallet=pallet,
+        boxes_count = tile_dict['boxes_count'],
         producer=producer,
         article=tile_dict["id"],
-        image_path=tile_dict["image_path"],
     )

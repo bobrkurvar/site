@@ -15,12 +15,11 @@ log = logging.getLogger(__name__)
 
 @router.get("")
 async def admin_page(request: Request, manager: dbManagerDep):
-    tiles = await manager.read(Tile)
+    tiles = await manager.read(Tile, to_join=["images"])
 
     tile_sizes = await manager.read(TileSize)
     tile_colors = await manager.read(TileColor)
     surfaces = await manager.read(TileSurface)
-    pallets = await manager.read(Pallet)
     boxes = await manager.read(Box)
     material = await manager.read(TileMaterial)
     producers = await manager.read(Producer)
@@ -52,19 +51,6 @@ async def admin_page(request: Request, manager: dbManagerDep):
             boxes_unique_area.append(box)
             unique_area.add(box.get("area"))
 
-    unique_weight.clear()
-    unique_area.clear()
-    pallet_unique_weight = []
-    pallet_unique_area = []
-
-    for pallet in pallets:
-        if pallet.get("weight") not in unique_weight:
-            pallet_unique_weight.append(pallet)
-            unique_weight.add(pallet.get("weight"))
-
-        if pallet.get("area") not in unique_area:
-            pallet_unique_area.append(pallet)
-            unique_area.add(pallet.get("area"))
 
     return templates.TemplateResponse(
         "admin.html",
@@ -74,7 +60,6 @@ async def admin_page(request: Request, manager: dbManagerDep):
             "tile_sizes": tile_sizes,
             "tile_colors": tile_colors,
             "tile_surfaces": surfaces,
-            "pallets": pallets,
             "boxes": boxes,
             "material": material,
             "producers": producers,
@@ -82,7 +67,5 @@ async def admin_page(request: Request, manager: dbManagerDep):
             "colors_unique_feature": tile_colors_unique_feature,
             "boxes_unique_weight": boxes_unique_weight,
             "boxes_unique_area": boxes_unique_area,
-            "pallet_unique_weight": pallet_unique_weight,
-            "pallet_unique_area": pallet_unique_area,
         },
     )

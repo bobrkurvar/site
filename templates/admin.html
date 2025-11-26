@@ -39,7 +39,7 @@
             <div class="form-group">
                 <h3>Основная информация</h3>
                 <input type="text" name="name" placeholder="Название товара" required>
-                <input type="file" name="image" accept="image/*" required>
+                <input type="file" name="images" accept="image/*" multiple required>
             </div>
 
             <!-- Размер -->
@@ -67,7 +67,7 @@
                     </datalist>
 
                     <!-- Исправлено: добавил datalist для свойства цвета -->
-                    <input type="text" name="color_feature" placeholder="Свойство цвета" required list="color-feature-list">
+                    <input type="text" name="color_feature" placeholder="Свойство цвета"  list="color-feature-list">
                     <datalist id="color-feature-list">
                         {% for color in tile_colors_unique_feature %}
                         <option value="{{ color.feature_name }}">
@@ -79,7 +79,7 @@
             <!-- Поверхность -->
             <div class="form-group">
                 <h3>Поверхность</h3>
-                <input type="text" name="surface" placeholder="Название поверхности" required list="surface-list">
+                <input type="text" name="surface" placeholder="Название поверхности"  list="surface-list">
                 <datalist id="surface-list">
                     {% for surface in tile_surfaces %}
                     <option value="{{ surface.name }}">
@@ -101,7 +101,7 @@
             <!-- Материал -->
             <div class="form-group">
                 <h3>Материал</h3>
-                <input type="text" name="material" placeholder="Выберите материал" required list="material-list">
+                <input type="text" name="material" placeholder="Выберите материал"  list="material-list">
                 <datalist id="material-list">
                     {% for material in materials %}
                     <option value="{{ material.name }}">
@@ -133,29 +133,18 @@
                 </datalist>
             </div>
 
-            <!-- Вес паллеты -->
+            <!-- Количество коробок -->
             <div class="form-group">
-                <h3>Вес паллеты</h3>
-                <input type="number" step="0.01" name="pallet_weight" placeholder="Выберите вес паллеты" required
-                       list="pallet-weight-list">
-                <datalist id="pallet-weight-list">
-                    {% for pallet in pallet_unique_weight %}
-                    <option value="{{ pallet.weight }}">
+                <h3>Количество коробок</h3>
+                <input type="number" step="0.01" name="boxes_count" placeholder="Выберете количество коробок" required
+                       list="box-area-list">
+                <datalist id="boxes-counts-list">
+                    {% for tile in tiles %}
+                    <option value="{{ tile.boxes_count }}">
                     {% endfor %}
                 </datalist>
             </div>
 
-            <!-- Метры паллеты -->
-            <div class="form-group">
-                <h3>Метры паллеты</h3>
-                <input type="number" step="0.01" name="pallet_area" placeholder="Выберите Метры паллеты" required
-                       list="pallet-area-list">
-                <datalist id="pallet-area-list">
-                    {% for pallet in pallet_unique_area %}
-                    <option value="{{ pallet.area }}">
-                    {% endfor %}
-                </datalist>
-            </div>
 
 
             <button type="submit">Добавить товар</button>
@@ -172,15 +161,18 @@
                 <div class="tile-info">
                     <strong>{{ tile.name }}</strong>
                     <span>Размер: {{ tile.size_width }}x{{ tile.size_height }}</span>
+                    {% if tile.feature_name %}
                     <span>Цвет: {{ tile.color_name }} ({{ tile.feature_name }})</span>
+                    {% else %}
+                    <span>Цвет: {{ tile.color_name }}</span>
+                    {% endif %}
+                    {% if tile.surface_name %}
                     <span>Поверхность: {{ tile.surface_name }}</span>
-                    {% if tile.image_path %}
-                    <img src="/static/images/tiles/{{ tile.name }}"
+                    {% endif %}
+                    <img src="/static/images/tiles/{{ tile.id }}"
                          alt="{{ tile.name }}"
                          class="tile-image">
-                    {% else %}
                     <span class="no-image">Нет изображения</span>
-                    {% endif %}
                 </div>
                 <div class="tile-actions">
                     <a href="/admin/edit/{{ tile.id }}" class="edit-btn">Редактировать</a>

@@ -29,7 +29,6 @@ async def add_tile_color(color_name: str, feature_name: str, manager, session):
     tile_color = await manager.read(
         TileColor, color_name=color_name, feature_name=feature_name, session=session
     )
-    log.debug("tile_color: %s", tile_color)
     if not tile_color:
         await manager.create(
             TileColor, color_name=color_name, feature_name=feature_name, session=session
@@ -60,52 +59,36 @@ async def add_box(box_weight: Decimal, box_area: Decimal, manager, session):
         return box[0]
 
 
-async def add_pallet(pallet_weight: Decimal, pallet_area: Decimal, manager, session):
-    pallet = await manager.read(
-        Pallet, weight=pallet_weight, area=pallet_area, session=session
-    )
-    if not pallet:
-        return await manager.create(
-            Pallet, weight=pallet_weight, area=pallet_area, session=session
-        )
-    else:
-        return pallet[0]
-
-
 async def add_tile(
-    name: str,
+    tile_name: str,
     height: Decimal,
     width: Decimal,
     color: str,
-    color_feature: str,
-    surface: str,
-    material: str,
     producer: str,
     box_weight: Decimal,
-    pallet_weight: Decimal,
     box_area: Decimal,
-    pallet_area: Decimal,
-    image: bytes,
+    boxes_count: int,
+    images: list[bytes],
     manager,
+    color_feature: str = "",
+    surface: str | None = None,
+    material: str | None = None,
 ):
-    path = config.image_path
-    upload_dir = Path(path)
-    name = Path(name).name
-    image_path = upload_dir / name
 
     async with UnitOfWork(manager._session_factory) as uow:
 
         await add_tile_size(height, width, manager, uow.session)
-        await add_tile_surface(surface, manager, uow.session)
+        if surface:
+            await add_tile_surface(surface, manager, uow.session)
         await add_tile_color(color, color_feature, manager, uow.session)
-        await add_tile_material(material, manager, uow.session)
+        if material:
+            await add_tile_material(material, manager, uow.session)
         await add_producer(producer, manager, uow.session)
         box = await add_box(box_weight, box_area, manager, uow.session)
-        pallet = await add_pallet(pallet_weight, pallet_area, manager, uow.session)
 
         tile_record = await manager.create(
             Tile,
-            name=name,
+            name=tile_name,
             size_height=height,
             size_width=width,
             color_name=color,
@@ -115,21 +98,25 @@ async def add_tile(
             producer_name=producer,
             box_weight=box.get("weight"),
             box_area=box.get("area"),
-            pallet_weight=pallet.get("weight"),
-            pallet_area=pallet.get("area"),
-            image_path=str(image_path),
+            boxes_count = boxes_count,
             session=uow.session,
         )
 
+        path = config.image_path
+        upload_dir = Path(path)
         upload_dir.mkdir(parents=True, exist_ok=True)
-        try:
-            async with aiofiles.open(image_path, "xb") as fw:
-                await fw.write(image)
-        except FileExistsError:
-            log.debug("путь %s уже занять", image_path)
-            raise
+        for n, img in enumerate(images):
+            name = Path(str(tile_record['id']) + '-' + str(n)).name
+            image_path = upload_dir / name
+            await manager.create(TileImages, tile_id=tile_record['id'], image_path=str(image_path), session=uow.session)
 
-        # tile_record = [map_to_tile_domain(tile) for tile in tile_record]
+            try:
+                async with aiofiles.open(image_path, "xb") as fw:
+                    await fw.write(img)
+            except FileExistsError:
+                log.debug("путь %s уже занять", image_path)
+                raise
+
         return tile_record
 
 
@@ -154,7 +141,7 @@ async def delete_tile_color(tiles: list, color_name: str, feature_name: str, man
 async def delete_tile(manager, **filters):
 
     async with UnitOfWork(manager._session_factory) as uow:
-        tiles = await manager.read(Tile, session=uow.session, **filters)
+        tiles = await manager.read(Tile, to_join=['images'], session=uow.session, **filters)
         files_deleted = 0
 
         await manager.delete(Tile, session=uow.session, **filters)
@@ -171,10 +158,12 @@ async def delete_tile(manager, **filters):
             await delete_tile_color(
                 all_tiles, tile.get("color_name"), tile.get("feature_name"), manager, uow.session
             )
-            image_path = Path(tile["image_path"])
-            log.debug("for delete image_path: %s", image_path)
-            if image_path.exists():
-                image_path.unlink(missing_ok=True)
-                files_deleted += 1
-                log.info(f"Удален файл: {image_path}")
+            images_paths = tile["image_path"]
+            for image in images_paths:
+                image_path = Path(image)
+                log.debug("for delete image_path: %s", image_path)
+                if image_path.exists():
+                    image_path.unlink(missing_ok=True)
+                    files_deleted += 1
+                    log.info(f"Удален файл: {image_path}")
         log.info("Удалено файлов: %s", files_deleted)

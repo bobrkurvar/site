@@ -34,45 +34,35 @@ async def admin_create_tile(
     name: Annotated[str, Form()],
     size: Annotated[str, Form()],
     color_name: Annotated[str, Form()],
-    color_feature: Annotated[str, Form()],
-    surface: Annotated[str, Form()],
-    material: Annotated[str, Form()],
     producer: Annotated[str, Form()],
     box_weight: Annotated[Decimal, Form()],
-    pallet_weight: Annotated[Decimal, Form()],
     box_area: Annotated[Decimal, Form()],
-    pallet_area: Annotated[Decimal, Form()],
-    image: Annotated[UploadFile, File()],
+    boxes_count: Annotated[int, Form()],
+    images: Annotated[list[UploadFile], File()],
     manager: dbManagerDep,
+    color_feature: Annotated[str, Form()] = "",
+    surface: Annotated[str, Form()] = "",
+    material: Annotated[str, Form()] = "",
 ):
-    bytes_image = await image.read()
+    bytes_images = [await img.read() for img in images]
     height_str, width_str = size.split()
     height = Decimal(height_str)
     width = Decimal(width_str)
-    log.debug(
-        "height: %s, width: %s, color: %s, color_feature: %s, surface: %s, material: %s, producer: %s",
-        height,
-        width,
-        color_name,
-        color_feature,
-        surface,
-        material,
-        producer,
-    )
+    surface = surface or None
+    material = material or None
     await add_tile(
         name,
         height,
         width,
         color_name,
-        color_feature,
-        surface,
-        material,
         producer,
         box_weight,
-        pallet_weight,
         box_area,
-        pallet_area,
-        bytes_image,
+        boxes_count,
+        bytes_images,
         manager,
+        color_feature,
+        surface,
+        material
     )
     return RedirectResponse("/admin", status_code=303)

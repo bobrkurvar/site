@@ -14,7 +14,7 @@ def get_db_manager() -> Crud:
         domain.TileMaterial: models.TileMaterial,
         domain.Producer: models.Producer,
         domain.Box: models.Box,
-        domain.Pallet: models.Pallet,
+        domain.TileImages: models.TileImages,
     }
     manager = Crud(db_host, domain_with_orm)
 

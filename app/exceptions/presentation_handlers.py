@@ -3,7 +3,7 @@ import logging
 from fastapi import Request, status
 from fastapi.templating import Jinja2Templates
 
-from domain import Box, Pallet, Tile, TileColor, TileSize, TileSurface
+from domain import Box, Tile, TileColor, TileSize, TileSurface
 from repo import get_db_manager
 from repo.exceptions import (AlreadyExistsError,
                              CustomForeignKeyViolationError, DatabaseError,
@@ -22,7 +22,6 @@ async def admin_not_found_handler(request: Request, exc: NotFoundError):
     tile_sizes = await manager.read(TileSize)
     tile_colors = await manager.read(TileColor)
     surfaces = await manager.read(TileSurface)
-    pallets = await manager.read(Pallet)
     boxes = await manager.read(Box)
 
     return templates.TemplateResponse(
@@ -33,7 +32,6 @@ async def admin_not_found_handler(request: Request, exc: NotFoundError):
             "tile_sizes": tile_sizes,
             "tile_colors": tile_colors,
             "tile_surfaces": surfaces,
-            "pallets": pallets,
             "boxes": boxes,
         },
         status_code=status.HTTP_404_NOT_FOUND,
@@ -49,7 +47,6 @@ async def admin_already_exists_handler(request: Request, exc: AlreadyExistsError
     tile_sizes = await manager.read(TileSize)
     tile_colors = await manager.read(TileColor)
     surfaces = await manager.read(TileSurface)
-    pallets = await manager.read(Pallet)
     boxes = await manager.read(Box)
 
     return templates.TemplateResponse(
@@ -60,7 +57,6 @@ async def admin_already_exists_handler(request: Request, exc: AlreadyExistsError
             "tile_sizes": tile_sizes,
             "tile_colors": tile_colors,
             "tile_surfaces": surfaces,
-            "pallets": pallets,
             "boxes": boxes,
         },
         status_code=status.HTTP_409_CONFLICT,
@@ -78,7 +74,6 @@ async def admin_foreign_key_handler(
     tile_sizes = await manager.read(TileSize)
     tile_colors = await manager.read(TileColor)
     surfaces = await manager.read(TileSurface)
-    pallets = await manager.read(Pallet)
     boxes = await manager.read(Box)
 
     return templates.TemplateResponse(
@@ -89,7 +84,6 @@ async def admin_foreign_key_handler(
             "tile_sizes": tile_sizes,
             "tile_colors": tile_colors,
             "tile_surfaces": surfaces,
-            "pallets": pallets,
             "boxes": boxes,
         },
         status_code=status.HTTP_409_CONFLICT,
@@ -105,7 +99,6 @@ async def admin_database_error_handler(request: Request, exc: DatabaseError):
     tile_sizes = await manager.read(TileSize)
     tile_colors = await manager.read(TileColor)
     surfaces = await manager.read(TileSurface)
-    pallets = await manager.read(Pallet)
     boxes = await manager.read(Box)
 
     return templates.TemplateResponse(
@@ -116,7 +109,6 @@ async def admin_database_error_handler(request: Request, exc: DatabaseError):
             "tile_sizes": tile_sizes,
             "tile_colors": tile_colors,
             "tile_surfaces": surfaces,
-            "pallets": pallets,
             "boxes": boxes,
         },
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -131,7 +123,6 @@ async def admin_global_error_handler(request: Request, exc: Exception):
     tile_sizes = await manager.read(TileSize)
     tile_colors = await manager.read(TileColor)
     surfaces = await manager.read(TileSurface)
-    pallets = await manager.read(Pallet)
     boxes = await manager.read(Box)
 
     return templates.TemplateResponse(
@@ -142,7 +133,6 @@ async def admin_global_error_handler(request: Request, exc: Exception):
             "tile_sizes": tile_sizes,
             "tile_colors": tile_colors,
             "tile_surfaces": surfaces,
-            "pallets": pallets,
             "boxes": boxes,
         },
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

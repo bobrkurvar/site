@@ -18,16 +18,14 @@ class Catalog(Base):
     name: Mapped[str] = mapped_column(unique=True)
     color_name: Mapped[str]
     feature_name: Mapped[str]
-    image_path: Mapped[str] = mapped_column(default=config.image_path)
     size_height: Mapped[Decimal] = mapped_column(DECIMAL(8, 2))
     size_width: Mapped[Decimal] = mapped_column(DECIMAL(8, 2))
     box_weight: Mapped[Decimal] = mapped_column(DECIMAL(8, 2))
     box_area: Mapped[Decimal] = mapped_column(DECIMAL(8, 2))
-    pallet_weight: Mapped[Decimal] = mapped_column(DECIMAL(8, 2))
-    pallet_area: Mapped[Decimal] = mapped_column(DECIMAL(8, 2))
-    surface_name: Mapped[str] = mapped_column(ForeignKey("tile_surface.name"))
-    material_name: Mapped[str] = mapped_column(ForeignKey("tile_materials.name"))
+    surface_name: Mapped[str] = mapped_column(ForeignKey("tile_surface.name"), nullable=True)
+    material_name: Mapped[str] = mapped_column(ForeignKey("tile_materials.name"), nullable=True)
     producer_name: Mapped[str] = mapped_column(ForeignKey("producers.name"))
+    boxes_count: Mapped[int]
 
     color: Mapped["TileColor"] = relationship("TileColor", back_populates="tiles")
     size: Mapped["TileSize"] = relationship("TileSize", back_populates="tiles")
@@ -37,7 +35,12 @@ class Catalog(Base):
     )
     producer: Mapped["Producer"] = relationship("Producer", back_populates="tiles")
     box: Mapped["Box"] = relationship("Box", back_populates="tiles")
-    pallet: Mapped["Pallet"] = relationship("Pallet", back_populates="tiles")
+    images: Mapped[list["TileImages"]] = relationship(
+        "TileImages",
+        back_populates='tile',
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
 
     __table_args__ = (
         ForeignKeyConstraint(
@@ -47,10 +50,6 @@ class Catalog(Base):
         ForeignKeyConstraint(
             ["box_weight", "box_area"],
             ["boxes.weight", "boxes.area"],
-        ),
-        ForeignKeyConstraint(
-            ["pallet_weight", "pallet_area"],
-            ["pallets.weight", "pallets.area"],
         ),
         ForeignKeyConstraint(
             ["color_name", "feature_name"],
@@ -71,13 +70,30 @@ class Catalog(Base):
             "producer_name": self.producer_name,
             "box_weight": self.box_weight,
             "box_area": self.box_area,
-            "pallet_weight": self.pallet_weight,
-            "pallet_area": self.pallet_area,
-            "image_path": self.image_path,
+            "boxes_count": self.boxes_count,
         }
+
+        try:
+            if self.images:
+                data["images_paths"] = [path.image_path for path in self.images]
+        except Exception:
+            pass
 
         return data
 
+class TileImages(Base):
+    __tablename__ = "tile_images"
+    image_id: Mapped[int] = mapped_column(primary_key=True)
+    tile_id: Mapped[int] = mapped_column(ForeignKey("catalog.id", ondelete="CASCADE"))
+    image_path: Mapped[str] = mapped_column(default=config.image_path)
+    tile: Mapped["Catalog"] = relationship("Catalog", back_populates="images")
+
+    def model_dump(self):
+        return {
+            "image_id": self.image_id,
+            "tile_id": self.tile_id,
+            "image_path": self.image_path,
+        }
 
 class TileSize(Base):
     __tablename__ = "tile_sizes"
@@ -95,7 +111,7 @@ class TileSize(Base):
 class TileColor(Base):
     __tablename__ = "tile_colors"
     color_name: Mapped[str] = mapped_column(primary_key=True)
-    feature_name: Mapped[str] = mapped_column(primary_key=True)
+    feature_name: Mapped[str] = mapped_column(primary_key=True, default="")
     tiles: Mapped[list["Catalog"]] = relationship(
         "Catalog",
         back_populates="color",
@@ -150,12 +166,3 @@ class Box(Base):
     def model_dump(self):
         return {"weight": self.weight, "area": self.area}
 
-
-class Pallet(Base):
-    __tablename__ = "pallets"
-    weight: Mapped[Decimal] = mapped_column(DECIMAL(8, 2), primary_key=True)
-    area: Mapped[Decimal] = mapped_column(DECIMAL(8, 2), primary_key=True)
-    tiles: Mapped[list["Catalog"]] = relationship("Catalog", back_populates="pallet")
-
-    def model_dump(self):
-        return {"weight": self.weight, "area": self.area}
