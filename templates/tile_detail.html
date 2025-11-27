@@ -21,13 +21,11 @@
             </div>
 
             <div class="tile-image-main">
-                {% if tile.images_paths %}
-                    {% for img in tile.images_paths %}
-                    <img src="{{ img }}"
+                {% if images %}
+                    <img src="{{ images[0] }}"
                          alt="{{ tile.name }}"
                          class="tile-detail-image"
                          loading="eager">
-                    {% endfor %}
                 {% else %}
                 <div class="no-image-large">
                     <div class="no-image-icon">🖼️</div>
@@ -38,11 +36,11 @@
 
             <!-- Миниатюры (если есть дополнительные фото) -->
             <div class="tile-thumbnails">
-                {% if tile.additional_images %}
-                    {% for img in tile.additional_images %}
+                {% if images %}
+                    {% for img in images %}
                     <div class="thumbnail">
-                        <img src="/static/images/tiles/{{ tile.name }}"
-                             alt="{{ tile.name }} - фото {{ loop.index }}"
+                        <img src="{{ img }}}"
+                             alt="{{ tile.name }}"
                              class="thumbnail-image">
                     </div>
                     {% endfor %}
@@ -84,10 +82,16 @@
                     </div>
                     {% endif %}
 
+                    {% if tile.article %}
+                    <div class="spec-item">
+                        <span class="spec-label">Артикль:</span>
+                        <span class="spec-value">{{ tile.article }}</span>
+                    </div>
+                    {% endif %}
+
 
 
                 </div>
-
 
             </div>
         </aside>

@@ -148,7 +148,7 @@ async def delete_tile(manager, **filters):
             await delete_tile_color(
                 all_tiles, tile.get("color_name"), tile.get("feature_name"), manager, uow.session
             )
-            images_paths = tile["image_path"]
+            images_paths = tile["images_paths"]
             for image in images_paths:
                 image_path = Path(image)
                 log.debug("for delete image_path: %s", image_path)

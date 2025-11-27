@@ -44,13 +44,18 @@ async def get_catalog_page(
     for t in tiles:
         log.debug("images: %s", t['images_paths'])
 
-    if tiles:
-        main_img = tiles[0]['images_paths'][0]
-        main_img = main_img[:-2] + '-0'
+    main_images = {}
+
+    for tile in tiles:
+        img = tile['images_paths'][0]
+        main_images[tile['id']] = img[:-2] + '-0'
+
+    log.debug("main_images: %s", main_images)
 
     tiles = [map_to_tile_domain(tile) for tile in tiles]
 
     sizes = await manager.read(TileSize)
+    sizes = [TileSize(size['height'], size['width']) for size in sizes]
     colors = await manager.read(TileColor)
 
 
@@ -68,20 +73,24 @@ async def get_catalog_page(
             "page": page,
             "total_pages": total_pages,
             "total_count": total_count,
-            "main_img": main_img
+            "main_images": main_images
         },
     )
 
 
 @router.get("/{tile_id}")
 async def get_tile_page(request: Request, tile_id: int, manager: dbManagerDep):
-    tile = await manager.read(Tile, id=tile_id)
+    tile = await manager.read(Tile, to_join=["images"], id=tile_id)
     tile = tile[0] if tile else {}
+    images = []
+    if tile: images = tile["images_paths"]
+    log.debug("detail images: %s", images)
     tile = map_to_tile_domain(tile)
     return templates.TemplateResponse(
         "tile_detail.html",
         {
             "request": request,
             "tile": tile,
+            "images": images
         },
     )

@@ -50,7 +50,6 @@ async def admin_create_tile(
     height = Decimal(height_str)
     width = Decimal(width_str)
     surface = surface or None
-    material = material or None
     await add_tile(
         name,
         height,
@@ -65,6 +64,5 @@ async def admin_create_tile(
         bytes_images,
         color_feature,
         surface,
-        material
     )
     return RedirectResponse("/admin", status_code=303)

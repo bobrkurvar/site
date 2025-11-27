@@ -11,7 +11,6 @@ def get_db_manager() -> Crud:
         domain.TileSize: models.TileSize,
         domain.TileColor: models.TileColor,
         domain.TileSurface: models.TileSurface,
-        domain.TileMaterial: models.TileMaterial,
         domain.Producer: models.Producer,
         domain.Box: models.Box,
         domain.TileImages: models.TileImages,

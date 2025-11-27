@@ -39,7 +39,13 @@
             <div class="form-group">
                 <h3>Основная информация</h3>
                 <input type="text" name="name" placeholder="Название товара" required>
-                <input type="file" name="images" accept="image/*" multiple required>
+                    <!-- Главное фото -->
+                <label>Главное фото (обязательно)</label>
+                <input type="file" name="main_image" accept="image/*" required>
+
+                <!-- Остальные фото -->
+                <label>Дополнительные фото</label>
+                <input type="file" name="images" accept="image/*" multiple>
             </div>
 
             <!-- Размер -->

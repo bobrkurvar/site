@@ -19,10 +19,10 @@ async def admin_page(request: Request, manager: dbManagerDep):
     for t in tiles:
         log.debug("images: %s", t['images_paths'])
     tile_sizes = await manager.read(TileSize)
+    tile_sizes = [TileSize(size['height'], size['width']) for size in tile_sizes]
     tile_colors = await manager.read(TileColor)
     surfaces = await manager.read(TileSurface)
     boxes = await manager.read(Box)
-    material = await manager.read(TileMaterial)
     producers = await manager.read(Producer)
 
     unique_color = set()
@@ -62,7 +62,6 @@ async def admin_page(request: Request, manager: dbManagerDep):
             "tile_colors": tile_colors,
             "tile_surfaces": surfaces,
             "boxes": boxes,
-            "material": material,
             "producers": producers,
             "colors_unique_color": tile_colors_unique_color,
             "colors_unique_feature": tile_colors_unique_feature,

@@ -7,7 +7,7 @@ class TileSize:
         self.width = width
 
     def __str__(self):
-        return f"{self.height} × {self.width}(мм)"
+        return f"{self.height.normalize()} × {self.width.normalize()}"
 
 
 class TileColor:
@@ -42,7 +42,7 @@ class Box:
         self.area = area
 
     def __str__(self):
-        return str(self.weight)
+        return str(self.weight.normalize())
 
 
 class Tile:
@@ -68,7 +68,7 @@ class Tile:
 
     @property
     def present(self):
-        return f"{self.name} {self.size} {self.color} {self.surface or ''} ({self.article})"
+        return f"{self.name} {self.size} {self.color} {self.surface or ''}"
 
     def __str__(self):
         return f"{self.article} {str(self.color)} {str(self.surface)} {self.name}"
