@@ -42,7 +42,6 @@ async def admin_create_tile(
     manager: dbManagerDep,
     color_feature: Annotated[str, Form()] = "",
     surface: Annotated[str, Form()] = "",
-    material: Annotated[str, Form()] = "",
     images: Annotated[list[UploadFile], File()] = None,
 ):
     bytes_images = [await img.read() for img in images] if images else []

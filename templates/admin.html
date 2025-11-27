@@ -98,16 +98,6 @@
                 </datalist>
             </div>
 
-            <!-- Материал -->
-            <div class="form-group">
-                <h3>Материал</h3>
-                <input type="text" name="material" placeholder="Выберите материал"  list="material-list">
-                <datalist id="material-list">
-                    {% for material in materials %}
-                    <option value="{{ material.name }}">
-                    {% endfor %}
-                </datalist>
-            </div>
 
             <!-- Вес коробки -->
             <div class="form-group">

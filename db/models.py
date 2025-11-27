@@ -24,16 +24,12 @@ class Catalog(Base):
     box_weight: Mapped[Decimal] = mapped_column(DECIMAL(8, 2))
     box_area: Mapped[Decimal] = mapped_column(DECIMAL(8, 2))
     surface_name: Mapped[str] = mapped_column(ForeignKey("tile_surface.name"), nullable=True)
-    material_name: Mapped[str] = mapped_column(ForeignKey("tile_materials.name"), nullable=True)
     producer_name: Mapped[str] = mapped_column(ForeignKey("producers.name"))
     boxes_count: Mapped[int]
 
     color: Mapped["TileColor"] = relationship("TileColor", back_populates="tiles")
     size: Mapped["TileSize"] = relationship("TileSize", back_populates="tiles")
     surface: Mapped["TileSurface"] = relationship("TileSurface", back_populates="tiles")
-    material: Mapped["TileMaterial"] = relationship(
-        "TileMaterial", back_populates="tiles"
-    )
     producer: Mapped["Producer"] = relationship("Producer", back_populates="tiles")
     box: Mapped["Box"] = relationship("Box", back_populates="tiles")
     images: Mapped[list["TileImages"]] = relationship(
@@ -67,7 +63,6 @@ class Catalog(Base):
             "color_name": self.color_name,
             "feature_name": self.feature_name,
             "surface_name": self.surface_name,
-            "material_name": self.material_name,
             "producer_name": self.producer_name,
             "box_weight": self.box_weight,
             "box_area": self.box_area,
@@ -135,19 +130,6 @@ class TileSurface(Base):
 
     def model_dump(self):
         return {"name": self.name}
-
-
-class TileMaterial(Base):
-    __tablename__ = "tile_materials"
-    name: Mapped[str] = mapped_column(primary_key=True)
-    tiles: Mapped[list["Catalog"]] = relationship(
-        "Catalog",
-        back_populates="material",
-    )
-
-    def model_dump(self):
-        return {"name": self.name}
-
 
 class Producer(Base):
     __tablename__ = "producers"

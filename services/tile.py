@@ -35,14 +35,6 @@ async def add_tile_color(color_name: str, feature_name: str, manager, session):
         )
 
 
-async def add_tile_material(material_name: str, manager, session):
-    tile_material = await manager.read(
-        TileMaterial, name=material_name, session=session
-    )
-    if not tile_material:
-        await manager.create(TileMaterial, name=material_name, session=session)
-
-
 async def add_producer(producer_name: str, manager, session):
     producer = await manager.read(Producer, name=producer_name, session=session)
     if not producer:
@@ -73,7 +65,6 @@ async def add_tile(
     images: list[bytes] | list,
     color_feature: str = "",
     surface: str | None = None,
-    material: str | None = None,
 ):
 
     async with UnitOfWork(manager._session_factory) as uow:
@@ -82,8 +73,6 @@ async def add_tile(
         if surface:
             await add_tile_surface(surface, manager, uow.session)
         await add_tile_color(color, color_feature, manager, uow.session)
-        if material:
-            await add_tile_material(material, manager, uow.session)
         await add_producer(producer, manager, uow.session)
         box = await add_box(box_weight, box_area, manager, uow.session)
 
@@ -95,7 +84,6 @@ async def add_tile(
             color_name=color,
             feature_name=color_feature,
             surface_name=surface,
-            material_name=material,
             producer_name=producer,
             box_weight=box.get("weight"),
             box_area=box.get("area"),
