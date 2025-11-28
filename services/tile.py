@@ -94,6 +94,7 @@ async def add_tile(
         path = config.image_path
         upload_dir = Path(path)
         upload_dir.mkdir(parents=True, exist_ok=True)
+        images = [img for img in images if img]
         images.insert(0, main_image)
         for n, img in enumerate(images):
             name = Path(str(tile_record['id']) + '-' + str(n)).name
