@@ -20,6 +20,8 @@
 .slider-sidebar {
     flex: 0 0 300px;
     padding: 0;
+    height: fit-content;
+    min-height: auto;
 }
 
 .features-card {
