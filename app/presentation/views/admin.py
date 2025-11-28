@@ -19,7 +19,7 @@ async def admin_page(request: Request, manager: dbManagerDep):
     for t in tiles:
         log.debug("images: %s", t['images_paths'])
     tile_sizes = await manager.read(TileSize)
-    tile_sizes = [TileSize(size['height'], size['width']) for size in tile_sizes]
+    tile_sizes = [TileSize(size['length'], size['width'], size['height']) for size in tile_sizes]
     tile_colors = await manager.read(TileColor)
     surfaces = await manager.read(TileSurface)
     boxes = await manager.read(Box)

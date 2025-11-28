@@ -17,12 +17,12 @@ async def add_tile_surface(name: str, manager, session):
         await manager.create(TileSurface, name=name, session=session)
 
 
-async def add_tile_size(height: Decimal, width: Decimal, manager, session):
+async def add_tile_size(length: Decimal, height: Decimal, width: Decimal, manager, session):
     tile_size = await manager.read(
-        TileSize, height=height, width=width, session=session
+        TileSize, length=length, height=height, width=width, session=session
     )
     if not tile_size:
-        await manager.create(TileSize, height=height, width=width, session=session)
+        await manager.create(TileSize, length=length, height=height, width=width, session=session)
 
 
 async def add_tile_color(color_name: str, feature_name: str, manager, session):
@@ -53,8 +53,9 @@ async def add_box(box_weight: Decimal, box_area: Decimal, manager, session):
 
 async def add_tile(
     tile_name: str,
-    height: Decimal,
+    length: Decimal,
     width: Decimal,
+    height: Decimal,
     color: str,
     producer: str,
     box_weight: Decimal,
@@ -69,7 +70,7 @@ async def add_tile(
 
     async with UnitOfWork(manager._session_factory) as uow:
 
-        await add_tile_size(height, width, manager, uow.session)
+        await add_tile_size(length, height, width, manager, uow.session)
         if surface:
             await add_tile_surface(surface, manager, uow.session)
         await add_tile_color(color, color_feature, manager, uow.session)
@@ -81,6 +82,7 @@ async def add_tile(
             name=tile_name,
             size_height=height,
             size_width=width,
+            size_length=length,
             color_name=color,
             feature_name=color_feature,
             surface_name=surface,

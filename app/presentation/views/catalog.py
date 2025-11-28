@@ -55,7 +55,7 @@ async def get_catalog_page(
     tiles = [map_to_tile_domain(tile) for tile in tiles]
 
     sizes = await manager.read(TileSize)
-    sizes = [TileSize(size['height'], size['width']) for size in sizes]
+    sizes = [TileSize(height=size['height'], width=size['width'], length=size["length"]) for size in sizes]
     colors = await manager.read(TileColor)
 
 

@@ -46,14 +46,16 @@ async def admin_create_tile(
 ):
     bytes_images = [await img.read() for img in images] if images else []
     bytes_main_image = await main_image.read()
-    height_str, width_str = size.split()
-    height = Decimal(height_str)
+    length_str, width_str,  height_str = size.split()
+    length = Decimal(length_str)
     width = Decimal(width_str)
+    height = Decimal(height_str)
     surface = surface or None
     await add_tile(
         name,
-        height,
+        length,
         width,
+        height,
         color_name,
         producer,
         box_weight,
