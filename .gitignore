@@ -3,6 +3,6 @@
 .idea/
 migrations/**
 alembic.ini
-static/tiles/**
+static/images/tiles/**
 
 
