@@ -22,6 +22,7 @@
     padding: 0;
     height: fit-content;
     min-height: auto;
+    margin-top: 40px;
 }
 
 .features-card {
