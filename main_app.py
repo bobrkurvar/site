@@ -70,4 +70,4 @@ async def global_exception_handler(request: Request, exc: Exception):
     if request.url.path.startswith("/admin"):
         return await admin_global_error_handler(request, exc)
     else:
-        return global_exception_handler(request, exc)
+        return presentation_global_error_handler(request, exc)
