@@ -43,6 +43,8 @@ async def admin_page(request: Request, manager: dbManagerDep):
     boxes_unique_weight = []
     boxes_unique_area = []
 
+    tiles = [map_to_tile_domain(t) for t in tiles]
+
     for box in boxes:
         if box.get("weight") not in unique_weight:
             boxes_unique_weight.append(box)

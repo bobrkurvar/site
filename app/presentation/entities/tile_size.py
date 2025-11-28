@@ -18,9 +18,10 @@ async def admin_delete_tile_size(
     manager: dbManagerDep,
     height: Annotated[float | None, Form(gt=0)] = None,
     width: Annotated[float | None, Form(gt=0)] = None,
+    length: Annotated[float | None, Form(gt=0)] = None,
 ):
     if height is not None and width is not None:
-        await manager.delete(TileSize, height=height, width=width)
+        await manager.delete(TileSize, height=height, width=width, length=length)
     else:
         await manager.delete(TileSize)
     return RedirectResponse("/admin", status_code=303)

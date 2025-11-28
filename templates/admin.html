@@ -141,8 +141,6 @@
                 </datalist>
             </div>
 
-
-
             <button type="submit">Добавить товар</button>
         </form>
     </section>
@@ -207,6 +205,7 @@
                     <form method="post" action="/admin/tiles/sizes/delete">
                         <input type="hidden" name="height" value="{{ size.height }}">
                         <input type="hidden" name="width" value="{{ size.width }}">
+                        <input type="hidden" name="length" value="{{ size.length }}">
                         <button type="submit" class="delete-btn"
                                 onclick="return confirm('Удалить размер?')">
                             Удалить
@@ -294,8 +293,6 @@
                 {% endfor %}
             </div>
         </div>
-
-        <!-- Веса и метры паллетов -->
 
 
     </section>

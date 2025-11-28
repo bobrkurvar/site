@@ -31,8 +31,8 @@ async def get_catalog_page(
     if color:
         filters["color_name"] = color
     if size:
-        filters["size_width"], filters["size_height"] = (
-            float(i) for i in size.split(",")
+        filters['size_length'], filters["size_width"], filters["size_height"] = (
+            float(i) for i in size.split("×")
         )
 
     limit = ITEMS_PER_PAGE
