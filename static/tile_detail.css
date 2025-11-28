@@ -305,3 +305,17 @@
         margin-left: 0;
     }
 }
+
+.thumbnail-image {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: outline 0.2s;
+}
+
+.thumbnail:hover,
+.thumbnail.active-thumb {
+    border-color: #3498db;
+}

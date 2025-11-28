@@ -26,29 +26,21 @@
             </div>
         </div>
 
-        <!-- Правая колонка: слайдер + производители -->
+        <!-- Слайдер-->
         <div class="slider-column">
             <div class="slider">
                 <div class="slides">
-
-                    <div class="slide active">
-                        <img src="/static/images/slides/slide1.png" alt="Слайд 1">
+                    {% for img in slide_images %}
+                    <div class="slide {% if loop.first %}active{% endif %}">
+                        <img src="{{ img }}" alt="Слайд {{ loop.index }}">
                     </div>
-
-                    <div class="slide">
-                        <img src="/static/images/slides/slide2.png" alt="Слайд 2">
-                    </div>
-
-                    <div class="slide">
-                        <img src="/static/images/slides/slide3.png" alt="Слайд 3">
-                    </div>
-
+                    {% endfor %}
                 </div>
 
                 <div class="dots">
-                    <span class="dot active" data-index="0"></span>
-                    <span class="dot" data-index="1"></span>
-                    <span class="dot" data-index="2"></span>
+                    {% for img in slide_images %}
+                    <span class="dot {% if loop.first %}active{% endif %}" data-index="{{ loop.index0 }}"></span>
+                    {% endfor %}
                 </div>
             </div>
         </div>
