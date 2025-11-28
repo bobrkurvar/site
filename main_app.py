@@ -36,7 +36,7 @@ async def global_not_found_handler(request: Request, exc: NotFoundError):
     if request.url.path.startswith("/admin"):
         return await admin_not_found_handler(request, exc)
     else:
-        return not_found_in_db_exceptions_handler(request, exc)
+        return presentation_global_error_handler(request, exc)
 
 
 @app.exception_handler(AlreadyExistsError)
@@ -44,7 +44,7 @@ async def global_already_exists_handler(request: Request, exc: AlreadyExistsErro
     if request.url.path.startswith("/admin"):
         return await admin_already_exists_handler(request, exc)
     else:
-        return entity_already_exists_in_db_exceptions_handler(request, exc)
+        return presentation_global_error_handler(request, exc)
 
 
 @app.exception_handler(CustomForeignKeyViolationError)
@@ -54,7 +54,7 @@ async def global_foreign_key_handler(
     if request.url.path.startswith("/admin"):
         return await admin_foreign_key_handler(request, exc)
     else:
-        return foreign_key_violation_exceptions_handler(request, exc)
+        return presentation_global_error_handler(request, exc)
 
 
 @app.exception_handler(DatabaseError)
@@ -62,7 +62,7 @@ async def global_database_handler(request: Request, exc: DatabaseError):
     if request.url.path.startswith("/admin"):
         return await admin_database_error_handler(request, exc)
     else:
-        return data_base_exception_handler(request, exc)
+        return presentation_global_error_handler(request, exc)
 
 
 @app.exception_handler(Exception)
