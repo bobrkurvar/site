@@ -149,8 +149,10 @@ async def delete_tile(manager, **filters):
                 all_tiles, tile.get("color_name"), tile.get("feature_name"), manager, uow.session
             )
             images_paths = tile["images_paths"]
+            absolute_path = (Path(__file__).resolve().parent.parent / "static").parent
             for image in images_paths:
-                image_path = Path(image)
+                image_str = image.lstrip('/')
+                image_path = absolute_path / image_str
                 log.debug("for delete image_path: %s", image_path)
                 if image_path.exists():
                     image_path.unlink(missing_ok=True)
