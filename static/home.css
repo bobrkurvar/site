@@ -18,40 +18,196 @@
 
 /* ===== Левая колонка: преимущества ===== */
 .slider-sidebar {
-    flex: 0 0 250px; /* фиксированная ширина */
-}
-
-/* Чек-лист преимуществ */
-.features-checklist h3 {
-    font-size: 1.3em;
-    margin-bottom: 60px;
-    color: #2c3e50;
-    border-bottom: 2px solid #3498db;
-    padding-bottom: 6px;
-}
-
-.features-checklist ul {
-    list-style: none;
+    flex: 0 0 300px;
     padding: 0;
-    margin: 0;
+    height: fit-content;
+    min-height: auto;
+    margin-top: 40px;
 }
 
-.features-checklist li {
+.features-card {
+    background: rgba(245, 245, 220, 0.85); /* Бежевый как в шапке */
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 25px 20px;
+    box-shadow:
+        0 8px 25px rgba(93, 64, 55, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(188, 170, 164, 0.4);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-header {
+    margin-bottom: 35px; /* Увеличил отступ между заголовком и списком */
+}
+
+.title-wrapper {
+    text-align: center;
+}
+
+.card-title {
+    color: #1a202c;
+    font-size: 1.5em;
+    font-weight: 700;
+    margin: 0 0 12px 0;
+    letter-spacing: -0.5px;
+}
+
+.title-underline {
+    width: 60px;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    margin: 0 auto;
+    border-radius: 2px;
+    opacity: 0.8;
+}
+
+.features-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    flex: 1;
+}
+
+.feature-card {
+    display: flex;
+    align-items: flex-start;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 16px;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
-    padding-left: 28px;
-    margin-bottom: 60px;
-    font-size: 1em;
-    color: #34495e;
-    line-height: 1.5;
-    transition: all 0.3s ease;
+    overflow: hidden;
 }
 
-.features-checklist li::before {
+.feature-card::before {
+    content: '';
     position: absolute;
-    left: 0;
     top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.3), transparent);
+}
+
+.feature-card:hover {
+    transform: translateY(-3px);
+    box-shadow:
+        0 8px 25px rgba(102, 126, 234, 0.15),
+        0 0 0 1px rgba(102, 126, 234, 0.1);
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.feature-icon-wrapper {
+    flex-shrink: 0;
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 16px;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.feature-emoji {
+    font-size: 1.4em;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.feature-text {
+    flex: 1;
+}
+
+.feature-title {
+    color: #2d3748;
     font-size: 1.1em;
-    color: #27ae60;
+    font-weight: 600;
+    margin: 0 0 6px 0;
+    line-height: 1.3;
+}
+
+.feature-desc {
+    color: #718096;
+    font-size: 0.9em;
+    margin: 0;
+    line-height: 1.4;
+    opacity: 0.9;
+}
+
+.card-footer {
+    margin-top: 30px;
+}
+
+.accent-line {
+    height: 2px;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(102, 126, 234, 0.3) 50%,
+        transparent 100%);
+    border-radius: 1px;
+}
+
+/* Анимации */
+.feature-card {
+    animation: cardSlideIn 0.6s ease-out forwards;
+    opacity: 0;
+    transform: translateX(-20px);
+}
+
+.feature-card:nth-child(1) { animation-delay: 0.1s; }
+.feature-card:nth-child(2) { animation-delay: 0.2s; }
+.feature-card:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes cardSlideIn {
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .slider-sidebar {
+        flex: 0 0 100%;
+        margin-bottom: 20px;
+    }
+
+    .features-card {
+        padding: 25px 20px;
+    }
+
+    .feature-card {
+        padding: 16px;
+    }
+
+    .feature-icon-wrapper {
+        width: 44px;
+        height: 44px;
+        margin-right: 14px;
+    }
+}
+
+/* Анимация появления */
+.feature-item {
+    animation: fadeInUp 0.6s ease forwards;
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.feature-item:nth-child(1) { animation-delay: 0.1s; }
+.feature-item:nth-child(2) { animation-delay: 0.2s; }
+.feature-item:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* ===== Правая колонка: слайдер + производители ===== */
