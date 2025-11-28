@@ -2,12 +2,20 @@ from decimal import Decimal
 
 
 class TileSize:
-    def __init__(self, height: Decimal, width: Decimal):
+    def __init__(self, width: Decimal, length: Decimal, height: Decimal):
         self.height = height
         self.width = width
+        self.length = length
 
     def __str__(self):
-        return f"{self.height.normalize()} × {self.width.normalize()}"
+        return f"{self.format_decimal(self.length)} × {self.format_decimal(self.width)} × {self.format_decimal(self.height)}"
+
+    @staticmethod
+    def format_decimal(value: Decimal) -> str:
+        as_float = float(value)
+        if as_float.is_integer():
+            return str(int(as_float))
+        return f"{as_float:g}"
 
 
 class TileColor:
@@ -71,7 +79,7 @@ class Tile:
         return f"{self.name} {self.size} {self.color} {self.surface or ''}"
 
     def __str__(self):
-        return f"{self.article} {str(self.color)} {str(self.surface)} {self.name}"
+        return f"{self.article} {str(self.color)} {self.surface} {self.name}"
 
 class TileImages:
 
@@ -80,7 +88,7 @@ class TileImages:
 
 
 def map_to_tile_domain(tile_dict: dict) -> Tile:
-    size = TileSize(height=tile_dict["size_height"], width=tile_dict["size_width"])
+    size = TileSize(height=tile_dict["size_height"], width=tile_dict["size_width"], length=tile_dict["size_length"])
     color = TileColor(name=tile_dict["color_name"], feature=tile_dict["feature_name"])
     surface = TileSurface(name=tile_dict["surface_name"]) if tile_dict["surface_name"] else None
     producer = Producer(name=tile_dict["producer_name"])

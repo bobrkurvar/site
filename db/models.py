@@ -19,6 +19,7 @@ class Catalog(Base):
     name: Mapped[str] = mapped_column(unique=True)
     color_name: Mapped[str]
     feature_name: Mapped[str]
+    size_length: Mapped[Decimal] = mapped_column(DECIMAL(5, 2))
     size_height: Mapped[Decimal] = mapped_column(DECIMAL(8, 2))
     size_width: Mapped[Decimal] = mapped_column(DECIMAL(8, 2))
     box_weight: Mapped[Decimal] = mapped_column(DECIMAL(8, 2))
@@ -41,8 +42,8 @@ class Catalog(Base):
 
     __table_args__ = (
         ForeignKeyConstraint(
-            ["size_height", "size_width"],
-            ["tile_sizes.height", "tile_sizes.width"],
+            ["size_length", "size_height", "size_width"],
+            ["tile_sizes.length", "tile_sizes.height", "tile_sizes.width"],
         ),
         ForeignKeyConstraint(
             ["box_weight", "box_area"],
@@ -58,6 +59,7 @@ class Catalog(Base):
         data = {
             "id": self.id,
             "name": self.name,
+            "size_length": self.size_length,
             "size_height": self.size_height,
             "size_width": self.size_width,
             "color_name": self.color_name,
@@ -96,6 +98,7 @@ class TileImages(Base):
 
 class TileSize(Base):
     __tablename__ = "tile_sizes"
+    length: Mapped[Decimal] = mapped_column(DECIMAL(5, 2), primary_key=True)
     height: Mapped[Decimal] = mapped_column(DECIMAL(8, 2), primary_key=True)
     width: Mapped[Decimal] = mapped_column(DECIMAL(8, 2), primary_key=True)
     tiles: Mapped[list["Catalog"]] = relationship(
@@ -104,7 +107,7 @@ class TileSize(Base):
     )
 
     def model_dump(self):
-        return {"height": self.height, "width": self.width}
+        return {"length": self.length, "height": self.height, "width": self.width}
 
 
 class TileColor(Base):
