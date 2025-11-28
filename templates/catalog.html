@@ -29,9 +29,9 @@
                         <select name="size">
                             <option value="">Все размеры</option>
                             {% for size in sizes %}
-                            <option value="{{ size.width }},{{ size.height }}"
-                                {% if request.query_params.get('size') == size.width ~ ',' ~ size.height %}selected{% endif %}>
-                                {{ size.width }}x{{ size.height }}
+                            <option value="{{ size }}"
+                                {% if request.query_params.get('size') == size.length ~ ' ' ~ size.width ~ ' ' ~ size.height %}selected{% endif %}>
+                                {{ size }}
                             </option>
                             {% endfor %}
                         </select>
@@ -45,7 +45,7 @@
                             {% for color in colors %}
                             <option value="{{ color.color_name }}"
                                 {% if request.query_params.get('color') == color.name %}selected{% endif %}>
-                                {{ color.name }}
+                                {{ color.color_name }}
                             </option>
                             {% endfor %}
                         </select>

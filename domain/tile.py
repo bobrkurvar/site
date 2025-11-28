@@ -8,7 +8,7 @@ class TileSize:
         self.length = length
 
     def __str__(self):
-        return f"{self.format_decimal(self.length)} × {self.format_decimal(self.width)} × {self.format_decimal(self.height)}"
+        return f"{self.format_decimal(self.length)}×{self.format_decimal(self.width)}×{self.format_decimal(self.height)}"
 
     @staticmethod
     def format_decimal(value: Decimal) -> str:
