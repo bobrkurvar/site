@@ -65,9 +65,6 @@
                 {% for tile in tiles %}
                 <a href="/catalog/{{ tile.article }}" class="tile-card-link">
                     <div class="tile-card">
-                        <div class="tile-header">
-                            <h3 class="tile-title">{{ tile.present }}</h3>
-                        </div>
                         <div class="tile-image-container">
                             {% if main_images[tile.article] %}
                             <img src="{{ main_images[tile.article] }}"
@@ -77,6 +74,9 @@
                             {% else %}
                             <div class="no-image">Нет изображения</div>
                             {% endif %}
+                        </div>
+                        <div class="tile-header">
+                            <h3 class="tile-title">{{ tile.present }}</h3>
                         </div>
                     </div>
                 </a>
