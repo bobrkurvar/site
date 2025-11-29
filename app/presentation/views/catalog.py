@@ -17,7 +17,19 @@ ITEMS_PER_PAGE = 20
 
 
 @router.get("")
-async def get_catalog_page(
+async def get_catalog_collections_page(
+        request: Request,
+        manager: dbManagerDep,
+        name: str | None = None,
+        size: str | None = None,
+        color: str | None = None,
+        page: int = 1,
+):
+    pass
+
+
+@router.get("/tiles")
+async def get_catalog_tiles_page(
     request: Request,
     manager: dbManagerDep,
     name: str | None = None,
@@ -64,7 +76,7 @@ async def get_catalog_page(
     total_pages = max((total_count + limit - 1) // limit, 1)
 
     return templates.TemplateResponse(
-        "catalog.html",
+        "tiles_tiles_catalog.html",
         {
             "request": request,
             "tiles": tiles,
@@ -78,7 +90,7 @@ async def get_catalog_page(
     )
 
 
-@router.get("/{tile_id}")
+@router.get("tiles/{tile_id}")
 async def get_tile_page(request: Request, tile_id: int, manager: dbManagerDep):
     tile = await manager.read(Tile, to_join=["images"], id=tile_id)
     tile = tile[0] if tile else {}
@@ -94,3 +106,4 @@ async def get_tile_page(request: Request, tile_id: int, manager: dbManagerDep):
             "images": images
         },
     )
+
