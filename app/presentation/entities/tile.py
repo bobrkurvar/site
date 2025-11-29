@@ -7,11 +7,35 @@ from fastapi.responses import RedirectResponse
 
 from repo import Crud, get_db_manager
 from services.tile import add_tile, delete_tile
+from core import config
+from pathlib import Path
+import aiofiles
+
 
 router = APIRouter(prefix="/admin/tiles")
 dbManagerDep = Annotated[Crud, Depends(get_db_manager)]
 log = logging.getLogger(__name__)
 
+
+
+@router.post("/insert/slide-image")
+async def insert_slide_image(
+    images: Annotated[list[UploadFile], File()]
+):
+    path = r"static\images\slides"
+    upload_dir = Path(path)
+    extra_num = len([f for f in upload_dir.iterdir() if f.is_file()])
+    for i, image in enumerate(images):
+        image_byte = await image.read()
+        image_path = upload_dir / str(extra_num + i)
+        log.debug("slide image: %s", image_path)
+        try:
+            async with aiofiles.open(image_path, "xb") as fw:
+                await fw.write(image_byte)
+        except FileExistsError:
+            log.debug("путь %s уже занять", image_path)
+
+    return RedirectResponse("/admin", status_code=303)
 
 @router.post("/delete")
 async def delete_tile_by_criteria_or_all(

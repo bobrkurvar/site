@@ -327,6 +327,18 @@
             </form>
         </div>
     </section>
+    <!-- Управление слайдами -->
+    <section class="admin-section">
+        <h2>Добавить слайд</h2>
+        <form class="admin-form" method="post" action="/admin/tiles/insert/slide-image" enctype="multipart/form-data">
+            <div class="form-group">
+                <label>Изображение слайда (обязательно)</label>
+                <input type="file" name="images" accept="image/*" required>
+                <small class="input-hint">Рекомендуемый размер: 1200×400px</small>
+            </div>
+            <button type="submit">Добавить слайд</button>
+        </form>
+    </section>
 </main>
 
 </body>

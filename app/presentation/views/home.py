@@ -19,6 +19,7 @@ async def get_main_page(request: Request):
     slides_dir = Path.cwd() / "static" / "images" / "slides"
 
     slide_images = [f"/static/images/slides/{img.name}" for img in slides_dir.iterdir() if img.is_file()]
+    log.debug("home slide_images: %s", slide_images)
     return templates.TemplateResponse(
         "home.html",
         {
