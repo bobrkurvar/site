@@ -371,9 +371,11 @@
     color: #2c3e50;
     font-weight: 600;
     text-align: center;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    /*white-space: nowrap;*/
+    /*overflow: hidden; */
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    /*text-overflow: ellipsis; */
 }
 
 /* Остальной CSS остается таким же, но добавьте: */
