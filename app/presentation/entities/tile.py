@@ -37,6 +37,16 @@ async def insert_slide_image(
 
     return RedirectResponse("/admin", status_code=303)
 
+@router.post("/delete/all-slide-image")
+async def insert_slide_image():
+    path = r"static\images\slides"
+    upload_dir = Path(path)
+    for f in upload_dir.iterdir():
+        if f.exists():
+            f.unlink(missing_ok=True)
+
+    return RedirectResponse("/admin", status_code=303)
+
 @router.post("/delete")
 async def delete_tile_by_criteria_or_all(
     manager: dbManagerDep,

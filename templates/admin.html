@@ -329,16 +329,32 @@
     </section>
     <!-- Управление слайдами -->
     <section class="admin-section">
-        <h2>Добавить слайд</h2>
-        <form class="admin-form" method="post" action="/admin/tiles/insert/slide-image" enctype="multipart/form-data">
-            <div class="form-group">
-                <label>Изображение слайда (обязательно)</label>
-                <input type="file" name="images" accept="image/*" required>
-                <small class="input-hint">Рекомендуемый размер: 1200×400px</small>
+        <div class="section-header">
+            <h2>Управление слайдами</h2>
+        </div>
+
+        <div class="form-row">
+            <!-- Форма добавления слайда -->
+            <form class="admin-form half-width" method="post" action="/admin/tiles/insert/slide-image" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label>Изображение слайда (обязательно)</label>
+                    <input type="file" name="images" accept="image/*" multiple required>
+                    <small class="input-hint">Рекомендуемый размер: 1200×400px</small>
+                </div>
+                <button type="submit" class="btn-primary">Добавить слайд</button>
+            </form>
+
+            <!-- Кнопка удаления всех слайдов -->
+            <div class="half-width">
+                <div class="danger-zone">
+                    <form class="admin-form" method="post" action="/admin/tiles/delete/all-slide-image" onsubmit="return confirm('Вы уверены, что хотите удалить ВСЕ слайды?');">
+                        <button type="submit" class="btn-danger">Удалить все слайды</button>
+                    </form>
+                </div>
             </div>
-            <button type="submit">Добавить слайд</button>
-        </form>
+        </div>
     </section>
+
 </main>
 
 </body>

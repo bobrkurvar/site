@@ -229,3 +229,27 @@
 .management-buttons button {
     white-space: nowrap;
 }
+
+form.admin-form button.btn-danger {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 16px;
+    font-weight: bold;
+    transition: background-color 0.3s;
+    grid-column: 1 / -1;
+}
+
+form.admin-form button.btn-danger:hover {
+    background: #c82333;
+    transform: none;
+    box-shadow: none;
+}
+
+form.admin-form button.btn-danger:active {
+    background: #bd2130;
+}
