@@ -7,7 +7,6 @@ from fastapi.responses import RedirectResponse
 
 from repo import Crud, get_db_manager
 from services.tile import add_tile, delete_tile
-from core import config
 from pathlib import Path
 import aiofiles
 
@@ -50,12 +49,9 @@ async def insert_slide_image():
 @router.post("/delete")
 async def delete_tile_by_criteria_or_all(
     manager: dbManagerDep,
-    name: Annotated[str, Form()] = None,
     tile_id: Annotated[int, Form()] = None,
 ):
     params = {}
-    if name:
-        params["name"] = name
     if tile_id:
         params["id"] = tile_id
     log.debug("params: %s", params)

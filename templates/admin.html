@@ -174,9 +174,8 @@
                     {% endif %}
                 </div>
                 <div class="tile-actions">
-                    <a href="/admin/edit/{{ tile.id }}" class="edit-btn">Редактировать</a>
                     <form method="post" action="/admin/tiles/delete">
-                        <input type="hidden" name="tile_id" value="{{ tile.id }}">
+                        <input type="hidden" name="tile_id" value="{{ tile.article }}">
                         <button type="submit" class="delete-btn"
                                 onclick="return confirm('Удалить товар?')">
                             Удалить
@@ -244,7 +243,7 @@
                 <div class="characteristic-item">
                     <span>{{ surface.name }}</span>
                     <form method="post" action="/admin/tiles/surface/delete">
-                        <input type="hidden" name="surface" value="{{ surface.name }}">
+                        <input type="hidden" name="name" value="{{ surface.name }}">
                         <button type="submit" class="delete-btn"
                                 onclick="return confirm('Удалить поверхность?')">
                             Удалить
