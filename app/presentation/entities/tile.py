@@ -18,7 +18,7 @@ log = logging.getLogger(__name__)
 
 
 
-@router.post("/slide-image")
+@router.post("/insert/slide-image")
 async def insert_slide_image(
     images: Annotated[list[UploadFile], File()]
 ):
