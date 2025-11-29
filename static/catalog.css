@@ -201,6 +201,8 @@
     color: #5d4037;
     font-weight: 600;
     text-align: center;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .tile-image-container {
