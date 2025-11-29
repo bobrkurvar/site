@@ -244,7 +244,7 @@
                 <div class="characteristic-item">
                     <span>{{ surface.name }}</span>
                     <form method="post" action="/admin/tiles/surface/delete">
-                        <input type="hidden" name="surface" value="{{ surface.name }}">
+                        <input type="hidden" name="name" value="{{ surface.name }}">
                         <button type="submit" class="delete-btn"
                                 onclick="return confirm('Удалить поверхность?')">
                             Удалить

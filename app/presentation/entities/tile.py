@@ -7,7 +7,6 @@ from fastapi.responses import RedirectResponse
 
 from repo import Crud, get_db_manager
 from services.tile import add_tile, delete_tile
-from core import config
 from pathlib import Path
 import aiofiles
 

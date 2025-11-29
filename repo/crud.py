@@ -50,10 +50,10 @@ class Crud:
                 return obj.model_dump()
 
         try:
-            # Если сессия передана, используем её (для UoW)
+
             if session is not None:
                 return await _create_internal(session)
-            # Иначе создаём свою транзакцию
+
             else:
                 async with self._session_factory.begin() as session_ctx:
                     return await _create_internal(session_ctx)
@@ -88,7 +88,7 @@ class Crud:
             ]
             query = select(model).where(*conditions)
             result = await session.execute(query)
-            records_to_delete = list(result.scalars())  # объекты остаются привязанными
+            records_to_delete = list(result.scalars())
 
             if not records_to_delete:
                 raise NotFoundError(model.__name__, str(filters))
