@@ -83,28 +83,28 @@ class Crud:
         async def _delete_internal(session):
             model = self._mapper[domain_model]
 
-            conditions = [
-                getattr(model, field) == value for field, value in filters.items()
-            ]
-            query = select(model).where(*conditions)
-            result = await session.execute(query)
-            records_to_delete = list(result.scalars())
+            conditions = [getattr(model, field) == value for field, value in filters.items()]
 
-            if not records_to_delete:
+            delete_query = (
+                delete(model)
+                .where(*conditions)
+                .returning(model)
+            )
+
+            result = await session.execute(delete_query)
+            deleted_records = result.scalars().all()
+
+            if not deleted_records:
                 raise NotFoundError(model.__name__, str(filters))
-
-            # Массовое удаление
-            delete_query = delete(model).where(*conditions)
-            await session.execute(delete_query)
 
             log.debug(
                 "Удалено %d записей из %s с фильтрами: %s",
-                len(records_to_delete),
+                len(deleted_records),
                 model.__name__,
                 filters,
             )
 
-            return [record.model_dump() for record in records_to_delete]
+            return [record.model_dump() for record in result]
 
         if session is not None:
             return await _delete_internal(session)
