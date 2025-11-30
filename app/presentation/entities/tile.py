@@ -38,11 +38,18 @@ async def insert_slide_image(
 
 @router.post("/delete/all-slide-image")
 async def insert_slide_image():
-    absolute_path = (Path(__file__).resolve().parent.parent / "static").parent
-    upload_dir = Path(absolute_path) / "images" / "slides"
+    # Поднимаемся на 3 уровня вверх от текущего файла
+    project_root = Path(__file__).resolve().parent.parent.parent
+    upload_dir = project_root / "static" / "images" / "slides"
+
+    # Проверяем существование папки
+    if not upload_dir.exists():
+        upload_dir.mkdir(parents=True, exist_ok=True)
+
+    # Очищаем только файлы, не папки
     for f in upload_dir.iterdir():
-        if f.exists():
-            f.unlink(missing_ok=True)
+        if f.is_file() and f.exists():
+            f.unlink()
 
     return RedirectResponse("/admin", status_code=303)
 
