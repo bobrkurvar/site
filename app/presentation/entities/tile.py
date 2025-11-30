@@ -21,8 +21,13 @@ log = logging.getLogger(__name__)
 async def insert_slide_image(
     images: Annotated[list[UploadFile], File()]
 ):
-    path = r"static\images\slides"
-    upload_dir = Path(path)
+    # Поднимаемся на 3 уровня вверх от текущего файла
+    project_root = Path(__file__).resolve().parent.parent.parent
+    upload_dir = project_root / "static" / "images" / "slides"
+
+    # Проверяем существование папки
+    if not upload_dir.exists():
+        upload_dir.mkdir(parents=True, exist_ok=True)
     extra_num = len([f for f in upload_dir.iterdir() if f.is_file()])
     for i, image in enumerate(images):
         image_byte = await image.read()
