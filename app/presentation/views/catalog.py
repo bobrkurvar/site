@@ -76,7 +76,7 @@ async def get_catalog_tiles_page(
     total_pages = max((total_count + limit - 1) // limit, 1)
 
     return templates.TemplateResponse(
-        "tiles_tiles_catalog.html",
+        "tiles_catalog.html",
         {
             "request": request,
             "tiles": tiles,
