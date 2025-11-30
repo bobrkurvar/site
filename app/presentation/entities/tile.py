@@ -38,8 +38,8 @@ async def insert_slide_image(
 
 @router.post("/delete/all-slide-image")
 async def insert_slide_image():
-    path = r"static\images\slides"
-    upload_dir = Path(path)
+    absolute_path = (Path(__file__).resolve().parent.parent / "static").parent
+    upload_dir = Path(absolute_path) / "images" / "slides"
     for f in upload_dir.iterdir():
         if f.exists():
             f.unlink(missing_ok=True)
