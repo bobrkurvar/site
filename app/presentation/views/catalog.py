@@ -78,7 +78,7 @@ async def get_catalog_tiles_page(
     )
 
 
-@router.get("{tile_id}")
+@router.get("/{tile_id}")
 async def get_tile_page(request: Request, tile_id: int, manager: dbManagerDep):
     tile = await manager.read(Tile, to_join=["images"], id=tile_id)
     tile = tile[0] if tile else {}
