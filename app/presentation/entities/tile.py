@@ -23,7 +23,8 @@ async def insert_slide_image(
 ):
 
     project_root = Path(__file__).resolve().parent.parent.parent
-    upload_dir = project_root / "static" / "images" / "slides"
+    upload_dir_str = str(project_root).replace(r"\app", "")
+    upload_dir = Path(upload_dir_str) / "static" / "images" / "slides"
 
     if not upload_dir.exists():
         upload_dir.mkdir(parents=True, exist_ok=True)
