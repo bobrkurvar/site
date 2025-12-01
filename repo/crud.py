@@ -112,7 +112,7 @@ class Crud:
             async with self._session_factory.begin() as session:
                 return await _delete_internal(session)
 
-    async def update(self, domain_model, filters: dict, values: dict):
+    async def update(self, domain_model, filters: dict, **values):
         async with self._session_factory.begin() as session:
             model = self._mapper[domain_model]
             query = update(model)

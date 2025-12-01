@@ -1,6 +1,7 @@
 import logging
 from decimal import Decimal
 from typing import Annotated
+from domain import Tile
 
 from fastapi import APIRouter, Depends, File, Form, UploadFile
 from fastapi.responses import RedirectResponse
@@ -80,9 +81,9 @@ async def admin_create_tile(
     main_image: Annotated[UploadFile, File()],
     tile_type: Annotated[str, Form()],
     manager: dbManagerDep,
-    color_feature: Annotated[str, Form()] = "",
-    surface: Annotated[str, Form()] = "",
-    images: Annotated[list[UploadFile], File()] = None,
+    color_feature: Annotated[str, Form()],
+    surface: Annotated[str, Form()],
+    images: Annotated[list[UploadFile], File()],
 ):
     bytes_images = [await img.read() for img in images] if images else []
     bytes_main_image = await main_image.read()
@@ -109,4 +110,27 @@ async def admin_create_tile(
         color_feature,
         surface,
     )
+    return RedirectResponse("/admin", status_code=303)
+
+
+@router.post("/update")
+async def admin_update_tile(
+        manager: dbManagerDep,
+        article: Annotated[int, Form()],
+        name: Annotated[str, Form()],
+        size: Annotated[str, Form()],
+        color_name: Annotated[str, Form()],
+        producer: Annotated[str, Form()],
+        box_weight: Annotated[Decimal | str, Form()],
+        box_area: Annotated[Decimal | str, Form()],
+        boxes_count: Annotated[int | str, Form()],
+        tile_type: Annotated[str, Form()],
+        color_feature: Annotated[str, Form()],
+        surface: Annotated[str, Form()],
+):
+    params = locals()
+    params = {k: v for k, v in params.items() if v not in (None, '') and k not in ("manager", "article")}
+    log.debug("to update: %s", params)
+    if params:
+        await manager.update(Tile, dict(id=article), **params)
     return RedirectResponse("/admin", status_code=303)
