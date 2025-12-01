@@ -39,7 +39,7 @@ async def get_catalog_tiles_page(
     offset = (page - 1) * limit
 
     tiles = await manager.read(
-        Tile, to_join=["images", "size"], offset=offset, limit=limit, **filters
+        Tile, to_join=["images", "size", "box"], offset=offset, limit=limit, **filters
     )
     for t in tiles:
         log.debug("images: %s", t['images_paths'])

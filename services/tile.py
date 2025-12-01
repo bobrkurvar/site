@@ -125,15 +125,14 @@ async def add_tile(
         return tile_record
 
 
-async def delete_tile_size(tiles: list, tile_size_id: int, height: Decimal, width: Decimal, length: Decimal, manager, session):
+async def delete_tile_size(tiles: list, tile_size_id: int,  manager, session):
     tiles = [
         tile
         for tile in tiles
         if tile.get("size_id") == tile_size_id
     ]
     if not tiles:
-        log.debug("height=%s, width=%s length=%s удаляется из справочника", height, width, length)
-        await manager.delete(TileSize, length=length, height=height, width=width, session=session)
+        await manager.delete(TileSize, id=tile_size_id, session=session)
 
 
 async def delete_tile_color(tiles: list, color_name: str, feature_name: str, manager, session):
@@ -146,7 +145,7 @@ async def delete_tile_color(tiles: list, color_name: str, feature_name: str, man
 async def delete_tile(manager, **filters):
 
     async with UnitOfWork(manager._session_factory) as uow:
-        tiles = await manager.read(Tile, to_join=['images'], session=uow.session, **filters)
+        tiles = await manager.read(Tile, to_join=['images', "size"], session=uow.session, **filters)
         files_deleted = 0
 
         await manager.delete(Tile, session=uow.session, **filters)
@@ -156,9 +155,6 @@ async def delete_tile(manager, **filters):
             await delete_tile_size(
                 all_tiles,
                 tile.get("size_id"),
-                tile.get("size_height"),
-                tile.get("size_width"),
-                tile.get("size_length"),
                 manager,
                 uow.session,
             )
@@ -166,11 +162,14 @@ async def delete_tile(manager, **filters):
                 all_tiles, tile.get("color_name"), tile.get("feature_name"), manager, uow.session
             )
             images_paths = tile["images_paths"]
-            absolute_path = (Path(__file__).resolve().parent.parent / "static").parent
+            project_root = Path(__file__).resolve().parent.parent.parent
+            upload_dir_str = str(project_root).replace(r"\app", "")
+            absolute_path = Path(upload_dir_str)
+            log.debug("absolute_path: %s", absolute_path)
             for image in images_paths:
                 image_str = image.lstrip('/')
                 image_path = absolute_path / image_str
-                log.debug("for delete image_path: %s", image_path)
+                log.debug("for delete image_path: %s", str(image_path))
                 if image_path.exists():
                     image_path.unlink(missing_ok=True)
                     files_deleted += 1

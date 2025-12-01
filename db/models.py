@@ -19,7 +19,7 @@ class Catalog(Base):
     name: Mapped[str] = mapped_column(unique=True)
     color_name: Mapped[str]
     feature_name: Mapped[str]
-    size_id: Mapped[int] = mapped_column(ForeignKey("tile_sizes.id"))
+    tile_size_id: Mapped[int] = mapped_column(ForeignKey("tile_sizes.id"))
     box_id: Mapped[int] = mapped_column(ForeignKey("boxes.id"))
     surface_name: Mapped[str] = mapped_column(ForeignKey("tile_surface.name"), nullable=True)
     producer_name: Mapped[str] = mapped_column(ForeignKey("producers.name"))
@@ -78,6 +78,7 @@ class Catalog(Base):
 
         try:
             if self.box:
+                data["box_id"] = self.box.id
                 data["box_weight"] = self.box.weight
                 data["box_area"] = self.box.area
         except Exception:

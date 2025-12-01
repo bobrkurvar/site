@@ -59,10 +59,11 @@ async def insert_slide_image():
 @router.post("/delete")
 async def delete_tile_by_criteria_or_all(
     manager: dbManagerDep,
-    tile_id: Annotated[int, Form()] = None,
+    tile_id: Annotated[int | str, Form()],
 ):
     params = {}
-    if tile_id:
+    log.debug("tile_id: %s", tile_id)
+    if tile_id != '':
         params["id"] = tile_id
     log.debug("params: %s", params)
     await delete_tile(manager, **params)

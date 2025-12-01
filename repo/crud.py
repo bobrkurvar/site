@@ -1,5 +1,4 @@
 import logging
-from typing import Any, List
 
 from sqlalchemy import delete, select, update, and_
 from sqlalchemy.exc import IntegrityError
@@ -81,14 +80,14 @@ class Crud:
 
     async def delete(self, domain_model, session=None, **filters):
         async def _delete_internal(session):
-            log.debug("filter for delete: %s", filters)
+            log.debug("%s filter for delete: %s", domain_model, filters)
             model = self._mapper[domain_model]
 
             conditions = [getattr(model, field) == value for field, value in filters.items()]
 
             delete_query = (
                 delete(model)
-                .where(and_(*conditions))
+                .where(*conditions)
                 .returning(model)
             )
 
