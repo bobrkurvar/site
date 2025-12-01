@@ -1,5 +1,4 @@
 import logging
-from decimal import Decimal
 from pathlib import Path
 
 import aiofiles
@@ -50,11 +49,11 @@ async def add_box(box_weight: Decimal, box_area: Decimal, manager, session):
     else:
         return box[0]
 
-async def add_tile_type(tile_id: int, tile_type: str, manager, session):
+async def add_tile_type(tile_type: str, manager, session):
     tile_types = await manager.read(Types, name=tile_type, session=session)
     if not tile_types:
         return await manager.create(
-            Types, tile_id = tile_id, name=tile_type, session=session
+            Types, name=tile_type, session=session
         )
     else:
         return tile_type[0]
@@ -85,6 +84,7 @@ async def add_tile(
             await add_tile_surface(surface, manager, uow.session)
         await add_tile_color(color, color_feature, manager, uow.session)
         await add_producer(producer, manager, uow.session)
+        await add_tile_type(tile_type, manager, uow.session)
         box = await add_box(box_weight, box_area, manager, uow.session)
 
         tile_record = await manager.create(
@@ -94,6 +94,7 @@ async def add_tile(
             size_width=width,
             size_length=length,
             color_name=color,
+            type_name=tile_type,
             feature_name=color_feature,
             surface_name=surface,
             producer_name=producer,
@@ -103,7 +104,6 @@ async def add_tile(
             session=uow.session,
         )
 
-        await add_tile_type(tile_record["id"], tile_type, manager, uow.session)
 
         path = config.image_path
         upload_dir = Path(path)
@@ -125,15 +125,15 @@ async def add_tile(
         return tile_record
 
 
-async def delete_tile_size(tiles: list, height: float, width: float, manager, session):
+async def delete_tile_size(tiles: list, tile_size_id: int, height: Decimal, width: Decimal, length: Decimal, manager, session):
     tiles = [
         tile
         for tile in tiles
-        if tile.get("size_height") == height and tile.get("size_width") == width
+        if tile.get("size_id") == tile_size_id
     ]
     if not tiles:
-        log.debug("%s, %s удаляется из справочника", height, width)
-        await manager.delete(TileSize, height=height, width=width, session=session)
+        log.debug("height=%s, width=%s length=%s удаляется из справочника", height, width, length)
+        await manager.delete(TileSize, length=length, height=height, width=width, session=session)
 
 
 async def delete_tile_color(tiles: list, color_name: str, feature_name: str, manager, session):
@@ -150,13 +150,15 @@ async def delete_tile(manager, **filters):
         files_deleted = 0
 
         await manager.delete(Tile, session=uow.session, **filters)
-        all_tiles = await manager.read(Tile, session=uow.session)
+        all_tiles = await manager.read(Tile, to_join=['size'], session=uow.session)
 
         for tile in tiles:
             await delete_tile_size(
                 all_tiles,
+                tile.get("size_id"),
                 tile.get("size_height"),
                 tile.get("size_width"),
+                tile.get("size_length"),
                 manager,
                 uow.session,
             )

@@ -19,11 +19,8 @@ class Catalog(Base):
     name: Mapped[str] = mapped_column(unique=True)
     color_name: Mapped[str]
     feature_name: Mapped[str]
-    size_length: Mapped[Decimal] = mapped_column(DECIMAL(5, 2))
-    size_height: Mapped[Decimal] = mapped_column(DECIMAL(8, 2))
-    size_width: Mapped[Decimal] = mapped_column(DECIMAL(8, 2))
-    box_weight: Mapped[Decimal] = mapped_column(DECIMAL(8, 2))
-    box_area: Mapped[Decimal] = mapped_column(DECIMAL(8, 2))
+    size_id: Mapped[int] = mapped_column(ForeignKey("tile_sizes.id"))
+    box_id: Mapped[int] = mapped_column(ForeignKey("boxes.id"))
     surface_name: Mapped[str] = mapped_column(ForeignKey("tile_surface.name"), nullable=True)
     producer_name: Mapped[str] = mapped_column(ForeignKey("producers.name"))
     type_name: Mapped[str] = mapped_column(ForeignKey("types.name"))
@@ -44,14 +41,6 @@ class Catalog(Base):
 
     __table_args__ = (
         ForeignKeyConstraint(
-            ["size_length", "size_height", "size_width"],
-            ["tile_sizes.length", "tile_sizes.height", "tile_sizes.width"],
-        ),
-        ForeignKeyConstraint(
-            ["box_weight", "box_area"],
-            ["boxes.weight", "boxes.area"],
-        ),
-        ForeignKeyConstraint(
             ["color_name", "feature_name"],
             ["tile_colors.color_name", "tile_colors.feature_name"],
         ),
@@ -61,15 +50,10 @@ class Catalog(Base):
         data = {
             "id": self.id,
             "name": self.name,
-            "size_length": self.size_length,
-            "size_height": self.size_height,
-            "size_width": self.size_width,
             "color_name": self.color_name,
             "feature_name": self.feature_name,
             "surface_name": self.surface_name,
             "producer_name": self.producer_name,
-            "box_weight": self.box_weight,
-            "box_area": self.box_area,
             "boxes_count": self.boxes_count,
             "tile_type": self.type_name
         }
@@ -83,11 +67,21 @@ class Catalog(Base):
         except Exception:
             pass
 
-        # try:
-        #     if self.type:
-        #         data["tile_type"] = self.type.name
-        # except Exception:
-        #     pass
+        try:
+            if self.size:
+                data["size_id"] = self.size.id
+                data["size_length"] = self.size.length
+                data["size_height"] = self.size.height
+                data["size_width"] = self.size.width
+        except Exception:
+            pass
+
+        try:
+            if self.box:
+                data["box_weight"] = self.box.weight
+                data["box_area"] = self.box.area
+        except Exception:
+            pass
 
         return data
 
@@ -114,18 +108,20 @@ class TileImages(Base):
             "image_path": self.image_path,
         }
 
+
 class TileSize(Base):
     __tablename__ = "tile_sizes"
-    length: Mapped[Decimal] = mapped_column(DECIMAL(5, 2), primary_key=True)
-    height: Mapped[Decimal] = mapped_column(DECIMAL(8, 2), primary_key=True)
-    width: Mapped[Decimal] = mapped_column(DECIMAL(8, 2), primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    length: Mapped[Decimal] = mapped_column(DECIMAL(5, 2))
+    height: Mapped[Decimal] = mapped_column(DECIMAL(5, 2))
+    width: Mapped[Decimal] = mapped_column(DECIMAL(5, 2))
     tiles: Mapped[list["Catalog"]] = relationship(
         "Catalog",
         back_populates="size",
     )
 
     def model_dump(self):
-        return {"length": self.length, "height": self.height, "width": self.width}
+        return {"id": self.id, "length": self.length, "height": self.height, "width": self.width}
 
 
 class TileColor(Base):
@@ -166,8 +162,9 @@ class Producer(Base):
 
 class Box(Base):
     __tablename__ = "boxes"
-    weight: Mapped[Decimal] = mapped_column(DECIMAL(8, 2), primary_key=True)
-    area: Mapped[Decimal] = mapped_column(DECIMAL(8, 2), primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    weight: Mapped[Decimal] = mapped_column(DECIMAL(8, 2))
+    area: Mapped[Decimal] = mapped_column(DECIMAL(8, 2))
     tiles: Mapped[list["Catalog"]] = relationship("Catalog", back_populates="box")
 
     def model_dump(self):

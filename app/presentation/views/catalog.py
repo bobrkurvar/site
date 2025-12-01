@@ -39,7 +39,7 @@ async def get_catalog_tiles_page(
     offset = (page - 1) * limit
 
     tiles = await manager.read(
-        Tile, to_join=["images", "type"], offset=offset, limit=limit, **filters
+        Tile, to_join=["images", "size"], offset=offset, limit=limit, **filters
     )
     for t in tiles:
         log.debug("images: %s", t['images_paths'])
@@ -55,10 +55,8 @@ async def get_catalog_tiles_page(
     tiles = [map_to_tile_domain(tile) for tile in tiles]
 
     sizes = await manager.read(TileSize)
-    sizes = [TileSize(height=size['height'], width=size['width'], length=size["length"]) for size in sizes]
+    sizes = [TileSize(size_id=size["id"], height=size['height'], width=size['width'], length=size["length"]) for size in sizes]
     colors = await manager.read(TileColor)
-
-
 
     total_count = len(await manager.read(Tile, **filters))
     total_pages = max((total_count + limit - 1) // limit, 1)
@@ -80,7 +78,7 @@ async def get_catalog_tiles_page(
 
 @router.get("/{tile_id}")
 async def get_tile_page(request: Request, tile_id: int, manager: dbManagerDep):
-    tile = await manager.read(Tile, to_join=["images", "type"], id=tile_id)
+    tile = await manager.read(Tile, to_join=["images", "size", "box"], id=tile_id)
     tile = tile[0] if tile else {}
     images = []
     if tile: images = tile["images_paths"]

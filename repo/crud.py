@@ -1,7 +1,7 @@
 import logging
 from typing import Any, List
 
-from sqlalchemy import delete, select, update
+from sqlalchemy import delete, select, update, and_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.orm import selectinload
@@ -81,13 +81,14 @@ class Crud:
 
     async def delete(self, domain_model, session=None, **filters):
         async def _delete_internal(session):
+            log.debug("filter for delete: %s", filters)
             model = self._mapper[domain_model]
 
             conditions = [getattr(model, field) == value for field, value in filters.items()]
 
             delete_query = (
                 delete(model)
-                .where(*conditions)
+                .where(and_(*conditions))
                 .returning(model)
             )
 

@@ -74,7 +74,7 @@
                        list="size-combinations" pattern="\d*\.?\d+\s+\d*\.?\d+\s+\d*\.?\d+">
                 <datalist id="size-combinations">
                     {% for size in tile_sizes %}
-                        <option value="{{ size.width }} {{ size.height }} {{ size.depth }}">
+                        <option value="{{ size.length }} {{ size.width }} {{ size.height }}">
                     {% endfor %}
                 </datalist>
             </div>
@@ -381,7 +381,7 @@ document.getElementById('add-btn').addEventListener('click', () => {
 
     // Все input/textarea/file поля кроме optionalForAdd делаем обязательными
     form.querySelectorAll('input, textarea, select').forEach(el => {
-        if (optionalForAdd.includes(el.id) || el.id === 'tile_sku') {
+        if (optionalForAdd.includes(el.id) || el.id === 'article') {
             el.required = false;
         } else {
             el.required = true;
