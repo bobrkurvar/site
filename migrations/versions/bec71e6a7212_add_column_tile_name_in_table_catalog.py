@@ -37,7 +37,7 @@ def upgrade():
 
     # 4. Добавляем FOREIGN KEY
     op.create_foreign_key(
-        "fk_child_parent",
+        "fk_catalog_types",
         "catalog", "types",
         ["type_name"], ["name"]
     )
