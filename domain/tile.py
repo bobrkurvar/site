@@ -53,6 +53,15 @@ class Box:
         return str(self.weight.normalize())
 
 
+class Types:
+
+    def __init__(self, name: str, tile_id: int):
+        self.name = name
+        self.tile_id = tile_id
+
+    def __str__(self):
+        return self.name
+
 class Tile:
     def __init__(
         self,
@@ -63,6 +72,7 @@ class Tile:
         boxes_count: int,
         producer: Producer,
         article: int,
+        tile_type: Types,
         surface: TileSurface | None = None,
     ):
         self.name = name
@@ -73,10 +83,11 @@ class Tile:
         self.boxes_count = boxes_count
         self.producer = producer
         self.article = article
+        self.tile_type = tile_type
 
     @property
     def present(self):
-        return f"{self.name} {self.size} {self.color} {self.surface or ''}"
+        return f"{self.tile_type} {self.name} {self.size} {self.color} {self.surface or ''}"
 
     def __str__(self):
         return f"{self.article} {str(self.color)} {self.surface} {self.name}"
@@ -93,6 +104,7 @@ def map_to_tile_domain(tile_dict: dict) -> Tile:
     surface = TileSurface(name=tile_dict["surface_name"]) if tile_dict["surface_name"] else None
     producer = Producer(name=tile_dict["producer_name"])
     box = Box(weight=tile_dict["box_weight"], area=tile_dict["box_area"])
+    tile_type = Types(name=tile_dict["tile_type"], tile_id=tile_dict["id"])
 
     return Tile(
         size=size,
@@ -102,5 +114,6 @@ def map_to_tile_domain(tile_dict: dict) -> Tile:
         box=box,
         boxes_count = tile_dict['boxes_count'],
         producer=producer,
+        tile_type=tile_type,
         article=tile_dict["id"],
     )

@@ -39,6 +39,7 @@ class Catalog(Base):
         cascade="all, delete-orphan",
         passive_deletes=True
     )
+    type: Mapped["Types"] = relationship("Types", back_populates='tiles')
 
     __table_args__ = (
         ForeignKeyConstraint(
@@ -80,7 +81,23 @@ class Catalog(Base):
         except Exception:
             pass
 
+        try:
+            if self.type:
+                data["tile_type"] = self.type.name
+        except Exception:
+            pass
+
         return data
+
+class Types(Base):
+    __tablename__ = "types"
+    name: Mapped[str] = mapped_column(primary_key=True)
+    tile_id: Mapped[int] = mapped_column(ForeignKey("catalog.id"))
+    tiles: Mapped[list["Catalog"]] = relationship("Catalog", back_populates="type")
+
+    def model_dump(self):
+        return {"tile_id": self.tile_id, "name": self.name}
+
 
 class TileImages(Base):
     __tablename__ = "tile_images"

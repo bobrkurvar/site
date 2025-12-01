@@ -1,8 +1,8 @@
 **/__pycache__
 .venv
 .idea/
-migrations/**
 alembic.ini
 static/images/tiles/**
+migrations/versions/__pycache__/**
 
 

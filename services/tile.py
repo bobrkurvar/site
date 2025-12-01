@@ -50,6 +50,15 @@ async def add_box(box_weight: Decimal, box_area: Decimal, manager, session):
     else:
         return box[0]
 
+async def add_tile_type(tile_id: int, tile_type: str, manager, session):
+    tile_types = await manager.read(Types, name=tile_type, session=session)
+    if not tile_types:
+        return await manager.create(
+            Types, tile_id = tile_id, name=tile_type, session=session
+        )
+    else:
+        return tile_type[0]
+
 
 async def add_tile(
     tile_name: str,
@@ -62,6 +71,7 @@ async def add_tile(
     box_area: Decimal,
     boxes_count: int,
     main_image: bytes,
+    tile_type: str,
     manager,
     images: list[bytes] | list,
     color_feature: str = "",
@@ -92,6 +102,8 @@ async def add_tile(
             boxes_count = boxes_count,
             session=uow.session,
         )
+
+        await add_tile_type(tile_record["id"], tile_type, manager, uow.session)
 
         path = config.image_path
         upload_dir = Path(path)
