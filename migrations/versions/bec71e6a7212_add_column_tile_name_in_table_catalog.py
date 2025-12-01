@@ -29,7 +29,7 @@ def upgrade():
     conn = op.get_bind()
     conn.execute(sa.text("""
         UPDATE catalog
-        SET type_name = 'Плитка'
+        SET type_name = 'Tile'
         WHERE type_name IS NULL
     """))
 
