@@ -3,5 +3,6 @@
 .idea/
 alembic.ini
 static/images/tiles/**
+migrations/versions/__pycache__/**
 
 
