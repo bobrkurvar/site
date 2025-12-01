@@ -48,6 +48,17 @@
                 <input type="file" name="images" accept="image/*" multiple>
             </div>
 
+            <!-- Типы -->
+            <div class="form-group">
+                <h3>Типы товаров</h3>
+                <input type="text" name="tile_type" placeholder="Тип товара" required>
+                <datalist id="tiles-types-list">
+                    {% for tile in tiles %}
+                        <option value="{{ tile.tile_type }}">
+                    {% endfor %}
+                </datalist>
+            </div>
+
             <!-- Размер -->
             <div class="form-group">
                 <h3>Размер</h3>
@@ -133,13 +144,14 @@
             <div class="form-group">
                 <h3>Количество коробок</h3>
                 <input type="number" step="0.01" name="boxes_count" placeholder="Выберете количество коробок" required
-                       list="box-area-list">
+                       list="boxes-counts-list">
                 <datalist id="boxes-counts-list">
                     {% for tile in tiles %}
                         <option value="{{ tile.boxes_count }}">
                     {% endfor %}
                 </datalist>
             </div>
+
 
             <button type="submit">Добавить товар</button>
         </form>

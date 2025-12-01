@@ -21,11 +21,10 @@ log = logging.getLogger(__name__)
 async def insert_slide_image(
     images: Annotated[list[UploadFile], File()]
 ):
-    # Поднимаемся на 3 уровня вверх от текущего файла
+
     project_root = Path(__file__).resolve().parent.parent.parent
     upload_dir = project_root / "static" / "images" / "slides"
 
-    # Проверяем существование папки
     if not upload_dir.exists():
         upload_dir.mkdir(parents=True, exist_ok=True)
     extra_num = len([f for f in upload_dir.iterdir() if f.is_file()])
@@ -43,15 +42,12 @@ async def insert_slide_image(
 
 @router.post("/delete/all-slide-image")
 async def insert_slide_image():
-    # Поднимаемся на 3 уровня вверх от текущего файла
     project_root = Path(__file__).resolve().parent.parent.parent
     upload_dir = project_root / "static" / "images" / "slides"
 
-    # Проверяем существование папки
     if not upload_dir.exists():
         upload_dir.mkdir(parents=True, exist_ok=True)
 
-    # Очищаем только файлы, не папки
     for f in upload_dir.iterdir():
         if f.is_file() and f.exists():
             f.unlink()
@@ -81,6 +77,7 @@ async def admin_create_tile(
     box_area: Annotated[Decimal, Form()],
     boxes_count: Annotated[int, Form()],
     main_image: Annotated[UploadFile, File()],
+    tile_type: Annotated[str, Form()],
     manager: dbManagerDep,
     color_feature: Annotated[str, Form()] = "",
     surface: Annotated[str, Form()] = "",
@@ -93,6 +90,7 @@ async def admin_create_tile(
     width = Decimal(width_str)
     height = Decimal(height_str)
     surface = surface or None
+    log.debug("tile_type: %s", tile_type)
     await add_tile(
         name,
         length,
@@ -104,6 +102,7 @@ async def admin_create_tile(
         box_area,
         boxes_count,
         bytes_main_image,
+        tile_type,
         manager,
         bytes_images,
         color_feature,
