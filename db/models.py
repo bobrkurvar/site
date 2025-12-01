@@ -26,6 +26,7 @@ class Catalog(Base):
     box_area: Mapped[Decimal] = mapped_column(DECIMAL(8, 2))
     surface_name: Mapped[str] = mapped_column(ForeignKey("tile_surface.name"), nullable=True)
     producer_name: Mapped[str] = mapped_column(ForeignKey("producers.name"))
+    type_name: Mapped[str] = mapped_column(ForeignKey("types.name"))
     boxes_count: Mapped[int]
 
     color: Mapped["TileColor"] = relationship("TileColor", back_populates="tiles")
@@ -70,6 +71,7 @@ class Catalog(Base):
             "box_weight": self.box_weight,
             "box_area": self.box_area,
             "boxes_count": self.boxes_count,
+            "tile_type": self.type_name
         }
 
         try:
@@ -81,22 +83,21 @@ class Catalog(Base):
         except Exception:
             pass
 
-        try:
-            if self.type:
-                data["tile_type"] = self.type.name
-        except Exception:
-            pass
+        # try:
+        #     if self.type:
+        #         data["tile_type"] = self.type.name
+        # except Exception:
+        #     pass
 
         return data
 
 class Types(Base):
     __tablename__ = "types"
     name: Mapped[str] = mapped_column(primary_key=True)
-    tile_id: Mapped[int] = mapped_column(ForeignKey("catalog.id"))
     tiles: Mapped[list["Catalog"]] = relationship("Catalog", back_populates="type")
 
     def model_dump(self):
-        return {"tile_id": self.tile_id, "name": self.name}
+        return {"name": self.name}
 
 
 class TileImages(Base):
