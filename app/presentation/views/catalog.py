@@ -16,7 +16,7 @@ log = logging.getLogger(__name__)
 ITEMS_PER_PAGE = 20
 
 
-@router.get("/")
+@router.get("")
 async def get_catalog_tiles_page(
     request: Request,
     manager: dbManagerDep,
@@ -39,7 +39,7 @@ async def get_catalog_tiles_page(
     offset = (page - 1) * limit
 
     tiles = await manager.read(
-        Tile, to_join=["images"], offset=offset, limit=limit, **filters
+        Tile, to_join=["images", "type"], offset=offset, limit=limit, **filters
     )
     for t in tiles:
         log.debug("images: %s", t['images_paths'])
@@ -80,7 +80,7 @@ async def get_catalog_tiles_page(
 
 @router.get("/{tile_id}")
 async def get_tile_page(request: Request, tile_id: int, manager: dbManagerDep):
-    tile = await manager.read(Tile, to_join=["images"], id=tile_id)
+    tile = await manager.read(Tile, to_join=["images", "type"], id=tile_id)
     tile = tile[0] if tile else {}
     images = []
     if tile: images = tile["images_paths"]
