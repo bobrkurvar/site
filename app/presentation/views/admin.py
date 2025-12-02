@@ -52,7 +52,7 @@ async def admin_page(request: Request, manager: dbManagerDep):
     boxes_unique_area = []
 
     tiles = [map_to_tile_domain(t) for t in tiles]
-    boxes_unique_count = {tile.boxes_count for tile in tiles}
+    boxes_unique_count = set(tile.boxes_count for tile in tiles)
 
     for box in boxes:
         if box.get("weight") not in unique_weight:
