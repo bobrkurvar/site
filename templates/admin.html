@@ -305,6 +305,25 @@
             </div>
         </div>
 
+        <!-- Категории -->
+        <div class="characteristics-group">
+            <h3 data-count="{{ categories|length }} шт.">Производители</h3>
+            <div class="characteristics-list">
+                {% for category in categories %}
+                <div class="characteristic-item">
+                    <span>{{ category.name }}</span>
+                    <form method="post" action="/admin/tiles/categories/delete">
+                        <input type="hidden" name="name" value="{{ category.name }}">
+                        <button type="submit" class="delete-btn"
+                                onclick="return confirm('Удалить категорию?')">
+                            Удалить
+                        </button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
 
     </section>
 

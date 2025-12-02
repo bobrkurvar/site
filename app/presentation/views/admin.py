@@ -62,6 +62,8 @@ async def admin_page(request: Request, manager: dbManagerDep):
             boxes_unique_area.append(box)
             unique_area.add(box.get("area"))
 
+    categories = await manager.read(Types)
+
     return templates.TemplateResponse(
         "admin.html",
         {
@@ -76,5 +78,6 @@ async def admin_page(request: Request, manager: dbManagerDep):
             "colors_unique_feature": tile_colors_unique_feature,
             "boxes_unique_weight": boxes_unique_weight,
             "boxes_unique_area": boxes_unique_area,
+            "categories": categories
         },
     )
