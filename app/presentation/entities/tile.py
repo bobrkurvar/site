@@ -43,11 +43,8 @@ async def insert_slide_image(
 
 @router.post("/delete/all-slide-image")
 async def insert_slide_image():
-    project_root = Path(__file__).resolve().parent.parent.parent
+    project_root = Path(__file__).resolve().parent.parent.parent.parent
     upload_dir = project_root / "static" / "images" / "slides"
-
-    if not upload_dir.exists():
-        upload_dir.mkdir(parents=True, exist_ok=True)
 
     for f in upload_dir.iterdir():
         if f.is_file() and f.exists():
