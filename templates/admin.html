@@ -147,7 +147,7 @@
                 <input type="number" step="0.01" name="boxes_count" id="boxes_count" placeholder="Количество коробок" list="boxes-counts-list">
                 <datalist id="boxes-counts-list">
                     {% for tile in tiles %}
-                        <option value="{{ tile.boxes_count }}">
+                        <option value="{{ boxes_unique_count }}">
                     {% endfor %}
                 </datalist>
             </div>
