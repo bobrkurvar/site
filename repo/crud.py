@@ -1,7 +1,6 @@
 import logging
-from typing import Any, List
 
-from sqlalchemy import delete, select, update
+from sqlalchemy import delete, select, update, and_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.orm import selectinload
@@ -81,6 +80,7 @@ class Crud:
 
     async def delete(self, domain_model, session=None, **filters):
         async def _delete_internal(session):
+            log.debug("%s filter for delete: %s", domain_model, filters)
             model = self._mapper[domain_model]
 
             conditions = [getattr(model, field) == value for field, value in filters.items()]
@@ -112,7 +112,7 @@ class Crud:
             async with self._session_factory.begin() as session:
                 return await _delete_internal(session)
 
-    async def update(self, domain_model, filters: dict, values: dict):
+    async def update(self, domain_model, filters: dict, **values):
         async with self._session_factory.begin() as session:
             model = self._mapper[domain_model]
             query = update(model)
@@ -132,6 +132,7 @@ class Crud:
         limit: int | None = None,
         offset: int | None = None,
         order_by: str | None = None,
+        distinct: str | None = None,
         **filters
     ):
 
@@ -149,6 +150,10 @@ class Crud:
                         options.append(selectinload(getattr(model, join_attr)))
 
             query = select(model)
+
+            if distinct:
+                query.distinct(getattr(model, distinct))
+
             if options:
                 query = query.options(*options)
 

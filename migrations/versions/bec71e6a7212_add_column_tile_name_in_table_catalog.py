@@ -19,31 +19,26 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade():
-    # 1. Добавляем новый столбец, временно nullable
     op.add_column(
         "catalog",
         sa.Column("type_name", sa.String, nullable=True)
     )
-    op.drop_column("types", "tile_id")
 
     conn = op.get_bind()
     conn.execute(sa.text("""
         UPDATE catalog
-        SET type_name = 'Плитка'
+        SET type_name = 'Tile'
         WHERE type_name IS NULL
     """))
 
     op.alter_column("catalog", "type_name", nullable=False)
 
-    # 4. Добавляем FOREIGN KEY
     op.create_foreign_key(
         "fk_catalog_types",
         "catalog", "types",
         ["type_name"], ["name"]
     )
 
-
 def downgrade():
     # Откат: удаляем внешний ключ и столбец
-    op.drop_constraint("fk_child_parent", "child", type_="foreignkey")
-    op.drop_column("child", "parent_id")
+    pass

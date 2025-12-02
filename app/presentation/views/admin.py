@@ -15,11 +15,11 @@ log = logging.getLogger(__name__)
 
 @router.get("")
 async def admin_page(request: Request, manager: dbManagerDep):
-    tiles = await manager.read(Tile, to_join=["images", "type"])
+    tiles = await manager.read(Tile, to_join=["images", "size", "box"])
     for t in tiles:
         log.debug("images: %s", t['images_paths'])
     tile_sizes = await manager.read(TileSize)
-    tile_sizes = [TileSize(size['length'], size['width'], size['height']) for size in tile_sizes]
+    tile_sizes = [TileSize(size_id=size["id"], length=size['length'], width=size['width'], height=size['height']) for size in tile_sizes]
     tile_colors = await manager.read(TileColor)
     surfaces = await manager.read(TileSurface)
     boxes = await manager.read(Box)

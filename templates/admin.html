@@ -32,26 +32,34 @@
 
     <!-- Форма добавления товара -->
     <section class="admin-section">
-        <h2>Добавить товар</h2>
+        <h2>Управление товарами</h2>
 
-        <form class="admin-form" method="post" action="/admin/tiles/create" enctype="multipart/form-data">
+        <form id="tile-form" class="admin-form" method="post" enctype="multipart/form-data">
+            <!-- Артикул товара (для обновления) -->
+            <div class="form-group">
+                <h3>Артикул / ID товара</h3>
+                <input type="text" name="article" id="article" placeholder="Введите артикул для обновления" list="tiles-list">
+                <datalist id="tiles-list">
+                    {% for tile in tiles %}
+                        <option value="{{ tile.sku }}">{{ tile.name }}</option>
+                    {% endfor %}
+                </datalist>
+            </div>
+
             <!-- Основная информация -->
             <div class="form-group">
                 <h3>Основная информация</h3>
-                <input type="text" name="name" placeholder="Название товара" required>
-                    <!-- Главное фото -->
-                <label>Главное фото (обязательно)</label>
-                <input type="file" name="main_image" accept="image/*" required>
-
-                <!-- Остальные фото -->
+                <input type="text" name="name" id="name" placeholder="Название товара">
+                <label>Главное фото</label>
+                <input type="file" name="main_image" id="main_image" accept="image/*">
                 <label>Дополнительные фото</label>
-                <input type="file" name="images" accept="image/*" multiple>
+                <input type="file" name="images" id="images" accept="image/*" multiple>
             </div>
 
             <!-- Типы -->
             <div class="form-group">
                 <h3>Типы товаров</h3>
-                <input type="text" name="tile_type" placeholder="Тип товара" required>
+                <input type="text" name="tile_type" id="tile_type" placeholder="Тип товара" list="tiles-types-list">
                 <datalist id="tiles-types-list">
                     {% for tile in tiles %}
                         <option value="{{ tile.tile_type }}">
@@ -62,44 +70,40 @@
             <!-- Размер -->
             <div class="form-group">
                 <h3>Размер</h3>
-                <input type="text" name="size" placeholder="Размер товара" required
+                <input type="text" name="size" id="size" placeholder="Размер товара"
                        list="size-combinations" pattern="\d*\.?\d+\s+\d*\.?\d+\s+\d*\.?\d+">
                 <datalist id="size-combinations">
                     {% for size in tile_sizes %}
-                    <option value="{{ size.width }} {{ size.height }} {{ size.depth }}">
+                        <option value="{{ size.length }} {{ size.width }} {{ size.height }}">
                     {% endfor %}
                 </datalist>
-                <small class="input-hint">Формат: ширина высота глубина (например: 100 150 20)</small>
             </div>
 
             <!-- Цвет -->
             <div class="form-group">
                 <h3>Цвет</h3>
-                <div class="color-inputs">
-                    <input type="text" name="color_name" placeholder="Название цвета" required list="color-name-list">
-                    <datalist id="color-name-list">
-                        {% for color in tile_colors_unique_color %}
+                <input type="text" name="color_name" id="color_name" placeholder="Название цвета" list="color-name-list">
+                <datalist id="color-name-list">
+                    {% for color in tile_colors_unique_color %}
                         <option value="{{ color.color_name }}">
-                        {% endfor %}
-                    </datalist>
+                    {% endfor %}
+                </datalist>
 
-                    <!-- Исправлено: добавил datalist для свойства цвета -->
-                    <input type="text" name="color_feature" placeholder="Свойство цвета"  list="color-feature-list">
-                    <datalist id="color-feature-list">
-                        {% for color in tile_colors_unique_feature %}
+                <input type="text" name="color_feature" id="color_feature" placeholder="Свойство цвета" list="color-feature-list">
+                <datalist id="color-feature-list">
+                    {% for color in tile_colors_unique_feature %}
                         <option value="{{ color.feature_name }}">
-                        {% endfor %}
-                    </datalist>
-                </div>
+                    {% endfor %}
+                </datalist>
             </div>
 
             <!-- Поверхность -->
             <div class="form-group">
                 <h3>Поверхность</h3>
-                <input type="text" name="surface" placeholder="Название поверхности"  list="surface-list">
+                <input type="text" name="surface" id="surface" placeholder="Название поверхности" list="surface-list">
                 <datalist id="surface-list">
                     {% for surface in tile_surfaces %}
-                    <option value="{{ surface.name }}">
+                        <option value="{{ surface.name }}">
                     {% endfor %}
                 </datalist>
             </div>
@@ -107,32 +111,29 @@
             <!-- Производитель -->
             <div class="form-group">
                 <h3>Производитель</h3>
-                <input type="text" name="producer" placeholder="Выберите производителя" required list="producer-list">
+                <input type="text" name="producer" id="producer" placeholder="Выберите производителя" list="producer-list">
                 <datalist id="producer-list">
                     {% for producer in producers %}
-                    <option value="{{ producer.name }}">
+                        <option value="{{ producer.name }}">
                     {% endfor %}
                 </datalist>
             </div>
-
 
             <!-- Вес коробки -->
             <div class="form-group">
                 <h3>Вес коробки</h3>
-                <input type="number" step="0.01" name="box_weight" placeholder="Выберите вес коробки" required
-                       list="box-weight-list">
+                <input type="number" step="0.01" name="box_weight" id="box_weight" placeholder="Вес коробки" list="box-weight-list">
                 <datalist id="box-weight-list">
                     {% for box in boxes_unique_weight %}
-                    <option value="{{ box.weight }}">
+                        <option value="{{ box.weight }}">
                     {% endfor %}
                 </datalist>
             </div>
 
-            <!-- Метры коробки -->
+            <!-- Количество метров -->
             <div class="form-group">
                 <h3>Количество метров</h3>
-                <input type="number" step="0.01" name="box_area" placeholder="Выберете метры" required
-                       list="box-area-list">
+                <input type="number" step="0.01" name="box_area" id="box_area" placeholder="Метры" list="box-area-list">
                 <datalist id="box-area-list">
                     {% for box in boxes_unique_area %}
                         <option value="{{ box.area }}">
@@ -143,8 +144,7 @@
             <!-- Количество коробок -->
             <div class="form-group">
                 <h3>Количество коробок</h3>
-                <input type="number" step="0.01" name="boxes_count" placeholder="Выберете количество коробок" required
-                       list="boxes-counts-list">
+                <input type="number" step="0.01" name="boxes_count" id="boxes_count" placeholder="Количество коробок" list="boxes-counts-list">
                 <datalist id="boxes-counts-list">
                     {% for tile in tiles %}
                         <option value="{{ tile.boxes_count }}">
@@ -152,12 +152,12 @@
                 </datalist>
             </div>
 
-
-            <button type="submit">Добавить товар</button>
+            <!-- Кнопки -->
+            <button type="submit" id="add-btn">Добавить</button>
+            <button type="submit" id="update-btn">Обновить</button>
         </form>
     </section>
 
-    <!-- Остальные секции остаются без изменений -->
     <!-- Список товаров -->
     <section class="admin-section">
         <h2 data-count="{{ tiles|length }} шт.">Список товаров</h2>
@@ -367,6 +367,38 @@
     </section>
 
 </main>
-
 </body>
 </html>
+
+<script>
+const form = document.getElementById('tile-form');
+
+// Поля, которые всегда необязательные при добавлении
+const optionalForAdd = ['color_feature', 'surface', 'images'];
+
+document.getElementById('add-btn').addEventListener('click', () => {
+    form.action = "/admin/tiles/create";
+
+    // Все input/textarea/file поля кроме optionalForAdd делаем обязательными
+    form.querySelectorAll('input, textarea, select').forEach(el => {
+        if (optionalForAdd.includes(el.id) || el.id === 'article') {
+            el.required = false;
+        } else {
+            el.required = true;
+        }
+    });
+});
+
+document.getElementById('update-btn').addEventListener('click', () => {
+    form.action = "/admin/tiles/update";
+
+    form.querySelectorAll('input, textarea, select').forEach(el => {
+        if (el.id === 'article') {
+            el.required = true;
+        } else {
+            el.required = false;
+        }
+    });
+});
+
+</script>

@@ -2,7 +2,8 @@ from decimal import Decimal
 
 
 class TileSize:
-    def __init__(self, width: Decimal, length: Decimal, height: Decimal):
+    def __init__(self, size_id: int, width: Decimal, length: Decimal, height: Decimal):
+        self.id = size_id
         self.height = height
         self.width = width
         self.length = length
@@ -45,7 +46,8 @@ class Producer:
 
 class Box:
 
-    def __init__(self, weight: Decimal, area: Decimal):
+    def __init__(self, box_id: int, weight: Decimal, area: Decimal):
+        self.id = box_id
         self.weight = weight
         self.area = area
 
@@ -99,11 +101,11 @@ class TileImages:
 
 
 def map_to_tile_domain(tile_dict: dict) -> Tile:
-    size = TileSize(height=tile_dict["size_height"], width=tile_dict["size_width"], length=tile_dict["size_length"])
+    size = TileSize(size_id=tile_dict["id"], height=tile_dict["size_height"], width=tile_dict["size_width"], length=tile_dict["size_length"])
     color = TileColor(name=tile_dict["color_name"], feature=tile_dict["feature_name"])
     surface = TileSurface(name=tile_dict["surface_name"]) if tile_dict["surface_name"] else None
     producer = Producer(name=tile_dict["producer_name"])
-    box = Box(weight=tile_dict["box_weight"], area=tile_dict["box_area"])
+    box = Box(box_id=tile_dict["box_id"], weight=tile_dict["box_weight"], area=tile_dict["box_area"])
     tile_type = Types(name=tile_dict["tile_type"], tile_id=tile_dict["id"])
 
     return Tile(

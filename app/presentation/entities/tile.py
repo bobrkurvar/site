@@ -1,6 +1,7 @@
 import logging
 from decimal import Decimal
 from typing import Annotated
+from domain import Tile
 
 from fastapi import APIRouter, Depends, File, Form, UploadFile
 from fastapi.responses import RedirectResponse
@@ -22,9 +23,8 @@ async def insert_slide_image(
     images: Annotated[list[UploadFile], File()]
 ):
 
-    project_root = Path(__file__).resolve().parent.parent.parent
-    upload_dir_str = str(project_root).replace(r"\app", "")
-    upload_dir = Path(upload_dir_str) / "static" / "images" / "slides"
+    path = Path(__file__).resolve().parent.parent.parent.parent
+    upload_dir = Path(path) / "static" / "images" / "slides"
 
     if not upload_dir.exists():
         upload_dir.mkdir(parents=True, exist_ok=True)
@@ -60,8 +60,10 @@ async def delete_tile_by_criteria_or_all(
     manager: dbManagerDep,
     tile_id: Annotated[int, Form()] = None,
 ):
+    log.debug("tile id for delete: %s", tile_id)
     params = {}
-    if tile_id:
+    log.debug("tile_id: %s", tile_id)
+    if tile_id is not None:
         params["id"] = tile_id
     log.debug("params: %s", params)
     await delete_tile(manager, **params)
@@ -80,9 +82,9 @@ async def admin_create_tile(
     main_image: Annotated[UploadFile, File()],
     tile_type: Annotated[str, Form()],
     manager: dbManagerDep,
-    color_feature: Annotated[str, Form()] = "",
-    surface: Annotated[str, Form()] = "",
-    images: Annotated[list[UploadFile], File()] = None,
+    color_feature: Annotated[str, Form()],
+    surface: Annotated[str, Form()],
+    images: Annotated[list[UploadFile], File()],
 ):
     bytes_images = [await img.read() for img in images] if images else []
     bytes_main_image = await main_image.read()
@@ -109,4 +111,27 @@ async def admin_create_tile(
         color_feature,
         surface,
     )
+    return RedirectResponse("/admin", status_code=303)
+
+
+@router.post("/update")
+async def admin_update_tile(
+        manager: dbManagerDep,
+        article: Annotated[int, Form()],
+        name: Annotated[str, Form()],
+        size: Annotated[str, Form()],
+        color_name: Annotated[str, Form()],
+        producer: Annotated[str, Form()],
+        box_weight: Annotated[Decimal | str, Form()],
+        box_area: Annotated[Decimal | str, Form()],
+        boxes_count: Annotated[int | str, Form()],
+        tile_type: Annotated[str, Form()],
+        color_feature: Annotated[str, Form()],
+        surface: Annotated[str, Form()],
+):
+    params = locals()
+    params = {k: v for k, v in params.items() if v not in (None, '') and k not in ("manager", "article")}
+    log.debug("to update: %s", params)
+    if params:
+        await manager.update(Tile, dict(id=article), **params)
     return RedirectResponse("/admin", status_code=303)
