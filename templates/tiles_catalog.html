@@ -16,7 +16,7 @@
         <aside class="filters-sidebar">
             <div class="filters-panel">
                 <h3>Фильтры</h3>
-                <form class="filters-form" method="get" action="/catalog" id="filtersForm">
+                <form class="filters-form" method="get" action="/catalog/{{ category }}" id="filtersForm">
                     <div class="filter-group">
                         <label>Поиск по названию:</label>
                         <input type="text" name="name" placeholder="Введите название..."
@@ -53,7 +53,7 @@
 
                     <div class="filter-actions">
                         <button type="submit" class="filter-btn">Применить фильтры</button>
-                        <a href="/catalog" class="clear-filters">Сбросить</a>
+                        <a href="/catalog/{{ category }}" class="clear-filters">Сбросить</a>
                     </div>
                 </form>
             </div>

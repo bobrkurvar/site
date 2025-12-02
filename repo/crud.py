@@ -156,20 +156,24 @@ class Crud:
 
             query = select(model)
 
-            if distinct:
-                query.distinct(getattr(model, distinct))
-
             if options:
                 query = query.options(*options)
 
             for field, value in filters.items():
                 query = query.where(getattr(model, field) == value)
 
+
+            if distinct:
+                query = query.distinct(getattr(model, distinct))
+
+
             if order_by:
                 query = query.order_by(getattr(model, order_by))
 
+
             if offset:
                 query = query.offset(offset)
+
             if limit:
                 query = query.limit(limit)
 

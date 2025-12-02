@@ -47,8 +47,13 @@ async def get_catalog_tiles_page(
     tiles = await manager.read(
         Tile, to_join=["images", "size", "box"], limit=limit, offset=offset, **filters
     )
-    tile_sizes = await manager.read(Tile, to_join=["size"], distinct="tile_size_id")
-    tile_colors = await manager.read(Tile, distinct="color_name")
+
+    filter_filters = {}
+    if category is not None:
+        filter_filters["type_name"] = Types.get_category_from_slug(category)
+
+    tile_sizes = await manager.read(Tile, to_join=["size"], distinct="tile_size_id", **filter_filters)
+    tile_colors = await manager.read(Tile, distinct="color_name", **filter_filters)
 
     sizes = [
         TileSize(
@@ -96,6 +101,7 @@ async def get_catalog_tiles_page(
             "total_count": total_count,
             "main_images": main_images,
             "categories": categories,
+            "category": category
         },
     )
 
@@ -112,13 +118,12 @@ async def get_tile_page(request: Request, category: str, tile_id: int, manager: 
     tile = map_to_tile_domain(tile)
     categories = await manager.read(Types)
     categories = [Types(**category) for category in categories]
-
     return templates.TemplateResponse(
         "tile_detail.html",
         {
             "request": request,
             "tile": tile,
             "images": images,
-            "categories": categories
+            "categories": categories,
         },
     )
