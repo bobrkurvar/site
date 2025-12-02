@@ -24,7 +24,9 @@ if config.config_file_name is not None:
 # target_metadata = mymodel.Base.metadata
 manager = get_db_manager()
 target_metadata = Base.metadata
-config.set_main_option("sqlalchemy.url", manager._engine.url.render_as_string(hide_password=False))
+config.set_main_option(
+    "sqlalchemy.url", manager._engine.url.render_as_string(hide_password=False)
+)
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

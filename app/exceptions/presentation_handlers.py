@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 
 from fastapi import Request, status
 from fastapi.templating import Jinja2Templates
@@ -8,7 +9,6 @@ from repo import get_db_manager
 from repo.exceptions import (AlreadyExistsError,
                              CustomForeignKeyViolationError, DatabaseError,
                              NotFoundError)
-from pathlib import Path
 
 log = logging.getLogger(__name__)
 templates = Jinja2Templates("templates")
@@ -139,16 +139,18 @@ async def admin_global_error_handler(request: Request, exc: Exception):
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
     )
 
+
 async def presentation_global_error_handler(request: Request, exc: Exception):
     log.error("Глобальная ошибка: %s", exc)
     slides_dir = Path.cwd() / "static" / "images" / "slides"
 
-    slide_images = [f"/static/images/slides/{img.name}" for img in slides_dir.iterdir() if img.is_file()]
+    slide_images = [
+        f"/static/images/slides/{img.name}"
+        for img in slides_dir.iterdir()
+        if img.is_file()
+    ]
     return templates.TemplateResponse(
         "home.html",
-        {
-            "request": request,
-            "slide_images": slide_images
-        },
+        {"request": request, "slide_images": slide_images},
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
     )

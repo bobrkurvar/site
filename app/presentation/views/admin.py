@@ -17,9 +17,17 @@ log = logging.getLogger(__name__)
 async def admin_page(request: Request, manager: dbManagerDep):
     tiles = await manager.read(Tile, to_join=["images", "size", "box"])
     for t in tiles:
-        log.debug("images: %s", t['images_paths'])
+        log.debug("images: %s", t["images_paths"])
     tile_sizes = await manager.read(TileSize)
-    tile_sizes = [TileSize(size_id=size["id"], length=size['length'], width=size['width'], height=size['height']) for size in tile_sizes]
+    tile_sizes = [
+        TileSize(
+            size_id=size["id"],
+            length=size["length"],
+            width=size["width"],
+            height=size["height"],
+        )
+        for size in tile_sizes
+    ]
     tile_colors = await manager.read(TileColor)
     surfaces = await manager.read(TileSurface)
     boxes = await manager.read(Box)
@@ -53,7 +61,6 @@ async def admin_page(request: Request, manager: dbManagerDep):
         if box.get("area") not in unique_area:
             boxes_unique_area.append(box)
             unique_area.add(box.get("area"))
-
 
     return templates.TemplateResponse(
         "admin.html",

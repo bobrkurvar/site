@@ -12,12 +12,11 @@ dbManagerDep = Annotated[Crud, Depends(get_db_manager)]
 log = logging.getLogger(__name__)
 
 
-
 @router.post("/color/feature/delete")
 async def admin_delete_tile_color_feature(
     manager: dbManagerDep,
     color_name: Annotated[str, Form()] = None,
-    feature_name: Annotated[str, Form()] = None
+    feature_name: Annotated[str, Form()] = None,
 ):
     filters = {}
     if color_name:
@@ -28,5 +27,3 @@ async def admin_delete_tile_color_feature(
         filters["feature_name"] = feature_name
     await manager.delete(TileColor, **filters)
     return RedirectResponse("/admin", status_code=303)
-
-

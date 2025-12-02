@@ -3,7 +3,6 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
-#from fastapi.staticfiles import StaticFiles
 
 import core.logger
 from app.api import api_router
@@ -11,6 +10,9 @@ from app.exceptions.api_handlers import *
 from app.exceptions.presentation_handlers import *
 from app.presentation import presentation_router
 from repo import get_db_manager
+
+# from fastapi.staticfiles import StaticFiles
+
 
 
 @asynccontextmanager
@@ -24,8 +26,8 @@ log = logging.getLogger(__name__)
 
 app = FastAPI(lifespan=lifespan)
 
-#BASE_DIR = Path(__file__).resolve().parent
-#app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
+# BASE_DIR = Path(__file__).resolve().parent
+# app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
 app.include_router(api_router)
 app.include_router(presentation_router)

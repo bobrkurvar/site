@@ -1,10 +1,10 @@
 from decimal import Decimal
+from pathlib import Path
 
 from sqlalchemy import ForeignKey, ForeignKeyConstraint
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.types import DECIMAL
-from pathlib import Path
 
 from core import config
 
@@ -21,7 +21,9 @@ class Catalog(Base):
     feature_name: Mapped[str]
     tile_size_id: Mapped[int] = mapped_column(ForeignKey("tile_sizes.id"))
     box_id: Mapped[int] = mapped_column(ForeignKey("boxes.id"))
-    surface_name: Mapped[str] = mapped_column(ForeignKey("tile_surface.name"), nullable=True)
+    surface_name: Mapped[str] = mapped_column(
+        ForeignKey("tile_surface.name"), nullable=True
+    )
     producer_name: Mapped[str] = mapped_column(ForeignKey("producers.name"))
     type_name: Mapped[str] = mapped_column(ForeignKey("types.name"))
     boxes_count: Mapped[int]
@@ -33,11 +35,11 @@ class Catalog(Base):
     box: Mapped["Box"] = relationship("Box", back_populates="tiles")
     images: Mapped[list["TileImages"]] = relationship(
         "TileImages",
-        back_populates='tile',
+        back_populates="tile",
         cascade="all, delete-orphan",
-        passive_deletes=True
+        passive_deletes=True,
     )
-    type: Mapped["Types"] = relationship("Types", back_populates='tiles')
+    type: Mapped["Types"] = relationship("Types", back_populates="tiles")
 
     __table_args__ = (
         ForeignKeyConstraint(
@@ -55,7 +57,7 @@ class Catalog(Base):
             "surface_name": self.surface_name,
             "producer_name": self.producer_name,
             "boxes_count": self.boxes_count,
-            "tile_type": self.type_name
+            "tile_type": self.type_name,
         }
 
         try:
@@ -85,6 +87,7 @@ class Catalog(Base):
             pass
 
         return data
+
 
 class Types(Base):
     __tablename__ = "types"
@@ -122,7 +125,12 @@ class TileSize(Base):
     )
 
     def model_dump(self):
-        return {"id": self.id, "length": self.length, "height": self.height, "width": self.width}
+        return {
+            "id": self.id,
+            "length": self.length,
+            "height": self.height,
+            "width": self.width,
+        }
 
 
 class TileColor(Base):
@@ -149,6 +157,7 @@ class TileSurface(Base):
     def model_dump(self):
         return {"name": self.name}
 
+
 class Producer(Base):
     __tablename__ = "producers"
     name: Mapped[str] = mapped_column(primary_key=True)
@@ -170,4 +179,3 @@ class Box(Base):
 
     def model_dump(self):
         return {"id": self.id, "weight": self.weight, "area": self.area}
-

@@ -14,12 +14,12 @@ log = logging.getLogger(__name__)
 
 @router.post("/delete")
 async def admin_create_tile_box(
-        manager: dbManagerDep,
-        name: Annotated[str, Form()] = None,
+    manager: dbManagerDep,
+    name: Annotated[str, Form()] = None,
 ):
     filters = {}
     if name is not None:
-        filters['name'] = name
+        filters["name"] = name
 
     await manager.delete(TileSurface, **filters)
     return RedirectResponse("/admin", status_code=303)

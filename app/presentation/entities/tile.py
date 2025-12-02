@@ -1,27 +1,23 @@
 import logging
 from decimal import Decimal
+from pathlib import Path
 from typing import Annotated
-from domain import *
 
+import aiofiles
 from fastapi import APIRouter, Depends, File, Form, UploadFile
 from fastapi.responses import RedirectResponse
 
+from domain import *
 from repo import Crud, get_db_manager
 from services.tile import add_tile, delete_tile, update_tile
-from pathlib import Path
-import aiofiles
-
 
 router = APIRouter(prefix="/admin/tiles")
 dbManagerDep = Annotated[Crud, Depends(get_db_manager)]
 log = logging.getLogger(__name__)
 
 
-
 @router.post("/insert/slide-image")
-async def insert_slide_image(
-    images: Annotated[list[UploadFile], File()]
-):
+async def insert_slide_image(images: Annotated[list[UploadFile], File()]):
 
     path = Path(__file__).resolve().parent.parent.parent.parent
     upload_dir = Path(path) / "static" / "images" / "slides"
@@ -41,6 +37,7 @@ async def insert_slide_image(
 
     return RedirectResponse("/admin", status_code=303)
 
+
 @router.post("/delete/all-slide-image")
 async def insert_slide_image():
     project_root = Path(__file__).resolve().parent.parent.parent.parent
@@ -51,6 +48,7 @@ async def insert_slide_image():
             f.unlink()
 
     return RedirectResponse("/admin", status_code=303)
+
 
 @router.post("/delete")
 async def delete_tile_by_criteria_or_all(
@@ -85,7 +83,7 @@ async def admin_create_tile(
 ):
     bytes_images = [await img.read() for img in images] if images else []
     bytes_main_image = await main_image.read()
-    length_str, width_str,  height_str = size.split()
+    length_str, width_str, height_str = size.split()
     length = Decimal(length_str)
     width = Decimal(width_str)
     height = Decimal(height_str)
@@ -113,21 +111,25 @@ async def admin_create_tile(
 
 @router.post("/update")
 async def admin_update_tile(
-        manager: dbManagerDep,
-        article: Annotated[int, Form()],
-        name: Annotated[str, Form()],
-        size: Annotated[str, Form()],
-        color_name: Annotated[str, Form()],
-        producer: Annotated[str, Form()],
-        box_weight: Annotated[Decimal | str, Form()],
-        box_area: Annotated[Decimal | str, Form()],
-        boxes_count: Annotated[int | str, Form()],
-        tile_type: Annotated[str, Form()],
-        color_feature: Annotated[str, Form()],
-        surface: Annotated[str, Form()],
+    manager: dbManagerDep,
+    article: Annotated[int, Form()],
+    name: Annotated[str, Form()],
+    size: Annotated[str, Form()],
+    color_name: Annotated[str, Form()],
+    producer: Annotated[str, Form()],
+    box_weight: Annotated[Decimal | str, Form()],
+    box_area: Annotated[Decimal | str, Form()],
+    boxes_count: Annotated[int | str, Form()],
+    tile_type: Annotated[str, Form()],
+    color_feature: Annotated[str, Form()],
+    surface: Annotated[str, Form()],
 ):
     params = locals()
-    params = {k: v for k, v in params.items() if v not in (None, '') and k not in ("manager", "article")}
+    params = {
+        k: v
+        for k, v in params.items()
+        if v not in (None, "") and k not in ("manager", "article")
+    }
     log.debug("to update: %s", params)
     if params:
         await update_tile(manager, article, **params)

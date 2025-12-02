@@ -1,7 +1,8 @@
 from fastapi import APIRouter
 
-from .entities import (tile_color_router, tile_router, tile_size_router,
-                       tile_surface_router, tile_boxes_router, tile_producers_router)
+from .entities import (tile_boxes_router, tile_color_router,
+                       tile_producers_router, tile_router, tile_size_router,
+                       tile_surface_router)
 from .views.admin import router as view_admin_router
 from .views.catalog import router as catalog_router
 from .views.home import router as home_router
