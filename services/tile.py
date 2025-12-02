@@ -10,54 +10,62 @@ from repo.Uow import UnitOfWork
 log = logging.getLogger(__name__)
 
 
-async def add_tile_surface(name: str, manager, session):
-    tile_surface = await manager.read(TileSurface, name=name, session=session)
-    if not tile_surface:
-        await manager.create(TileSurface, name=name, session=session)
-
-
-async def add_tile_size(length: Decimal, height: Decimal, width: Decimal, manager, session):
-    tile_size = await manager.read(
-        TileSize, length=length, height=height, width=width, session=session
+async def add_items(domain_model, manager, session, **filters):
+    item = await manager.read(
+        domain_model, **filters, session=session
     )
-    if not tile_size:
-        return await manager.create(TileSize, length=length, height=height, width=width, session=session)
-    return tile_size[0]
+    if not item:
+        return await manager.create(domain_model, **filters, session=session)
+    return item[0]
 
-
-async def add_tile_color(color_name: str, feature_name: str, manager, session):
-    tile_color = await manager.read(
-        TileColor, color_name=color_name, feature_name=feature_name, session=session
-    )
-    if not tile_color:
-        await manager.create(
-            TileColor, color_name=color_name, feature_name=feature_name, session=session
-        )
-
-
-async def add_producer(producer_name: str, manager, session):
-    producer = await manager.read(Producer, name=producer_name, session=session)
-    if not producer:
-        await manager.create(Producer, name=producer_name, session=session)
-
-
-async def add_box(box_weight: Decimal, box_area: Decimal, manager, session):
-    box = await manager.read(Box, weight=box_weight, area=box_area, session=session)
-    if not box:
-        return await manager.create(
-            Box, weight=box_weight, area=box_area, session=session
-        )
-    else:
-        return box[0]
-
-async def add_tile_type(tile_type: str, manager, session):
-    tile_types = await manager.read(Types, name=tile_type, session=session)
-    if not tile_types:
-        return await manager.create(
-            Types, name=tile_type, session=session
-        )
-    else:
-        return tile_type[0]
+# async def add_tile_surface(name: str, manager, session):
+#     tile_surface = await manager.read(TileSurface, name=name, session=session)
+#     if not tile_surface:
+#         await manager.create(TileSurface, name=name, session=session)
+#
+#
+# async def add_tile_size(length: Decimal, height: Decimal, width: Decimal, manager, session):
+#     tile_size = await manager.read(
+#         TileSize, length=length, height=height, width=width, session=session
+#     )
+#     if not tile_size:
+#         return await manager.create(TileSize, length=length, height=height, width=width, session=session)
+#     return tile_size[0]
+#
+#
+# async def add_tile_color(color_name: str, feature_name: str, manager, session):
+#     tile_color = await manager.read(
+#         TileColor, color_name=color_name, feature_name=feature_name, session=session
+#     )
+#     if not tile_color:
+#         await manager.create(
+#             TileColor, color_name=color_name, feature_name=feature_name, session=session
+#         )
+#
+#
+# async def add_producer(producer_name: str, manager, session):
+#     producer = await manager.read(Producer, name=producer_name, session=session)
+#     if not producer:
+#         await manager.create(Producer, name=producer_name, session=session)
+#
+#
+# async def add_box(box_weight: Decimal, box_area: Decimal, manager, session):
+#     box = await manager.read(Box, weight=box_weight, area=box_area, session=session)
+#     if not box:
+#         return await manager.create(
+#             Box, weight=box_weight, area=box_area, session=session
+#         )
+#     else:
+#         return box[0]
+#
+# async def add_tile_type(tile_type: str, manager, session):
+#     tile_types = await manager.read(Types, name=tile_type, session=session)
+#     if not tile_types:
+#         return await manager.create(
+#             Types, name=tile_type, session=session
+#         )
+#     else:
+#         return tile_type[0]
 
 
 async def add_tile(
@@ -65,8 +73,8 @@ async def add_tile(
     length: Decimal,
     width: Decimal,
     height: Decimal,
-    color: str,
-    producer: str,
+    color_name: str,
+    producer_name: str,
     box_weight: Decimal,
     box_area: Decimal,
     boxes_count: int,
@@ -80,23 +88,23 @@ async def add_tile(
 
     async with UnitOfWork(manager._session_factory) as uow:
 
-        size = await add_tile_size(length, height, width, manager, uow.session)
+        size = await add_items(TileSize, manager, uow.session, height=height, width=width,  length=length)
         if surface:
-            await add_tile_surface(surface, manager, uow.session)
-        await add_tile_color(color, color_feature, manager, uow.session)
-        await add_producer(producer, manager, uow.session)
-        await add_tile_type(tile_type, manager, uow.session)
-        box = await add_box(box_weight, box_area, manager, uow.session)
+            await add_items(TileSurface, manager, uow.session, surface=surface)
+        await add_items(TileColor, manager, uow.session, color_name=color_name, color_feature=color_feature)
+        await add_items(Producer, manager, uow.session, name=producer_name)
+        await add_items(Types, manager, uow.session, name=tile_type)
+        box = await add_items(Box, manager, uow.session, weight=box_weight, area=box_area)
 
         tile_record = await manager.create(
             Tile,
             name=tile_name,
             tile_size_id=size["id"],
-            color_name=color,
+            color_name=color_name,
             type_name=tile_type,
             feature_name=color_feature,
             surface_name=surface,
-            producer_name=producer,
+            producer_name=producer_name,
             box_id = box["id"],
             boxes_count = boxes_count,
             session=uow.session,
@@ -123,23 +131,6 @@ async def add_tile(
         return tile_record
 
 
-# async def delete_tile_size(tiles: list, tile_size_id: int,  manager, session):
-#     tiles = [
-#         tile
-#         for tile in tiles
-#         if tile.get("size_id") == tile_size_id
-#     ]
-#     if not tiles:
-#         await manager.delete(TileSize, id=tile_size_id, session=session)
-#
-#
-# async def delete_tile_color(tiles: list, color_name: str, feature_name: str, manager, session):
-#     tiles = [tile for tile in tiles if tile.get("color_name") == color_name and tile.get("feature_name") == feature_name]
-#     if not tiles:
-#         log.debug("%s удаляется из справочника", color_name)
-#         await manager.delete(TileColor, color_name=color_name, feature_name=feature_name, session=session)
-
-
 async def delete_tile(manager, **filters):
 
     async with UnitOfWork(manager._session_factory) as uow:
@@ -147,23 +138,12 @@ async def delete_tile(manager, **filters):
         files_deleted = 0
 
         await manager.delete(Tile, session=uow.session, **filters)
-        all_tiles = await manager.read(Tile, to_join=['size'], session=uow.session)
 
         for tile in tiles:
-            # await delete_tile_size(
-            #     all_tiles,
-            #     tile.get("size_id"),
-            #     manager,
-            #     uow.session,
-            # )
-            # await delete_tile_color(
-            #     all_tiles, tile.get("color_name"), tile.get("feature_name"), manager, uow.session
-            # )
             images_paths = tile["images_paths"]
             project_root = Path(__file__).resolve().parent.parent
             upload_dir_str = str(project_root).replace(r"\app", "")
             absolute_path = Path(upload_dir_str)
-            #log.debug("absolute_path: %s", absolute_path)
             for image in images_paths:
                 image_str = image.lstrip('/')
                 image_path = absolute_path / image_str
@@ -173,3 +153,103 @@ async def delete_tile(manager, **filters):
                     files_deleted += 1
                     log.info(f"Удален файл: {image_path}")
         log.info("Удалено файлов: %s", files_deleted)
+
+
+
+async def map_to_domain_for_filter(article: int, manager, session, param: str, value, mapped: dict):
+    mapper_for_domain_model = {
+        "name": Tile,
+        "boxes_count": Tile,
+        "tile_type": Types,
+        "size": TileSize,
+        "color_name": TileColor,
+        "color_feature": TileColor,
+        "producer": Producer,
+        "box_weight": Box,
+        "box_area": Box,
+        "surface": TileSurface
+    }
+
+    mapper_for_filters = {
+        "name": {"name": value},
+        "surface": {"name": value},
+        "producer": {"name": value},
+        "tile_type": {"name": value},
+    }
+    if param == "boxes_count":
+        mapper_for_filters["boxes_count"] = {"boxes_count": int(value)}
+
+    if param == "size":
+        length_str, width_str, height_str = value.split()
+        mapper_for_filters[param] = {"length": Decimal(length_str), "width": Decimal(width_str), "height": Decimal(height_str)}
+
+    elif param == "color_feature":
+        color_name = mapped.setdefault('color_name', (await manager.read(Tile, id=article, session=session))[0]["color_name"])
+        mapper_for_filters[param] = {"color_name": color_name, "feature_name": value}
+        mapped["feature_name"] = value
+
+    elif param == "color_name":
+        feature_name = mapped.setdefault('feature_name', (await manager.read(Tile, id=article, session=session))[0]["feature_name"])
+        mapper_for_filters[param] = {"color_name": value, "feature_name": feature_name}
+        mapped["color_name"] = value
+
+    elif param == "box_weight":
+        box_area = mapped.setdefault("box_area", (await manager.read(Tile, to_join=["box"], id=article, session=session))[0]["box_area"])
+        mapper_for_filters[param] = {"weight": Decimal(value), "area": Decimal(box_area)}
+        mapped["box_weight"] = value
+
+    elif param == "box_area":
+        box_weight = mapped.setdefault("box_weight", (await manager.read(Tile, to_join=["box"], id=article, session=session))[0]["box_area"])
+        mapper_for_filters[param] = {"weight": Decimal(box_weight), "area": Decimal(value)}
+        mapped["box_area"] = value
+
+    return {"param": param, "domain_model": mapper_for_domain_model[param], "filters": mapper_for_filters.get(param, {param: value})}
+
+async def update_tile(manager, article, **params):
+
+    mapper_for_tiles = {
+        "surface": "surface_name",
+        "producer": "producer_name",
+        "size": "tile_size_id",
+        "box_weight": "box_id",
+        "box_area": "box_id",
+        "tile_type": 'type_name',
+        "color_feature": "feature_name"
+    }
+
+    mapper_for_item = {
+        "size": "id",
+        "box_weight": "id",
+        "box_area": "id",
+        "producer": "name",
+        "tile_type": "name",
+        "color_feature": "feature_name",
+        "surface": "name"
+    }
+
+    mapper_for_type_tile = {
+        "boxes_count": int
+    }
+
+    mapped = {}
+
+    async with UnitOfWork(manager._session_factory) as uow:
+        domain_tile_filters = []
+        for_tiles = {}
+        log.debug("params %s", params)
+        for param in params:
+            domain_tile_filters.append(await map_to_domain_for_filter(article, manager, uow.session, param, params[param], mapped))
+        log.debug("mapped: %s", mapped)
+        log.debug("domain_tile_filters %s" ,domain_tile_filters)
+        for tile_filter in domain_tile_filters:
+            cur = tile_filter["param"]
+            if cur != "name" and cur != "boxes_count":
+                log.debug("param: %s, model: %s", cur, tile_filter["domain_model"])
+                item = await add_items(tile_filter["domain_model"], manager, uow.session, **tile_filter["filters"])
+                for_tiles.update(**{mapper_for_tiles.get(cur, cur): item[mapper_for_item.get(cur, cur)]})
+            else:
+                for_tiles.update(**{mapper_for_tiles.get(cur, cur): mapper_for_type_tile.get(cur, str)(params[cur])})
+        log.debug("for_tiles: %s", for_tiles)
+
+
+        await manager.update(Tile, filters=dict(id=article), session=uow.session, **for_tiles)

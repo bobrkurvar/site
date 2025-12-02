@@ -40,7 +40,7 @@ class Crud:
             else:
                 log.debug(
                     "%s: параметры для создания %s",
-                    domain_model.__class__.__name__,
+                    domain_model,
                     kwargs,
                 )
                 obj = model(**kwargs)
@@ -112,8 +112,9 @@ class Crud:
             async with self._session_factory.begin() as session:
                 return await _delete_internal(session)
 
-    async def update(self, domain_model, filters: dict, **values):
-        async with self._session_factory.begin() as session:
+    async def update(self, domain_model, filters: dict, session = None, **values):
+
+        async def _update_internal(session):
             model = self._mapper[domain_model]
             query = update(model)
 
@@ -123,6 +124,12 @@ class Crud:
             query = query.values(**values)
 
             await session.execute(query)
+
+        if session is not None:
+            return await _update_internal(session)
+        else:
+            async with self._session_factory.begin() as session:
+                return await _update_internal(session)
 
     async def read(
         self,

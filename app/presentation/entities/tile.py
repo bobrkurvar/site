@@ -1,13 +1,13 @@
 import logging
 from decimal import Decimal
 from typing import Annotated
-from domain import Tile
+from domain import *
 
 from fastapi import APIRouter, Depends, File, Form, UploadFile
 from fastapi.responses import RedirectResponse
 
 from repo import Crud, get_db_manager
-from services.tile import add_tile, delete_tile
+from services.tile import add_tile, delete_tile, update_tile
 from pathlib import Path
 import aiofiles
 
@@ -130,5 +130,5 @@ async def admin_update_tile(
     params = {k: v for k, v in params.items() if v not in (None, '') and k not in ("manager", "article")}
     log.debug("to update: %s", params)
     if params:
-        await manager.update(Tile, dict(id=article), **params)
+        await update_tile(manager, article, **params)
     return RedirectResponse("/admin", status_code=303)
