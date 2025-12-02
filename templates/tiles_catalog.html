@@ -63,7 +63,7 @@
         <section class="products-section">
             <div class="tile-grid">
                 {% for tile in tiles %}
-                <a href="/catalog{ tile_type.slug }/{{ tile.article }}" class="tile-card-link">
+                <a href="/catalog/{{ tile.present_tile_url }}/{{ tile.article }}" class="tile-card-link">
                     <div class="tile-card">
                         <div class="tile-image-container">
                             {% if main_images[tile.article] %}

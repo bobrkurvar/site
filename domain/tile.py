@@ -102,7 +102,7 @@ class Tile:
 
     @property
     def present_tile_url(self):
-        pass
+        return f"{self.tile_type.slug}"
 
     def __str__(self):
         return f"{self.article} {str(self.color)} {self.surface} {self.name}"

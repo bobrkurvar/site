@@ -110,6 +110,8 @@ async def get_tile_page(request: Request, category: str, tile_id: int, manager: 
         images = tile["images_paths"]
     log.debug("detail images: %s", images)
     tile = map_to_tile_domain(tile)
+    categories = await manager.read(Types)
+    categories = [Types(**category) for category in categories]
 
     return templates.TemplateResponse(
         "tile_detail.html",
@@ -117,6 +119,6 @@ async def get_tile_page(request: Request, category: str, tile_id: int, manager: 
             "request": request,
             "tile": tile,
             "images": images,
-            "category": category
+            "categories": categories
         },
     )
