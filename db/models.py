@@ -16,7 +16,7 @@ class Base(AsyncAttrs, DeclarativeBase):
 class Catalog(Base):
     __tablename__ = "catalog"
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(unique=True)
+    name: Mapped[str] = mapped_column()
     color_name: Mapped[str]
     feature_name: Mapped[str]
     tile_size_id: Mapped[int] = mapped_column(ForeignKey("tile_sizes.id"))

@@ -1,4 +1,5 @@
 from decimal import Decimal
+from slugify import slugify
 
 
 class TileSize:
@@ -57,12 +58,19 @@ class Box:
 
 class Types:
 
-    def __init__(self, name: str, tile_id: int):
+    _slug_to_name = {}
+
+    def __init__(self, name: str):
         self.name = name
-        self.tile_id = tile_id
+        self.slug = slugify(name)
+        self.__class__._slug_to_name[self.slug] = name
 
     def __str__(self):
         return self.name
+
+    @classmethod
+    def get_category_from_slug(cls, slug: str):
+        return cls._slug_to_name[slug]
 
 
 class Tile:
@@ -91,6 +99,10 @@ class Tile:
     @property
     def present(self):
         return f"{self.tile_type} {self.name} {self.size} {self.color} {self.surface or ''}"
+
+    @property
+    def present_tile_url(self):
+        pass
 
     def __str__(self):
         return f"{self.article} {str(self.color)} {self.surface} {self.name}"
@@ -121,7 +133,7 @@ def map_to_tile_domain(tile_dict: dict) -> Tile:
         weight=tile_dict["box_weight"],
         area=tile_dict["box_area"],
     )
-    tile_type = Types(name=tile_dict["tile_type"], tile_id=tile_dict["id"])
+    tile_type = Types(name=tile_dict["tile_type"])
 
     return Tile(
         size=size,

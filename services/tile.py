@@ -41,13 +41,13 @@ async def add_tile(
             TileSize, manager, uow.session, height=height, width=width, length=length
         )
         if surface:
-            await add_items(TileSurface, manager, uow.session, surface=surface)
+            await add_items(TileSurface, manager, uow.session, name=surface)
         await add_items(
             TileColor,
             manager,
             uow.session,
             color_name=color_name,
-            color_feature=color_feature,
+            feature_name=color_feature,
         )
         await add_items(Producer, manager, uow.session, name=producer_name)
         await add_items(Types, manager, uow.session, name=tile_type)
@@ -69,14 +69,15 @@ async def add_tile(
             session=uow.session,
         )
 
-        path = config.image_path
-        upload_dir = Path(path)
+        upload_dir = Path(__name__).parent.parent
+        upload_dir = upload_dir / "static" / "images" / "tiles"
         upload_dir.mkdir(parents=True, exist_ok=True)
         images = [img for img in images if img]
         images.insert(0, main_image)
         for n, img in enumerate(images):
             name = Path(str(tile_record["id"]) + "-" + str(n)).name
             image_path = upload_dir / name
+            log.debug("image_path: %s", image_path)
             await manager.create(
                 TileImages,
                 tile_id=tile_record["id"],

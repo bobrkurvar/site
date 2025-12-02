@@ -11,7 +11,7 @@ from app.exceptions.presentation_handlers import *
 from app.presentation import presentation_router
 from repo import get_db_manager
 
-# from fastapi.staticfiles import StaticFiles
+from fastapi.staticfiles import StaticFiles
 
 
 
@@ -26,8 +26,8 @@ log = logging.getLogger(__name__)
 
 app = FastAPI(lifespan=lifespan)
 
-# BASE_DIR = Path(__file__).resolve().parent
-# app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
+BASE_DIR = Path(__file__).resolve().parent
+app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
 app.include_router(api_router)
 app.include_router(presentation_router)

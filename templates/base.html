@@ -31,7 +31,17 @@
     <!-- Нижняя часть — вкладки -->
     <nav class="header-menu">
         <a href="/" class="menu-link {% if request.url.path == '/' %}active{% endif %}">Главная</a>
-        <a href="/catalog" class="menu-link {% if request.url.path.startswith('/catalog') %}active{% endif %}">Каталог</a>
+        <div class="menu-dropdown">
+            <button class="menu-link dropdown-btn">
+                Каталог
+            </button>
+
+            <div class="dropdown-menu">
+                {% for category in categories %}
+                    <a href="/catalog/{{ category.slug }}">{{ category.name }}</a>
+                {% endfor %}
+            </div>
+        </div>
         <a href="/clients" class="menu-link {% if request.url.path.startswith('/clients') %}active{% endif %}">Для клиентов</a>
     </nav>
 
@@ -42,7 +52,29 @@
     {% endblock %}
 </main>
 
-{% block extra_js %}{% endblock %}
+{% block extra_js %}
+{% endblock %}
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const dropdowns = document.querySelectorAll(".menu-dropdown");
+
+    dropdowns.forEach(drop => {
+        const btn = drop.querySelector(".dropdown-btn");
+        const menu = drop.querySelector(".dropdown-menu");
+
+        btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            menu.classList.toggle("open");
+        });
+    });
+
+    document.addEventListener("click", () => {
+        document.querySelectorAll(".dropdown-menu.open")
+            .forEach(m => m.classList.remove("open"));
+    });
+});
+</script>
 
 </body>
 </html>
