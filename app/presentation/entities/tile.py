@@ -45,7 +45,7 @@ async def insert_slide_image(
 async def insert_slide_image():
     project_root = Path(__file__).resolve().parent.parent.parent.parent
     upload_dir = project_root / "static" / "images" / "slides"
-
+    log.debug("deleted slite dir: %s", upload_dir)
     for f in upload_dir.iterdir():
         if f.is_file() and f.exists():
             f.unlink()
