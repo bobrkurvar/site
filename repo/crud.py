@@ -132,6 +132,7 @@ class Crud:
         limit: int | None = None,
         offset: int | None = None,
         order_by: str | None = None,
+        distinct: str | None = None,
         **filters
     ):
 
@@ -149,6 +150,10 @@ class Crud:
                         options.append(selectinload(getattr(model, join_attr)))
 
             query = select(model)
+
+            if distinct:
+                query.distinct(getattr(model, distinct))
+
             if options:
                 query = query.options(*options)
 

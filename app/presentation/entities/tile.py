@@ -23,9 +23,8 @@ async def insert_slide_image(
     images: Annotated[list[UploadFile], File()]
 ):
 
-    project_root = Path(__file__).resolve().parent.parent.parent
-    upload_dir_str = str(project_root).replace(r"\app", "")
-    upload_dir = Path(upload_dir_str) / "static" / "images" / "slides"
+    path = Path(__file__).resolve().parent.parent.parent.parent
+    upload_dir = Path(path) / "static" / "images" / "slides"
 
     if not upload_dir.exists():
         upload_dir.mkdir(parents=True, exist_ok=True)
@@ -59,11 +58,12 @@ async def insert_slide_image():
 @router.post("/delete")
 async def delete_tile_by_criteria_or_all(
     manager: dbManagerDep,
-    tile_id: Annotated[int | str, Form()],
+    tile_id: Annotated[int, Form()] = None,
 ):
+    log.debug("tile id for delete: %s", tile_id)
     params = {}
     log.debug("tile_id: %s", tile_id)
-    if tile_id != '':
+    if tile_id is not None:
         params["id"] = tile_id
     log.debug("params: %s", params)
     await delete_tile(manager, **params)

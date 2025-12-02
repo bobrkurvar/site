@@ -169,5 +169,5 @@ class Box(Base):
     tiles: Mapped[list["Catalog"]] = relationship("Catalog", back_populates="box")
 
     def model_dump(self):
-        return {"weight": self.weight, "area": self.area}
+        return {"id": self.id, "weight": self.weight, "area": self.area}
 

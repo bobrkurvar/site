@@ -21,7 +21,8 @@ async def add_tile_size(length: Decimal, height: Decimal, width: Decimal, manage
         TileSize, length=length, height=height, width=width, session=session
     )
     if not tile_size:
-        await manager.create(TileSize, length=length, height=height, width=width, session=session)
+        return await manager.create(TileSize, length=length, height=height, width=width, session=session)
+    return tile_size[0]
 
 
 async def add_tile_color(color_name: str, feature_name: str, manager, session):
@@ -79,7 +80,7 @@ async def add_tile(
 
     async with UnitOfWork(manager._session_factory) as uow:
 
-        await add_tile_size(length, height, width, manager, uow.session)
+        size = await add_tile_size(length, height, width, manager, uow.session)
         if surface:
             await add_tile_surface(surface, manager, uow.session)
         await add_tile_color(color, color_feature, manager, uow.session)
@@ -90,16 +91,13 @@ async def add_tile(
         tile_record = await manager.create(
             Tile,
             name=tile_name,
-            size_height=height,
-            size_width=width,
-            size_length=length,
+            tile_size_id=size["id"],
             color_name=color,
             type_name=tile_type,
             feature_name=color_feature,
             surface_name=surface,
             producer_name=producer,
-            box_weight=box.get("weight"),
-            box_area=box.get("area"),
+            box_id = box["id"],
             boxes_count = boxes_count,
             session=uow.session,
         )
@@ -125,21 +123,21 @@ async def add_tile(
         return tile_record
 
 
-async def delete_tile_size(tiles: list, tile_size_id: int,  manager, session):
-    tiles = [
-        tile
-        for tile in tiles
-        if tile.get("size_id") == tile_size_id
-    ]
-    if not tiles:
-        await manager.delete(TileSize, id=tile_size_id, session=session)
-
-
-async def delete_tile_color(tiles: list, color_name: str, feature_name: str, manager, session):
-    tiles = [tile for tile in tiles if tile.get("color_name") == color_name and tile.get("feature_name") == feature_name]
-    if not tiles:
-        log.debug("%s удаляется из справочника", color_name)
-        await manager.delete(TileColor, color_name=color_name, feature_name=feature_name, session=session)
+# async def delete_tile_size(tiles: list, tile_size_id: int,  manager, session):
+#     tiles = [
+#         tile
+#         for tile in tiles
+#         if tile.get("size_id") == tile_size_id
+#     ]
+#     if not tiles:
+#         await manager.delete(TileSize, id=tile_size_id, session=session)
+#
+#
+# async def delete_tile_color(tiles: list, color_name: str, feature_name: str, manager, session):
+#     tiles = [tile for tile in tiles if tile.get("color_name") == color_name and tile.get("feature_name") == feature_name]
+#     if not tiles:
+#         log.debug("%s удаляется из справочника", color_name)
+#         await manager.delete(TileColor, color_name=color_name, feature_name=feature_name, session=session)
 
 
 async def delete_tile(manager, **filters):
@@ -152,20 +150,20 @@ async def delete_tile(manager, **filters):
         all_tiles = await manager.read(Tile, to_join=['size'], session=uow.session)
 
         for tile in tiles:
-            await delete_tile_size(
-                all_tiles,
-                tile.get("size_id"),
-                manager,
-                uow.session,
-            )
-            await delete_tile_color(
-                all_tiles, tile.get("color_name"), tile.get("feature_name"), manager, uow.session
-            )
+            # await delete_tile_size(
+            #     all_tiles,
+            #     tile.get("size_id"),
+            #     manager,
+            #     uow.session,
+            # )
+            # await delete_tile_color(
+            #     all_tiles, tile.get("color_name"), tile.get("feature_name"), manager, uow.session
+            # )
             images_paths = tile["images_paths"]
-            project_root = Path(__file__).resolve().parent.parent.parent
+            project_root = Path(__file__).resolve().parent.parent
             upload_dir_str = str(project_root).replace(r"\app", "")
             absolute_path = Path(upload_dir_str)
-            log.debug("absolute_path: %s", absolute_path)
+            #log.debug("absolute_path: %s", absolute_path)
             for image in images_paths:
                 image_str = image.lstrip('/')
                 image_path = absolute_path / image_str
