@@ -28,6 +28,7 @@ async def get_main_page(request: Request, manager: dbManagerDep):
 
 
     categories = await manager.read(Tile, distinct="type_name")
+    log.debug("categories: %s", categories)
     categories = [Types(name=category["type_name"]) for category in categories]
 
     log.debug("categories: %s", categories)
