@@ -38,20 +38,12 @@ async def admin_page(request: Request, manager: dbManagerDep):
 
     for tile_color in tile_colors:
         unique_colors.add(tile_color["color_name"])
-        unique_features.add(tile_color["feature_name"])
-    # for color in tile_colors:
-    #     if color.get("color_name") not in unique_color:
-    #         tile_colors_unique_color.append(color)
-    #         unique_color.add(color.get("color_name"))
-    #
-    #     if color.get("feature_name") not in unique_feature:
-    #         tile_colors_unique_feature.append(color)
-    #         unique_feature.add(color.get("feature_name"))
+        if tile_color["feature_name"] != "":
+            unique_features.add(tile_color["feature_name"])
 
-    # unique_weight = set()
-    # unique_area = set()
     boxes_unique_weight = set()
     boxes_unique_area =  set()
+
     for box in boxes:
         boxes_unique_weight.add(box["weight"])
         boxes_unique_area.add(box["area"])
@@ -59,15 +51,8 @@ async def admin_page(request: Request, manager: dbManagerDep):
     tiles = [map_to_tile_domain(t) for t in tiles]
     boxes_unique_count = set(tile.boxes_count for tile in tiles)
 
-    # for box in boxes:
-    #     if box.get("weight") not in unique_weight:
-    #         boxes_unique_weight.append(box)
-    #         unique_weight.add(box.get("weight"))
-    #
-    #     if box.get("area") not in unique_area:
-    #         boxes_unique_area.append(box)
-    #         unique_area.add(box.get("area"))
-
+    log.debug("colors_names: %s", unique_colors)
+    log.debug("features_names: %s", unique_features)
     categories = await manager.read(Types)
 
     return templates.TemplateResponse(

@@ -85,14 +85,14 @@
                 <input type="text" name="color_name" id="color_name" placeholder="Название цвета" list="color-name-list">
                 <datalist id="color-name-list">
                     {% for color in unique_colors %}
-                        <option value="{{ color.color_name }}">
+                        <option value="{{ color }}">
                     {% endfor %}
                 </datalist>
 
                 <input type="text" name="color_feature" id="color_feature" placeholder="Свойство цвета" list="color-feature-list">
                 <datalist id="color-feature-list">
-                    {% for color in unique_features %}
-                        <option value="{{ color.feature_name }}">
+                    {% for feature in unique_features %}
+                        <option value="{{ feature }}">
                     {% endfor %}
                 </datalist>
             </div>
@@ -124,8 +124,8 @@
                 <h3>Вес коробки</h3>
                 <input type="number" step="0.01" name="box_weight" id="box_weight" placeholder="Вес коробки" list="box-weight-list">
                 <datalist id="box-weight-list">
-                    {% for box in boxes_unique_weight %}
-                        <option value="{{ box.weight }}">
+                    {% for weight in boxes_unique_weight %}
+                        <option value="{{ weight }}">
                     {% endfor %}
                 </datalist>
             </div>
@@ -135,8 +135,8 @@
                 <h3>Количество метров</h3>
                 <input type="number" step="0.01" name="box_area" id="box_area" placeholder="Метры" list="box-area-list">
                 <datalist id="box-area-list">
-                    {% for box in boxes_unique_area %}
-                        <option value="{{ box.area }}">
+                    {% for area in boxes_unique_area %}
+                        <option value="{{ area }}">
                     {% endfor %}
                 </datalist>
             </div>
