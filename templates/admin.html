@@ -165,25 +165,9 @@
             {% for tile in tiles %}
             <div class="tile-item">
                 <div class="tile-info">
+                    <strong>{{ tile.article }}</strong>
                     <strong>{{ tile.name }}</strong>
-                    <span>Размер: {{ tile.size_width }}x{{ tile.size_height }}</span>
-                    {% if tile.feature_name %}
-                        <span>Цвет: {{ tile.color_name }} ({{ tile.feature_name }})</span>
-                    {% else %}
-                        <span>Цвет: {{ tile.color_name }}</span>
-                    {% endif %}
-                    {% if tile.surface_name %}
-                        <span>Поверхность: {{ tile.surface_name }}</span>
-                    {% endif %}
-                    {% if tile.images_paths %}
-                        {% for img in tile.images_paths %}
-                        <img src="{{ img }}"
-                             alt="{{ tile.name }}"
-                             class="tile-image">
-                        {% else %}
-                        <span class="no-image">Нет изображения</span>
-                        {% endfor %}
-                    {% endif %}
+                    <span>Размер: {{ tile.size.length }} {{ tile.size.width }} {{ tile.size.height }}</span>
                 </div>
                 <div class="tile-actions">
                     <form method="post" action="/admin/tiles/delete">
@@ -212,7 +196,7 @@
             <div class="characteristics-list">
                 {% for size in tile_sizes %}
                 <div class="characteristic-item">
-                    <span>{{ size.name }} ({{ size.width }}×{{ size.height }})</span>
+                    <span>{{ size.length }}×{{ size.width }}×{{ size.height }}</span>
                     <form method="post" action="/admin/tiles/sizes/delete">
                         <input type="hidden" name="height" value="{{ size.height }}">
                         <input type="hidden" name="width" value="{{ size.width }}">
@@ -234,7 +218,7 @@
                 {% for color in tile_colors %}
                 <div class="characteristic-item">
                     {% if color.feature_name %}
-                        <span>{{ color.color_name }} ({{ color.feature_name }})</span>
+                        <span>{{ color.color_name }} : {{ color.feature_name }}</span>
                     {% else %}
                         <span>{{ color.color_name }}</span>
                     {% endif %}
