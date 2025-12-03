@@ -19,7 +19,7 @@ async def admin_create_tile_box(
 ):
     filters = {}
     if name is not None:
-        filters["producer_name"] = name
+        filters["name"] = name
 
     await manager.delete(Producer, **filters)
     return RedirectResponse("/admin", status_code=303)

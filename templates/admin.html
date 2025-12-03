@@ -21,13 +21,13 @@
 </header>
 
 <main class="admin-panel">
-    {% if error %}
-    <div class="error-banner">
+    {% if request.query_params.err %}
+        <div class="error-banner">
         <div class="error-content">
             <span class="error-icon">⚠️</span>
-            <span class="error-text">{{ error }}</span>
+            <span class="error-text">{{ request.query_params.err }}</span>
         </div>
-    </div>
+        </div>
     {% endif %}
 
     <!-- Форма добавления товара -->
