@@ -94,11 +94,6 @@ async def add_tile(
         return tile_record
 
 
-# async def delete_category_if_need(category: str, manager, session):
-#     exists = await manager.read(Tile, type_name=category, session=session)
-#     if not exists:
-#         log.debug("deleted category: %s", category)
-#         await manager.delete(Types, name=category, session=session)
 
 async def delete_tile(manager, **filters):
 
@@ -110,7 +105,6 @@ async def delete_tile(manager, **filters):
         await manager.delete(Tile, session=uow.session, **filters)
 
         for tile in tiles:
-            #await delete_category_if_need(tile["tile_type"], manager, uow.session)
             images_paths = tile["images_paths"]
             project_root = Path(__file__).resolve().parent.parent
             upload_dir_str = str(project_root).replace(r"\app", "")
