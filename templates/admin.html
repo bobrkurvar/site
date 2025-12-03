@@ -222,7 +222,7 @@
                     {% else %}
                         <span>{{ color.color_name }}</span>
                     {% endif %}
-                    <form method="post" action="/admin/tiles/color/delete">
+                    <form method="post" action="/admin/tiles/colors/delete">
                         <input type="hidden" name="color_name" value="{{ color.color_name }}">
                         <input type="hidden" name="feature_name" value="{{ color.feature_name }}">
                         <button type="submit" class="delete-btn"
@@ -242,7 +242,7 @@
                 {% for surface in tile_surfaces %}
                 <div class="characteristic-item">
                     <span>{{ surface.name }}</span>
-                    <form method="post" action="/admin/tiles/surface/delete">
+                    <form method="post" action="/admin/tiles/surfaces/delete">
                         <input type="hidden" name="name" value="{{ surface.name }}">
                         <button type="submit" class="delete-btn"
                                 onclick="return confirm('Удалить поверхность?')">
@@ -295,7 +295,7 @@
 
         <!-- Категории -->
         <div class="characteristics-group">
-            <h3 data-count="{{ categories|length }} шт.">Производители</h3>
+            <h3 data-count="{{ categories|length }} шт.">Категории</h3>
             <div class="characteristics-list">
                 {% for category in categories %}
                 <div class="characteristic-item">
@@ -325,13 +325,13 @@
                     Удалить все товары
                 </button>
             </form>
-            <form method="post" action="/admin/tiles/color/delete">
+            <form method="post" action="/admin/tiles/colors/delete">
                 <button type="submit" class="delete-all-btn"
                         onclick="return confirm('Удалить ВСЕ цвета?')">
                     Удалить все цвета
                 </button>
             </form>
-            <form method="post" action="/admin/tiles/surface/delete">
+            <form method="post" action="/admin/tiles/surfaces/delete">
                 <button type="submit" class="delete-all-btn"
                         onclick="return confirm('Удалить ВСЕ поверхности?')">
                     Удалить все поверхности
