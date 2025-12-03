@@ -233,7 +233,11 @@
             <div class="characteristics-list">
                 {% for color in tile_colors %}
                 <div class="characteristic-item">
-                    <span>{{ color.color_name }} ({{ color.feature_name }})</span>
+                    {% if color.feature_name %}
+                        <span>{{ color.color_name }} ({{ color.feature_name }})</span>
+                    {% else %}
+                        <span>{{ color.color_name }}</span>
+                    {% endif %}
                     <form method="post" action="/admin/tiles/color/delete">
                         <input type="hidden" name="color_name" value="{{ color.color_name }}">
                         <input type="hidden" name="feature_name" value="{{ color.feature_name }}">
