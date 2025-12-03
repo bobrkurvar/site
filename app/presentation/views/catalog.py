@@ -86,7 +86,7 @@ async def get_catalog_tiles_page(
     total_count = len(await manager.read(Tile, **filters))
     total_pages = max((total_count + limit - 1) // limit, 1)
 
-    categories = await manager.read(Tile, type_name=Types.get_category_from_slug(category), distinct="type_name")
+    categories = await manager.read(Tile, distinct="type_name")
     categories = [Types(name=category["tile_type"]) for category in categories]
 
     return templates.TemplateResponse(
@@ -116,7 +116,7 @@ async def get_tile_page(request: Request, category: str, tile_id: int, manager: 
         images = tile["images_paths"]
     log.debug("detail images: %s", images)
     tile = map_to_tile_domain(tile)
-    categories = await manager.read(Tile, type_name=Types.get_category_from_slug(category), distinct="type_name")
+    categories = await manager.read(Tile, distinct="type_name")
     categories = [Types(name=category["tile_type"]) for category in categories]
     return templates.TemplateResponse(
         "tile_detail.html",
