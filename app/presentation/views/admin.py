@@ -33,35 +33,40 @@ async def admin_page(request: Request, manager: dbManagerDep):
     boxes = await manager.read(Box)
     producers = await manager.read(Producer)
 
-    unique_color = set()
-    unique_feature = set()
-    tile_colors_unique_color = []
-    tile_colors_unique_feature = []
-    for color in tile_colors:
-        if color.get("color_name") not in unique_color:
-            tile_colors_unique_color.append(color)
-            unique_color.add(color.get("color_name"))
+    unique_colors = set()
+    unique_features = set()
 
-        if color.get("feature_name") not in unique_feature:
-            tile_colors_unique_feature.append(color)
-            unique_feature.add(color.get("feature_name"))
+    for tile_color in tile_colors:
+        unique_colors.add(tile_color["color_name"])
+        unique_features.add(tile_color["feature_name"])
+    # for color in tile_colors:
+    #     if color.get("color_name") not in unique_color:
+    #         tile_colors_unique_color.append(color)
+    #         unique_color.add(color.get("color_name"))
+    #
+    #     if color.get("feature_name") not in unique_feature:
+    #         tile_colors_unique_feature.append(color)
+    #         unique_feature.add(color.get("feature_name"))
 
-    unique_weight = set()
-    unique_area = set()
-    boxes_unique_weight = []
-    boxes_unique_area = []
+    # unique_weight = set()
+    # unique_area = set()
+    boxes_unique_weight = set()
+    boxes_unique_area =  set()
+    for box in boxes:
+        boxes_unique_weight.add(box["weight"])
+        boxes_unique_area.add(box["area"])
 
     tiles = [map_to_tile_domain(t) for t in tiles]
     boxes_unique_count = set(tile.boxes_count for tile in tiles)
 
-    for box in boxes:
-        if box.get("weight") not in unique_weight:
-            boxes_unique_weight.append(box)
-            unique_weight.add(box.get("weight"))
-
-        if box.get("area") not in unique_area:
-            boxes_unique_area.append(box)
-            unique_area.add(box.get("area"))
+    # for box in boxes:
+    #     if box.get("weight") not in unique_weight:
+    #         boxes_unique_weight.append(box)
+    #         unique_weight.add(box.get("weight"))
+    #
+    #     if box.get("area") not in unique_area:
+    #         boxes_unique_area.append(box)
+    #         unique_area.add(box.get("area"))
 
     categories = await manager.read(Types)
 
@@ -75,8 +80,8 @@ async def admin_page(request: Request, manager: dbManagerDep):
             "tile_surfaces": surfaces,
             "boxes": boxes,
             "producers": producers,
-            "unique_colors": tile_colors_unique_color,
-            "unique_features": tile_colors_unique_feature,
+            "unique_colors": unique_colors,
+            "unique_features": unique_features,
             "boxes_unique_weight": boxes_unique_weight,
             "boxes_unique_area": boxes_unique_area,
             "categories": categories,
