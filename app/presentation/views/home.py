@@ -4,7 +4,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.templating import Jinja2Templates
-from domain import Types
+from domain import Tile, Types
 
 from repo import Crud, get_db_manager
 
@@ -27,8 +27,8 @@ async def get_main_page(request: Request, manager: dbManagerDep):
     ]
 
 
-    categories = await manager.read(Types)
-    categories = [Types(**category) for category in categories]
+    categories = await manager.read(Tile, distinct="type_name")
+    categories = [Types(name=category["type_name"]) for category in categories]
 
     log.debug("categories: %s", categories)
 
