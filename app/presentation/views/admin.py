@@ -75,11 +75,11 @@ async def admin_page(request: Request, manager: dbManagerDep):
             "tile_surfaces": surfaces,
             "boxes": boxes,
             "producers": producers,
-            "colors_unique_color": tile_colors_unique_color,
-            "colors_unique_feature": tile_colors_unique_feature,
+            "unique_colors": tile_colors_unique_color,
+            "unique_features": tile_colors_unique_feature,
             "boxes_unique_weight": boxes_unique_weight,
             "boxes_unique_area": boxes_unique_area,
             "categories": categories,
-            "boxes_unique_count": boxes_unique_count
+            "boxes_unique_count": boxes_unique_count,
         },
     )

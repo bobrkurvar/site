@@ -61,8 +61,8 @@
                 <h3>Типы товаров</h3>
                 <input type="text" name="tile_type" id="tile_type" placeholder="Тип товара" list="tiles-types-list">
                 <datalist id="tiles-types-list">
-                    {% for tile in tiles %}
-                        <option value="{{ tile.tile_type }}">
+                    {% for category in categories %}
+                        <option value="{{ category.name }}">
                     {% endfor %}
                 </datalist>
             </div>
@@ -84,14 +84,14 @@
                 <h3>Цвет</h3>
                 <input type="text" name="color_name" id="color_name" placeholder="Название цвета" list="color-name-list">
                 <datalist id="color-name-list">
-                    {% for color in tile_colors_unique_color %}
+                    {% for color in unique_colors %}
                         <option value="{{ color.color_name }}">
                     {% endfor %}
                 </datalist>
 
                 <input type="text" name="color_feature" id="color_feature" placeholder="Свойство цвета" list="color-feature-list">
                 <datalist id="color-feature-list">
-                    {% for color in tile_colors_unique_feature %}
+                    {% for color in unique_features %}
                         <option value="{{ color.feature_name }}">
                     {% endfor %}
                 </datalist>
