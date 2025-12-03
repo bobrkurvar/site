@@ -162,14 +162,11 @@ class Crud:
             for field, value in filters.items():
                 query = query.where(getattr(model, field) == value)
 
-
             if distinct:
                 query = query.distinct(getattr(model, distinct))
 
-
             if order_by:
                 query = query.order_by(getattr(model, order_by))
-
 
             if offset:
                 query = query.offset(offset)

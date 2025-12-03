@@ -3,6 +3,7 @@ class FakeStorage:
     Простая in-memory "БД".
     Хранит таблицы в словарях.
     """
+
     def __init__(self):
         self.tables = {}
 
@@ -46,9 +47,7 @@ class FakeCRUD:
             fk_value = getattr(obj, field)
             fk_table = self.storage.tables[fk_model]
             if fk_value not in fk_table:
-                raise FakeCrudError(
-                    f"FK {field}={fk_value} not in {fk_model.__name__}"
-                )
+                raise FakeCrudError(f"FK {field}={fk_value} not in {fk_model.__name__}")
 
         table[obj.id] = obj
         return obj
@@ -66,6 +65,7 @@ class FakeCRUD:
         if obj_id not in self.storage.tables[self.model]:
             raise FakeCrudError(f"{self.model.__name__} with id={obj_id} not found")
         del self.storage.tables[self.model][obj_id]
+
 
 class FakeUoW:
     def __init__(self):

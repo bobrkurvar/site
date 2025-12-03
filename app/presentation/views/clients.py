@@ -1,8 +1,7 @@
 import logging
+
 from fastapi import APIRouter
 from fastapi.responses import RedirectResponse
-
-
 
 router = APIRouter()
 

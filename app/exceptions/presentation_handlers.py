@@ -1,6 +1,5 @@
 import logging
 
-
 from fastapi import Request, status
 from fastapi.responses import RedirectResponse
 
@@ -18,8 +17,7 @@ async def admin_not_found_handler(request: Request, exc: NotFoundError):
 
 async def admin_already_exists_handler(request: Request, exc: AlreadyExistsError):
     log.error("Ошибка создания в базе данных: %s", exc)
-    return RedirectResponse("/admin?err=409",  status_code=303)
-
+    return RedirectResponse("/admin?err=409", status_code=303)
 
 
 async def admin_foreign_key_handler(
@@ -34,10 +32,10 @@ async def admin_database_error_handler(request: Request, exc: DatabaseError):
     return RedirectResponse("/admin?err=500", status_code=303)
 
 
-
 async def admin_global_error_handler(request: Request, exc: Exception):
     log.error("Глобальная ошибка: %s", exc)
     return RedirectResponse("/admin?err=500", status_code=303)
+
 
 async def presentation_global_error_handler(request: Request, exc: Exception):
     log.error("Глобальная ошибка: %s", exc)

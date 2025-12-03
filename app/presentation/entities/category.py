@@ -13,10 +13,7 @@ log = logging.getLogger(__name__)
 
 
 @router.post("/delete")
-async def admin_create_tile_box(
-    manager: dbManagerDep,
-    name: Annotated[str, Form()]
-):
+async def admin_create_tile_box(manager: dbManagerDep, name: Annotated[str, Form()]):
     filters = {}
     if name is not None:
         filters["name"] = name

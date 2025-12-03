@@ -94,7 +94,6 @@ async def add_tile(
         return tile_record
 
 
-
 async def delete_tile(manager, **filters):
 
     async with UnitOfWork(manager._session_factory) as uow:

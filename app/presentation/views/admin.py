@@ -42,7 +42,7 @@ async def admin_page(request: Request, manager: dbManagerDep):
             unique_features.add(tile_color["feature_name"])
 
     boxes_unique_weight = set()
-    boxes_unique_area =  set()
+    boxes_unique_area = set()
 
     for box in boxes:
         boxes_unique_weight.add(box["weight"])

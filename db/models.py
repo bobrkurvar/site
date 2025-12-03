@@ -105,7 +105,6 @@ class TileImages(Base):
     image_path: Mapped[str] = mapped_column(default=config.image_path)
     tile: Mapped["Catalog"] = relationship("Catalog", back_populates="images")
 
-
     def model_dump(self):
         return {
             "image_id": self.image_id,
@@ -125,10 +124,7 @@ class TileSize(Base):
         back_populates="size",
     )
 
-    __table_args__ = (
-        UniqueConstraint("length", "width", "height"),
-    )
-
+    __table_args__ = (UniqueConstraint("length", "width", "height"),)
 
     def model_dump(self):
         return {
@@ -183,11 +179,7 @@ class Box(Base):
     area: Mapped[Decimal] = mapped_column(DECIMAL(8, 2))
     tiles: Mapped[list["Catalog"]] = relationship("Catalog", back_populates="box")
 
-
-    __table_args__ = (
-        UniqueConstraint("weight", "area"),
-    )
-
+    __table_args__ = (UniqueConstraint("weight", "area"),)
 
     def model_dump(self):
         return {"id": self.id, "weight": self.weight, "area": self.area}

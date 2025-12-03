@@ -5,7 +5,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Request
 from fastapi.templating import Jinja2Templates
 
-from domain import Tile, TileSize, map_to_tile_domain, Types
+from domain import Tile, TileSize, Types, map_to_tile_domain
 from repo import Crud, get_db_manager
 
 router = APIRouter(tags=["presentation"], prefix="/catalog")
@@ -52,7 +52,9 @@ async def get_catalog_tiles_page(
     if category is not None:
         filter_filters["type_name"] = Types.get_category_from_slug(category)
 
-    tile_sizes = await manager.read(Tile, to_join=["size"], distinct="tile_size_id", **filter_filters)
+    tile_sizes = await manager.read(
+        Tile, to_join=["size"], distinct="tile_size_id", **filter_filters
+    )
     tile_colors = await manager.read(Tile, distinct="color_name", **filter_filters)
 
     sizes = [
@@ -82,7 +84,6 @@ async def get_catalog_tiles_page(
 
     tiles = [map_to_tile_domain(tile) for tile in tiles]
 
-
     total_count = len(await manager.read(Tile, **filters))
     total_pages = max((total_count + limit - 1) // limit, 1)
 
@@ -101,15 +102,21 @@ async def get_catalog_tiles_page(
             "total_count": total_count,
             "main_images": main_images,
             "categories": categories,
-            "category": category
+            "category": category,
         },
     )
 
 
-
 @router.get("/{category}/{tile_id}")
-async def get_tile_page(request: Request, category: str, tile_id: int, manager: dbManagerDep):
-    tile = await manager.read(Tile, to_join=["images", "size", "box"], type_name=Types.get_category_from_slug(category), id=tile_id)
+async def get_tile_page(
+    request: Request, category: str, tile_id: int, manager: dbManagerDep
+):
+    tile = await manager.read(
+        Tile,
+        to_join=["images", "size", "box"],
+        type_name=Types.get_category_from_slug(category),
+        id=tile_id,
+    )
     tile = tile[0] if tile else {}
     images = []
     if tile:
