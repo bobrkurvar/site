@@ -4,8 +4,8 @@ import logging
 
 log = logging.getLogger(__name__)
 
-def build_tile_filters(
-    category: str | None, name: str | None, size: str | None, color: str | None
+async def build_tile_filters(
+    manager, category: str | None, name: str | None, size: str | None, color: str | None
 ) -> dict:
     filters = {}
     if name:
@@ -14,9 +14,10 @@ def build_tile_filters(
         filters["color_name"] = color
     if size:
         length, width, height = (Decimal(i) for i in size.split("×"))
-        filters["size_length"] = length
-        filters["size_width"] = width
-        filters["size_height"] = height
+        tile_size_id = (
+            await manager.read(TileSize, length=length, width=width, height=height)
+        )[0]
+        filters["tile_size_id"] = tile_size_id["id"]
 
     if category is not None:
         filters["type_name"] = Types.get_category_from_slug(category)
