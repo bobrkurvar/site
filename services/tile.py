@@ -32,9 +32,12 @@ async def add_tile(
     images: list[bytes] | list,
     color_feature: str = "",
     surface: str | None = None,
+    fs=aiofiles,
+    uow_class=UnitOfWork,
+    upload_root=None,
 ):
 
-    async with UnitOfWork(manager._session_factory) as uow:
+    async with uow_class(manager._session_factory) as uow:
 
         size = await add_items(
             TileSize, manager, uow.session, height=height, width=width, length=length
@@ -68,7 +71,7 @@ async def add_tile(
             session=uow.session,
         )
 
-        upload_dir = Path(__name__).parent.parent
+        upload_dir = upload_root or Path(__name__).parent.parent
         upload_dir = upload_dir / "static" / "images" / "tiles"
         upload_dir.mkdir(parents=True, exist_ok=True)
         images = [img for img in images if img]
@@ -85,7 +88,7 @@ async def add_tile(
             )
 
             try:
-                async with aiofiles.open(image_path, "xb") as fw:
+                async with fs.open(image_path, "xb") as fw:
                     await fw.write(img)
             except FileExistsError:
                 log.debug("путь %s уже занять", image_path)
