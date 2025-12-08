@@ -3,6 +3,9 @@
 .idea/
 alembic.ini
 static/images/tiles/**
+static/images/collections/**
+static/images/slides/**
+
 
 
 

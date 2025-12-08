@@ -22,12 +22,12 @@ class TileSize:
 
 
 class TileColor:
-    def __init__(self, name: str, feature: str = ""):
-        self.name = name
-        self.feature = feature
+    def __init__(self, color_name: str, feature_name: str = ""):
+        self.color_name = color_name
+        self.feature_name = feature_name
 
     def __str__(self):
-        return f"{self.name} {self.feature}"
+        return f"{self.color_name} {self.feature_name}"
 
 
 class TileSurface:
@@ -114,6 +114,25 @@ class TileImages:
     def __init__(self, images: list[bytes]):
         self.images = images
 
+class Collections:
+    _slug_to_name = {}
+
+    def __init__(self, name: str, image_path: str, category: str):
+        self.name = name
+        self.image_path = image_path
+        self.slug = slugify(name)
+        self.category = category
+        self.__class__._slug_to_name[self.slug] = name
+
+    def __str__(self):
+        return self.name
+
+    @classmethod
+    def get_category_from_slug(cls, slug: str):
+        return cls._slug_to_name[slug]
+
+
+
 
 def map_to_tile_domain(tile_dict: dict) -> Tile:
     size = TileSize(
@@ -122,7 +141,7 @@ def map_to_tile_domain(tile_dict: dict) -> Tile:
         width=tile_dict["size_width"],
         length=tile_dict["size_length"],
     )
-    color = TileColor(name=tile_dict["color_name"], feature=tile_dict["feature_name"])
+    color = TileColor(color_name=tile_dict["color_name"], feature_name=tile_dict["feature_name"])
     surface = (
         TileSurface(name=tile_dict["surface_name"])
         if tile_dict["surface_name"]

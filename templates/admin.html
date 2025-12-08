@@ -158,6 +158,36 @@
         </form>
     </section>
 
+    <!-- Форма создания коллекции -->
+    <section class="create-collection-section">
+        <h3>Создать новую коллекцию</h3>
+        <form method="POST" action="/admin/tiles/collections/create" enctype="multipart/form-data">
+            <!-- Название коллекции -->
+            <div class="form-group">
+                <label for="collection_name">Название коллекции</label>
+                <input type="text" id="collection_name" name="name" placeholder="Введите название коллекции" required>
+            </div>
+
+            <!-- Категория-->
+            <label for="collection_category">Категория</label>
+            <select id="collection_category" name="category" required>
+                {% for cat in categories %}
+                    <option value="{{ cat.name }}" {% if loop.first %}selected{% endif %}>{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+
+
+            <!-- Изображение коллекции -->
+            <div class="form-group">
+                <label for="collection_image">Изображение коллекции</label>
+                <input type="file" id="collection_image" name="image" accept="image/*" required>
+            </div>
+
+            <!-- Кнопка создания коллекции -->
+            <button type="submit" id="create-collection-btn">Создать коллекцию</button>
+        </form>
+    </section>
+
     <!-- Список товаров -->
     <section class="admin-section">
         <h2 data-count="{{ tiles|length }} шт.">Список товаров - {{ tiles|length }} шт.</h2>
