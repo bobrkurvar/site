@@ -107,7 +107,6 @@ async def get_catalog_tiles_page(
     offset = (page - 1) * limit
 
     collections, tiles, tile_sizes, tile_colors = await fetch_tiles(manager, limit, offset, Types.get_category_from_slug(category), **filters)
-    #log.debug("tiles: %s collections: %s", tiles, collections)
     collections = [Collections(**collection) for collection in collections]
     sizes, colors = build_sizes_and_colors(tile_sizes, tile_colors)
     main_images = build_main_images(tiles)
