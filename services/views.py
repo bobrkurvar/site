@@ -55,7 +55,7 @@ def extract_quoted_word(name: str) -> str | None:
 async def fetch_tiles(manager, limit, offset, category = None, page = 1, **filters):
 
     if category:
-        filters.update({"tile_type": category})
+        filters.update({"type_name": category})
 
     tile_sizes = await manager.read(
         Tile, to_join=["size"], distinct="tile_size_id", **filters
