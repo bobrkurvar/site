@@ -54,12 +54,13 @@ def extract_quoted_word(name: str) -> str | None:
 
 async def fetch_tiles(manager, limit, offset, category = None, page = 1, **filters):
 
+    if category:
+        filters.update({"tile_type": category})
+
     tile_sizes = await manager.read(
         Tile, to_join=["size"], distinct="tile_size_id", **filters
     )
     tile_colors = await manager.read(Tile, distinct="color_name", **filters)
-
-
 
     tiles = await manager.read(
         Tile, to_join=["images", "size", "box"], limit=limit, offset=offset, **filters
@@ -70,17 +71,15 @@ async def fetch_tiles(manager, limit, offset, category = None, page = 1, **filte
         colls_names = [coll["name"] for coll in colls]
         log.debug("category: %s colls: %s", category, colls_names)
         tiles = [tile for tile in tiles if extract_quoted_word(tile["name"]) not in colls_names]
-        tiles_size_ids = [tile["size_id"] for tile in tiles]
         tile_colors = [tile for tile in tile_colors if extract_quoted_word(tile["name"]) not in colls_names]
-        tile_sizes = [tile_size for tile_size in tile_sizes if tile_size["size_id"] in tiles_size_ids]
+        tile_sizes = [tile_size for tile_size in tile_sizes if extract_quoted_word(tile_size["name"]) not in colls_names]
     else:
         colls = await manager.read(Collections)
         colls_names = [coll["name"] for coll in colls]
         log.debug("colls: %s",colls_names)
         tiles = [tile for tile in tiles if extract_quoted_word(tile["name"]) in colls_names]
-        tiles_size_ids = [tile["size_id"] for tile in tiles]
         tile_colors = [tile for tile in tile_colors if extract_quoted_word(tile["name"]) in colls_names]
-        tile_sizes = [tile_size for tile_size in tile_sizes if tile_size["size_id"] in tiles_size_ids]
+        tile_sizes = [tile_size for tile_size in tile_sizes if extract_quoted_word(tile_size["name"]) in colls_names]
         colls = []
 
 
