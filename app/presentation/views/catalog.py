@@ -68,7 +68,7 @@ async def get_catalog_tiles_page(
     main_images = build_main_images(tiles)
     tiles = [map_to_tile_domain(tile) for tile in tiles]
 
-    total_count = len(await manager.read(Tile, **filters))
+    total_count = len(tiles)
     total_pages = max((total_count + limit - 1) // limit, 1)
     categories = await manager.read(Tile, distinct="type_name")
     categories = [Types(name=category["tile_type"]) for category in categories]
@@ -113,7 +113,7 @@ async def get_catalog_tiles_page(
     main_images = build_main_images(tiles)
     tiles = [map_to_tile_domain(tile) for tile in tiles]
 
-    total_count = len(await manager.read(Tile, **filters))
+    total_count = len(tiles)
     total_pages = max((total_count + limit - 1) // limit, 1)
     categories = await manager.read(Tile, distinct="type_name")
     categories = [Types(name=category["tile_type"]) for category in categories]

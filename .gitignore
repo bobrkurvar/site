@@ -3,13 +3,8 @@
 .idea/
 alembic.ini
 static/images/tiles/**
-!static/images/tiles/.gitkeep
-
 static/images/collections/**
-!static/images/collections/.gitkeep
-
 static/images/slides/**
-!static/images/slides/.gitkeep
 
 
 
