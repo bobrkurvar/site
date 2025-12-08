@@ -14,7 +14,10 @@ def build_tile_filters(
         filters["color_name"] = color
     if size:
         length, width, height = (Decimal(i) for i in size.split("×"))
-        filters["tile_size_tuple"] = (length, width, height)
+        filters["size_length"] = length
+        filters["size_width"] = width
+        filters["size_height"] = height
+
     if category is not None:
         filters["type_name"] = Types.get_category_from_slug(category)
     return filters
