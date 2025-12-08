@@ -112,6 +112,9 @@ class TileImages(Base):
             "image_path": self.image_path,
         }
 
+class Collections(Base):
+    __tablename__ = "collections"
+    name: Mapped[str] = mapped_column(primary_key=True)
 
 class TileSize(Base):
     __tablename__ = "tile_sizes"

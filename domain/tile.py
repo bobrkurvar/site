@@ -114,6 +114,11 @@ class TileImages:
     def __init__(self, images: list[bytes]):
         self.images = images
 
+class Collections:
+
+    def __init__(self, name: str):
+        self.name = name
+
 
 def map_to_tile_domain(tile_dict: dict) -> Tile:
     size = TileSize(
