@@ -102,7 +102,7 @@ async def get_catalog_tiles_page(
     color: str | None = None,
     page: int = 1,
 ):
-    filters = build_tile_filters(category, name, size, color)
+    filters = await build_tile_filters(manager, category, name, size, color)
     limit = ITEMS_PER_PAGE
     offset = (page - 1) * limit
 
