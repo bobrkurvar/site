@@ -6,17 +6,12 @@
 
 {% block content %}
 <main class="catalog-panel">
-    <div class="catalog-header">
-        <h2>Наша коллекция плитки</h2>
-        <p>Всего товаров: {{ total_count }} шт.</p>
-    </div>
-
     <div class="catalog-layout">
         <!-- Панель фильтров сбоку -->
         <aside class="filters-sidebar">
             <div class="filters-panel">
                 <h3>Фильтры</h3>
-                <form class="filters-form" method="get" action="/catalog/{{ category }}" id="filtersForm">
+                <form class="filters-form" method="get" action="{{ path }}" id="filtersForm">
                     <div class="filter-group">
                         <label>Поиск по названию:</label>
                         <input type="text" name="name" placeholder="Введите название..."
@@ -53,14 +48,44 @@
 
                     <div class="filter-actions">
                         <button type="submit" class="filter-btn">Применить фильтры</button>
-                        <a href="/catalog/{{ category }}" class="clear-filters">Сбросить</a>
+                        <a href="{{ path }}" class="clear-filters">Сбросить</a>
                     </div>
                 </form>
             </div>
         </aside>
 
-        <!-- Основной контент с товарами -->
+
+        <!-- Основной контент с товарами и коллекциями -->
         <section class="products-section">
+            <!-- Секции коллекций -->
+            {% if collections %}
+                <div class="catalog-header">
+                    <h2 class="catalog-header">Коллекции</h2>
+                </div>
+                <div class="tile-grid">
+                    {% for col in collections %}
+                    <a href="/catalog/{{ category }}/{{ col.slug }}" class="tile-card-link">
+                        <div class="tile-card">
+                            <div class="tile-image-container">
+                                {% if col.image_path %}
+                                <img src="/{{ col.image_path }}" alt="{{ col.name }}" class="tile-image" loading="lazy">
+                                {% else %}
+                                <div class="no-image">Нет изображения</div>
+                                {% endif %}
+                            </div>
+                            <div class="tile-header">
+                                <h3 class="tile-title">{{ col.name }}</h3>
+                            </div>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="catalog-header">
+                <h2>Всего товаров: {{ total_count }} шт.</h2>
+            </div>
+
             <div class="tile-grid">
                 {% for tile in tiles %}
                 <a href="/catalog/{{ tile.present_tile_url }}/{{ tile.article }}" class="tile-card-link">

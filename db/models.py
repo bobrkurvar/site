@@ -58,6 +58,7 @@ class Catalog(Base):
             "producer_name": self.producer_name,
             "boxes_count": self.boxes_count,
             "tile_type": self.type_name,
+            "size_id": self.tile_size_id,
         }
 
         try:
@@ -71,7 +72,6 @@ class Catalog(Base):
 
         try:
             if self.size:
-                data["size_id"] = self.size.id
                 data["size_length"] = self.size.length
                 data["size_height"] = self.size.height
                 data["size_width"] = self.size.width
@@ -94,6 +94,8 @@ class Types(Base):
     name: Mapped[str] = mapped_column(primary_key=True)
     tiles: Mapped[list["Catalog"]] = relationship("Catalog", back_populates="type")
 
+    collection: Mapped["Collections"] = relationship("Collections", back_populates="type")
+
     def model_dump(self):
         return {"name": self.name}
 
@@ -115,6 +117,13 @@ class TileImages(Base):
 class Collections(Base):
     __tablename__ = "collections"
     name: Mapped[str] = mapped_column(primary_key=True)
+    image_path: Mapped[str] = mapped_column(unique=True, default=config.image_path)
+    category: Mapped[str] = mapped_column(ForeignKey("types.name"))
+
+    type: Mapped["Types"] = relationship("Types", back_populates="collection")
+
+    def model_dump(self):
+        return {"name": self.name, "image_path": self.image_path, "category": self.category}
 
 class TileSize(Base):
     __tablename__ = "tile_sizes"
