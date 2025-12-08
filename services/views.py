@@ -84,5 +84,5 @@ async def fetch_tiles(manager, filters, limit, offset, category = None, page = 1
         tile_sizes = [tile_size for tile_size in tile_sizes if tile_size["id"] in tiles_size_ids]
         colls = []
 
-    return colls, tiles, tile_sizes, tile_colors, total_count
+    return colls, tiles, tile_sizes, tile_colors, #total_count
 
