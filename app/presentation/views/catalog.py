@@ -106,14 +106,14 @@ async def get_catalog_tiles_page(
     limit = ITEMS_PER_PAGE
     offset = (page - 1) * limit
 
-    collections, tiles, tile_sizes, tile_colors = await fetch_tiles(manager, filters, limit, offset, Types.get_category_from_slug(category))
+    collections, tiles, tile_sizes, tile_colors, total_count = await fetch_tiles(manager, filters, limit, offset, Types.get_category_from_slug(category))
     #log.debug("tiles: %s collections: %s", tiles, collections)
     collections = [Collections(**collection) for collection in collections]
     sizes, colors = build_sizes_and_colors(tile_sizes, tile_colors)
     main_images = build_main_images(tiles)
     tiles = [map_to_tile_domain(tile) for tile in tiles]
 
-    total_count = len(await manager.read(Tile, **filters))
+    #total_count = len(await manager.read(Tile, **filters))
     total_pages = max((total_count + limit - 1) // limit, 1)
     categories = await manager.read(Tile, distinct="type_name")
     categories = [Types(name=category["tile_type"]) for category in categories]
