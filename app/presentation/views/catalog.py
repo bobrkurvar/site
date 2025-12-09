@@ -1,11 +1,10 @@
 import logging
-from decimal import Decimal
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.templating import Jinja2Templates
 
-from domain import Tile, TileSize, Types, Collections, TileColor, map_to_tile_domain
+from domain import Tile, Types, Collections, map_to_tile_domain
 from repo import Crud, get_db_manager
 from services.views import build_tile_filters, build_main_images, build_sizes_and_colors, fetch_tiles
 
@@ -21,7 +20,6 @@ ITEMS_PER_PAGE = 20
 async def get_tile_page(
     request: Request, category: str, tile_id: int, manager: dbManagerDep
 ):
-    log.debug("TILE DETAIL")
     tile = await manager.read(
         Tile,
         to_join=["images", "size", "box"],
@@ -62,17 +60,18 @@ async def get_catalog_tiles_page(
     limit = ITEMS_PER_PAGE
     offset = (page - 1) * limit
 
-    collections, tiles, tile_sizes, tile_colors = await fetch_tiles(manager, limit, offset, **filters)
+    collections, tiles, tile_sizes, tile_colors, total_count = await fetch_tiles(manager, limit, offset, collection=collection, **filters)
 
     sizes, colors = build_sizes_and_colors(tile_sizes, tile_colors)
     main_images = build_main_images(tiles)
     tiles = [map_to_tile_domain(tile) for tile in tiles]
 
-    total_count = len(await manager.read(Tile, **filters))
+    #total_count = len(await manager.read(Tile, **filters))
     total_pages = max((total_count + limit - 1) // limit, 1)
     categories = await manager.read(Tile, distinct="type_name")
     categories = [Types(name=category["tile_type"]) for category in categories]
-    path = f"/catalog/{category}/{collection}"
+
+    path = f"/catalog/{category}/{collection}" if not filters else f"/catalog/{category}"
 
     return templates.TemplateResponse(
         "tiles_catalog.html",
@@ -106,13 +105,13 @@ async def get_catalog_tiles_page(
     limit = ITEMS_PER_PAGE
     offset = (page - 1) * limit
 
-    collections, tiles, tile_sizes, tile_colors = await fetch_tiles(manager, limit, offset, Types.get_category_from_slug(category), **filters)
+    collections, tiles, tile_sizes, tile_colors, total_count = await fetch_tiles(manager, limit, offset, **filters)
     collections = [Collections(**collection) for collection in collections]
     sizes, colors = build_sizes_and_colors(tile_sizes, tile_colors)
     main_images = build_main_images(tiles)
     tiles = [map_to_tile_domain(tile) for tile in tiles]
 
-    total_count = len(await manager.read(Tile, **filters))
+    #total_count = len(await manager.read(Tile, **filters))
     total_pages = max((total_count + limit - 1) // limit, 1)
     categories = await manager.read(Tile, distinct="type_name")
     categories = [Types(name=category["tile_type"]) for category in categories]

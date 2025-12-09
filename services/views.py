@@ -50,19 +50,18 @@ def build_main_images(tiles):
 
 def extract_quoted_word(name: str) -> str | None:
     parts = name.split('"')
-    log.debug("prats: %s", parts)
     if len(parts) >= 3:
-        log.debug("parts[1]: %s", parts[1].lower())
-        return parts[1].lower()  # слово между первой и второй кавычкой
+        return parts[1].lower()
     return None
 
-async def fetch_tiles(manager, limit, offset, category = None, page = 1, **filters):
+async def fetch_tiles(manager, limit, offset, page = 1, collection = None, **filters):
+    category = None if "type_name" not in filters else filters["type_name"]
 
     size_color_filter = {}
     if category:
-        filters.update({"type_name": category})
         size_color_filter.update({"type_name": category})
 
+    log.debug("filters: %s", filters)
     tile_sizes = await manager.read(
         Tile, to_join=["size"], distinct="tile_size_id", **size_color_filter
     )
@@ -72,22 +71,31 @@ async def fetch_tiles(manager, limit, offset, category = None, page = 1, **filte
         Tile, to_join=["images", "size", "box"], limit=limit, offset=offset, **filters
     )
 
-    if category:
-        colls = await manager.read(Collections, category=category)
-        colls_names = [coll["name"] for coll in colls]
-        log.debug("category: %s colls: %s", category, colls_names)
-        tiles = [tile for tile in tiles if extract_quoted_word(tile["name"]) not in colls_names]
-        tile_colors = [tile for tile in tile_colors if extract_quoted_word(tile["name"]) not in colls_names]
-        tile_sizes = [tile_size for tile_size in tile_sizes if extract_quoted_word(tile_size["name"]) not in colls_names]
-    else:
-        colls = await manager.read(Collections)
-        colls_names = [coll["name"] for coll in colls]
-        log.debug("colls: %s",colls_names)
-        tiles = [tile for tile in tiles if extract_quoted_word(tile["name"]) in colls_names]
-        tile_colors = [tile for tile in tile_colors if extract_quoted_word(tile["name"]) in colls_names]
-        tile_sizes = [tile_size for tile_size in tile_sizes if extract_quoted_word(tile_size["name"]) in colls_names]
-        colls = []
+    if category: filters.pop("type_name")
+    colls = []
+    log.debug("collection: %s", collection)
+
+    total_count = len(tiles)
 
 
-    return colls, tiles, tile_sizes, tile_colors, #total_count
+    if not filters and offset == 0:
+        if not collection:
+            colls = await manager.read(Collections, category=category)
+            colls_names = [coll["name"].lower() for coll in colls]
+            log.debug("category: %s colls: %s", category, colls_names)
+            tiles = [tile for tile in tiles if extract_quoted_word(tile["name"]) not in colls_names]
+
+            all_category_tiles = await manager.read(Tile, type_name=category)
+            in_collections = [tile for tile in tiles if extract_quoted_word(tile["name"]) in colls_names]
+            total_count = len(all_category_tiles) - len(in_collections)
+            log.debug("total count: %s", total_count)
+        else:
+            collection = Collections.get_category_from_slug(collection).lower()
+            tiles = [tile for tile in tiles if extract_quoted_word(tile["name"]) == collection]
+            total_count = len(tiles)
+            log.debug("collection total count: %s", total_count)
+            colls = []
+
+
+    return colls, tiles, tile_sizes, tile_colors, total_count
 
