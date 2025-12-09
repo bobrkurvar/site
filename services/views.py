@@ -99,6 +99,8 @@ async def fetch_tiles(manager, limit, offset, collection = None, **filters):
         total_count = len(tiles)
         colls = []
 
+    log.debug("offset: %s, limit: %s", offset, limit)
+
     tiles = tiles[offset * limit: (offset + 1) * limit]
     log.debug("tiles: %s", tiles)
     log.debug("colls: %s", colls)
