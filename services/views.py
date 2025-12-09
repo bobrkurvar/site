@@ -50,7 +50,6 @@ def build_main_images(tiles):
 
 def extract_quoted_word(name: str) -> str | None:
     parts = name.split('"')
-    #log.debug("prats: %s", parts)
     if len(parts) >= 3:
         return parts[1].lower()
     return None
@@ -76,19 +75,27 @@ async def fetch_tiles(manager, limit, offset, page = 1, collection = None, **fil
     colls = []
     log.debug("collection: %s", collection)
 
-    if not filters:
+    total_count = len(tiles)
+
+
+    if not filters and offset == 0:
         if not collection:
             colls = await manager.read(Collections, category=category)
-            colls_names = [coll["name"] for coll in colls]
+            colls_names = [coll["name"].lower() for coll in colls]
             log.debug("category: %s colls: %s", category, colls_names)
             tiles = [tile for tile in tiles if extract_quoted_word(tile["name"]) not in colls_names]
+
+            all_category_tiles = await manager.read(Tile, type_name=category)
+            in_collections = [tile for tile in tiles if extract_quoted_word(tile["name"]) in colls_names]
+            total_count = len(all_category_tiles) - len(in_collections)
+            log.debug("total count: %s", total_count)
         else:
-            colls = await manager.read(Collections)
-            colls_names = [coll["name"] for coll in colls]
-            log.debug("colls: %s",colls_names)
-            tiles = [tile for tile in tiles if extract_quoted_word(tile["name"]) in colls_names]
+            collection = Collections.get_category_from_slug(collection).lower()
+            tiles = [tile for tile in tiles if extract_quoted_word(tile["name"]) == collection]
+            total_count = len(tiles)
+            log.debug("collection total count: %s", total_count)
             colls = []
 
 
-    return colls, tiles, tile_sizes, tile_colors, #total_count
+    return colls, tiles, tile_sizes, tile_colors, total_count
 
