@@ -14,7 +14,7 @@ templates = Jinja2Templates("templates")
 log = logging.getLogger(__name__)
 
 
-ITEMS_PER_PAGE = 1
+ITEMS_PER_PAGE = 20
 
 @router.get("/{category}/{tile_id:int}")
 async def get_tile_page(
