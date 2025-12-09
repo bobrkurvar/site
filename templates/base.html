@@ -11,6 +11,7 @@
 </head>
 <body>
 
+
 <header class="main-header">
 
     <!-- Верхняя часть шапки -->
@@ -42,6 +43,9 @@
                 {% endfor %}
             </div>
         </div>
+
+        <a href="/collections" class="menu-link {% if request.url.path == '/collections' %}active{% endif %}">Коллекции</a>
+
         <a href="/clients" class="menu-link {% if request.url.path.startswith('/clients') %}active{% endif %}">Для клиентов</a>
     </nav>
 

@@ -7,7 +7,7 @@
 {% block content %}
 <main class="catalog-panel">
     <div class="catalog-layout">
-        <!-- Панель фильтров сбоку -->
+                <!-- Панель фильтров сбоку -->
         <aside class="filters-sidebar">
             <div class="filters-panel">
                 <h3>Фильтры</h3>
@@ -53,42 +53,29 @@
                 </form>
             </div>
         </aside>
-
-
         <!-- Основной контент с товарами и коллекциями -->
         <section class="products-section">
-
+            <!-- Секции коллекций -->
             <div class="catalog-header">
-                <h2>Товары</h2>
+                <h2 class="catalog-header">Коллекции</h2>
             </div>
-
             <div class="tile-grid">
-                {% for tile in tiles %}
-                <a href="/catalog/{{ tile.present_tile_url }}/{{ tile.article }}" class="tile-card-link">
+                {% for item in items %}
+                <a href="/collections/{{ collection }}/{{ item.article }}" class="tile-card-link">
                     <div class="tile-card">
                         <div class="tile-image-container">
-                            {% if main_images[tile.article] %}
-                            <img src="{{ main_images[tile.article] }}"
-                                 alt="{{ tile.name }}"
-                                 class="tile-image"
-                                 loading="lazy">
+                            {% if col.image_path %}
+                            <img src="/{{ col.image_path }}" alt="{{ col.name }}" class="tile-image" loading="lazy">
                             {% else %}
                             <div class="no-image">Нет изображения</div>
                             {% endif %}
                         </div>
                         <div class="tile-header">
-                            <h3 class="tile-title">{{ tile.present }}</h3>
+                            <h3 class="tile-title">{{ col.name }}</h3>
                         </div>
                     </div>
                 </a>
                 {% endfor %}
-
-                {% if not tiles %}
-                <div class="empty-catalog">
-                    <p>Товары не найдены</p>
-                    <a href="{{ path }}" class="clear-filters">Показать все товары</a>
-                </div>
-                {% endif %}
             </div>
 
             {# ================= ПАГИНАЦИЯ ================= #}
@@ -103,7 +90,6 @@
                 {% set sep = '&' if base_query else '' %}
 
                 <div class="pagination">
-
                     {# ← Назад #}
                     {% if page > 1 %}
                         <a class="page-btn" href="?{{ base_query }}{{ sep }}page={{ page - 1 }}">« Назад</a>
@@ -122,26 +108,12 @@
                     {% if page < total_pages %}
                         <a class="page-btn" href="?{{ base_query }}{{ sep }}page={{ page + 1 }}">Вперёд »</a>
                     {% endif %}
-
                 </div>
-            {% endif %}
+          {% endif %}
 
 
 
         </section>
     </div>
 </main>
-
-<!-- JS для отправки только заполненных фильтров -->
-<script>
-document.getElementById('filtersForm').addEventListener('submit', function(event) {
-    const form = event.target;
-    const inputs = Array.from(form.elements);
-    inputs.forEach(input => {
-        if ((input.tagName === 'INPUT' || input.tagName === 'SELECT') && !input.value) {
-            input.disabled = true;
-        }
-    });
-});
-</script>
 {% endblock %}

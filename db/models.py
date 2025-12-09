@@ -52,12 +52,14 @@ class Catalog(Base):
         data = {
             "id": self.id,
             "name": self.name,
+            "box_id": self.box_id,
             "color_name": self.color_name,
             "feature_name": self.feature_name,
             "surface_name": self.surface_name,
             "producer_name": self.producer_name,
             "boxes_count": self.boxes_count,
             "tile_type": self.type_name,
+            "size_id": self.tile_size_id,
         }
 
         try:
@@ -71,7 +73,6 @@ class Catalog(Base):
 
         try:
             if self.size:
-                data["size_id"] = self.size.id
                 data["size_length"] = self.size.length
                 data["size_height"] = self.size.height
                 data["size_width"] = self.size.width
@@ -80,7 +81,6 @@ class Catalog(Base):
 
         try:
             if self.box:
-                data["box_id"] = self.box.id
                 data["box_weight"] = self.box.weight
                 data["box_area"] = self.box.area
         except Exception:
@@ -112,6 +112,14 @@ class TileImages(Base):
             "image_path": self.image_path,
         }
 
+class Collections(Base):
+    __tablename__ = "collections"
+    name: Mapped[str] = mapped_column(primary_key=True)
+    image_path: Mapped[str] = mapped_column(unique=True, default=config.image_path)
+
+
+    def model_dump(self):
+        return {"name": self.name, "image_path": self.image_path}
 
 class TileSize(Base):
     __tablename__ = "tile_sizes"

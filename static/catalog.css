@@ -5,7 +5,7 @@
 }
 
 .catalog-header h2 {
-    color: white;
+    color: #5d4037;
     font-size: 2.5em;
     margin-bottom: 10px;
     text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
@@ -29,6 +29,7 @@
 .filters-sidebar {
     position: sticky;
     top: 100px;
+    margin-top: 100px;
 }
 
 .filters-panel {
@@ -156,6 +157,7 @@
 /* Секция с товарами */
 .products-section {
     min-height: 500px;
+    margin-top: -20px;
 }
 
 /* Сетка товаров */
@@ -294,6 +296,11 @@
 
     .filters-sidebar {
         position: static;
+        margin-top: 0;
+    }
+
+    .products-section {
+        margin-top: 0;
     }
 
     .filters-form {
