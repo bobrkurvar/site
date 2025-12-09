@@ -90,7 +90,7 @@ def build_main_images(tiles):
 def extract_quoted_word(name: str) -> str | None:
     parts = name.split('"')
     if len(parts) >= 3:
-        return parts[1]
+        return parts[1].lower()
     return None
 
 async def fetch_items(manager, limit, offset, **filters):
@@ -100,7 +100,7 @@ async def fetch_items(manager, limit, offset, **filters):
         Tile, to_join=["images", "size", "box"], **filters
     )
 
-    colls = await manager.read(Collections, category=category)
+    colls = await manager.read(Collections)
     colls_names = [coll["name"].lower() for coll in colls]
     filters.pop("type_name", None)
 
