@@ -98,7 +98,8 @@ async def fetch_tiles(manager, limit, offset, collection = None, **filters):
         tiles = tiles[offset*limit : (offset+1)*limit]
         colls = []
 
-    tiles = tiles[offset * limit: (offset + 1) * limit]
+    #log.debug("tiles before paginate: %s", tiles)
+    #tiles = tiles[offset * limit: (offset + 1) * limit]
     log.debug("tiles: %s", tiles)
 
 
