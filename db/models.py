@@ -52,6 +52,7 @@ class Catalog(Base):
         data = {
             "id": self.id,
             "name": self.name,
+            "box_id": self.box_id,
             "color_name": self.color_name,
             "feature_name": self.feature_name,
             "surface_name": self.surface_name,
@@ -80,7 +81,6 @@ class Catalog(Base):
 
         try:
             if self.box:
-                data["box_id"] = self.box.id
                 data["box_weight"] = self.box.weight
                 data["box_area"] = self.box.area
         except Exception:

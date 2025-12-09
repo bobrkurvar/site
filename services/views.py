@@ -79,12 +79,10 @@ async def fetch_tiles(manager, limit, offset, collection = None, **filters):
     log.debug("collection: %s", collection)
 
 
-
-
     if not filters:
         colls = await manager.read(Collections, category=category)
         colls_names = [coll["name"].lower() for coll in colls]
-        all_category_tiles = await manager.read(Tile, type_name=category)
+        all_category_tiles = await manager.read(Tile, to_join=["images", "size", "box"], type_name=category)
         in_collections = [tile for tile in all_category_tiles if extract_quoted_word(tile["name"]) in colls_names]
         log.debug("collections names: %s in collections: %s", colls_names, in_collections)
         total_count = len(all_category_tiles) - len(in_collections)
@@ -105,6 +103,7 @@ async def fetch_tiles(manager, limit, offset, collection = None, **filters):
         all_filter_tiles = await manager.read(Tile, type_name=category, **filters)
         total_count = len(all_filter_tiles)
         colls = []
+    log.debug("tiles: %s", tiles)
 
 
     return colls, tiles, total_count
