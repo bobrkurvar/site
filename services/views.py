@@ -78,26 +78,29 @@ async def fetch_tiles(manager, limit, offset, collection = None, **filters):
     if category: filters.pop("type_name")
     log.debug("collection: %s", collection)
 
-    colls = await manager.read(Collections, category=category)
-    colls_names = [coll["name"].lower() for coll in colls]
-    all_category_tiles = await manager.read(Tile, type_name=category)
-    in_collections = [tile for tile in all_category_tiles if extract_quoted_word(tile["name"]) in colls_names]
-    log.debug("collections names: %s in collections: %s", colls_names, in_collections)
-    total_count = len(all_category_tiles) - len(in_collections)
-    log.debug("total count: %s", total_count)
 
 
-    if not filters and offset == 0:
-        if not collection:
-            log.debug("category: %s colls: %s", category, colls_names)
-            tiles = [tile for tile in tiles if extract_quoted_word(tile["name"]) not in colls_names]
-        else:
-            collection = Collections.get_category_from_slug(collection).lower()
-            tiles = [tile for tile in tiles if extract_quoted_word(tile["name"]) == collection]
-            total_count = len(tiles)
-            log.debug("collection total count: %s", total_count)
-            colls = []
+
+    if not filters:
+        colls = await manager.read(Collections, category=category)
+        colls_names = [coll["name"].lower() for coll in colls]
+        all_category_tiles = await manager.read(Tile, type_name=category)
+        in_collections = [tile for tile in all_category_tiles if extract_quoted_word(tile["name"]) in colls_names]
+        log.debug("collections names: %s in collections: %s", colls_names, in_collections)
+        total_count = len(all_category_tiles) - len(in_collections)
+        log.debug("total count: %s", total_count)
+        if offset == 0:
+            if not collection:
+                log.debug("category: %s colls: %s", category, colls_names)
+                tiles = [tile for tile in tiles if extract_quoted_word(tile["name"]) not in colls_names]
+            else:
+                collection = Collections.get_category_from_slug(collection).lower()
+                tiles = [tile for tile in tiles if extract_quoted_word(tile["name"]) == collection]
+                total_count = len(tiles)
+                log.debug("collection total count: %s", total_count)
+                colls = []
     else:
+        total_count = len(tiles)
         colls = []
 
 
