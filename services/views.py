@@ -100,7 +100,8 @@ async def fetch_tiles(manager, limit, offset, collection = None, **filters):
                 log.debug("collection total count: %s", total_count)
                 colls = []
     else:
-        total_count = len(tiles)
+        all_filter_tiles = await manager.read(Tile, type_name=category, **filters)
+        total_count = len(all_filter_tiles)
         colls = []
 
 
