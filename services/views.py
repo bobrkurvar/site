@@ -31,8 +31,8 @@ async def build_sizes_and_colors(manager, category: str):
     )
     tile_colors = await manager.read(Tile, distinct="color_name",  type_name=category)
 
-    log.debug("sizes: %s", tile_sizes)
-    log.debug("colors: %s", tile_colors)
+    #log.debug("sizes: %s", tile_sizes)
+    #log.debug("colors: %s", tile_colors)
 
     sizes = [
         TileSize(
@@ -90,7 +90,8 @@ async def fetch_tiles(manager, limit, offset, page = 1, collection = None, **fil
             tiles = [tile for tile in tiles if extract_quoted_word(tile["name"]) not in colls_names]
 
             all_category_tiles = await manager.read(Tile, type_name=category)
-            in_collections = [tile for tile in tiles if extract_quoted_word(tile["name"]) in colls_names]
+            in_collections = [tile for tile in all_category_tiles if extract_quoted_word(tile["name"]) in colls_names]
+            log.debug("collections names: %s in collections: %s", colls_names, in_collections)
             total_count = len(all_category_tiles) - len(in_collections)
             log.debug("total count: %s", total_count)
         else:
