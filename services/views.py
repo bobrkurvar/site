@@ -85,7 +85,6 @@ async def fetch_tiles(manager, limit, offset, collection = None, **filters):
     log.debug("collections names: %s in collections: %s", colls_names, in_collections)
     total_count = len(all_category_tiles) - len(in_collections)
     log.debug("total count: %s", total_count)
-    colls = []
 
 
     if not filters and offset == 0:
@@ -98,6 +97,8 @@ async def fetch_tiles(manager, limit, offset, collection = None, **filters):
             total_count = len(tiles)
             log.debug("collection total count: %s", total_count)
             colls = []
+    else:
+        colls = []
 
 
     return colls, tiles, total_count
