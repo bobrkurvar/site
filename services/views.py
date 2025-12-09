@@ -67,16 +67,13 @@ def extract_quoted_word(name: str) -> str | None:
     return None
 
 async def fetch_tiles(manager, limit, offset, collection = None, **filters):
-    category = None if "type_name" not in filters else filters["type_name"]
+    category = filters["type_name"]
     log.debug("filters: %s", filters)
 
 
     tiles = await manager.read(
-        Tile, to_join=["images", "size", "box"], limit=limit, offset=offset, **filters
+        Tile, to_join=["images", "size", "box"], **filters
     )
-
-    if category: filters.pop("type_name")
-    log.debug("collection: %s", collection)
 
 
     if not filters:
@@ -90,19 +87,18 @@ async def fetch_tiles(manager, limit, offset, collection = None, **filters):
         if not collection:
             log.debug("category: %s colls: %s", category, colls_names)
             tiles = [tile for tile in all_category_tiles if extract_quoted_word(tile["name"]) not in colls_names]
-            tiles = tiles[offset*limit : (offset+1)*limit]
         else:
             collection = Collections.get_category_from_slug(collection).lower()
             tiles = [tile for tile in all_category_tiles if extract_quoted_word(tile["name"]) == collection]
             total_count = len(tiles)
-            tiles = tiles[offset*limit : (offset+1)*limit]
             log.debug("collection total count: %s", total_count)
             colls = []
     else:
-        all_filter_tiles = await manager.read(Tile, type_name=category, **filters)
-        total_count = len(all_filter_tiles)
+        total_count = len(tiles)
+        tiles = tiles[offset*limit : (offset+1)*limit]
         colls = []
 
+    tiles = tiles[offset * limit: (offset + 1) * limit]
     log.debug("tiles: %s", tiles)
 
 
