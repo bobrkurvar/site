@@ -17,11 +17,10 @@ log = logging.getLogger(__name__)
 async def admin_create_tile_box(
         manager: dbManagerDep,
         name: Annotated[str, Form()],
-        category: Annotated[str, Form()],
         image: Annotated[UploadFile, File()]
 ):
     image = await image.read()
-    await add_collection(name, category, image, manager)
+    await add_collection(name, image, manager)
     return RedirectResponse("/admin", status_code=303)
 
 @router.post("/delete")

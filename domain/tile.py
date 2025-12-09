@@ -117,11 +117,10 @@ class TileImages:
 class Collections:
     _slug_to_name = {}
 
-    def __init__(self, name: str, image_path: str, category: str):
+    def __init__(self, name: str, image_path: str):
         self.name = name
         self.image_path = image_path
         self.slug = slugify(name)
-        self.category = category
         self.__class__._slug_to_name[self.slug] = name
 
     def __str__(self):
