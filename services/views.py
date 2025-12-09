@@ -87,22 +87,22 @@ async def fetch_tiles(manager, limit, offset, collection = None, **filters):
         log.debug("collections names: %s in collections: %s", colls_names, in_collections)
         total_count = len(all_category_tiles) - len(in_collections)
         log.debug("total count: %s", total_count)
-        if offset == 0:
-            if not collection:
-                log.debug("category: %s colls: %s", category, colls_names)
-                tiles = [tile for tile in all_category_tiles if extract_quoted_word(tile["name"]) not in colls_names]
-                tiles = tiles[offset*limit : (offset+1)*limit]
-            else:
-                collection = Collections.get_category_from_slug(collection).lower()
-                tiles = [tile for tile in all_category_tiles if extract_quoted_word(tile["name"]) == collection]
-                total_count = len(tiles)
-                tiles = tiles[offset*limit : (offset+1)*limit]
-                log.debug("collection total count: %s", total_count)
-                colls = []
+        if not collection:
+            log.debug("category: %s colls: %s", category, colls_names)
+            tiles = [tile for tile in all_category_tiles if extract_quoted_word(tile["name"]) not in colls_names]
+            tiles = tiles[offset*limit : (offset+1)*limit]
+        else:
+            collection = Collections.get_category_from_slug(collection).lower()
+            tiles = [tile for tile in all_category_tiles if extract_quoted_word(tile["name"]) == collection]
+            total_count = len(tiles)
+            tiles = tiles[offset*limit : (offset+1)*limit]
+            log.debug("collection total count: %s", total_count)
+            colls = []
     else:
         all_filter_tiles = await manager.read(Tile, type_name=category, **filters)
         total_count = len(all_filter_tiles)
         colls = []
+
     log.debug("tiles: %s", tiles)
 
 
