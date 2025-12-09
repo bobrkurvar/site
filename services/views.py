@@ -87,6 +87,7 @@ async def fetch_tiles(manager, limit, offset, collection = None, **filters):
                 colls = []
             log.debug("category: %s colls: %s", category, colls_names)
             tiles = [tile for tile in tiles if extract_quoted_word(tile["name"]) not in colls_names]
+            log.debug("tiles count without collection: %s", len(tiles))
         else:
             collection = Collections.get_category_from_slug(collection).lower()
             tiles = [tile for tile in tiles if extract_quoted_word(tile["name"]) == collection]
