@@ -168,15 +168,6 @@
                 <input type="text" id="collection_name" name="name" placeholder="Введите название коллекции" required>
             </div>
 
-            <!-- Категория-->
-            <label for="collection_category">Категория</label>
-            <select id="collection_category" name="category" required>
-                {% for cat in categories %}
-                    <option value="{{ cat.name }}" {% if loop.first %}selected{% endif %}>{{ cat.name }}</option>
-                {% endfor %}
-            </select>
-
-
             <!-- Изображение коллекции -->
             <div class="form-group">
                 <label for="collection_image">Изображение коллекции</label>

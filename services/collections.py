@@ -9,7 +9,6 @@ log = logging.getLogger(__name__)
 
 async def add_collection(
     name: str,
-    category: str,
     image: bytes,
     manager,
     fs=aiofiles,
@@ -23,11 +22,9 @@ async def add_collection(
         upload_dir.mkdir(parents=True, exist_ok=True)
         extra_num = len([f for f in upload_dir.iterdir() if f.is_file()])
         image_path = upload_dir / str(extra_num)
-        log.debug("collection category: %s", category)
         collection_record = await manager.create(
             Collections,
             name=name,
-            category=category,
             image_path = str(image_path),
             session = uow.session,
         )

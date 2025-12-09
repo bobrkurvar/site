@@ -94,8 +94,6 @@ class Types(Base):
     name: Mapped[str] = mapped_column(primary_key=True)
     tiles: Mapped[list["Catalog"]] = relationship("Catalog", back_populates="type")
 
-    collection: Mapped["Collections"] = relationship("Collections", back_populates="type")
-
     def model_dump(self):
         return {"name": self.name}
 
@@ -118,12 +116,10 @@ class Collections(Base):
     __tablename__ = "collections"
     name: Mapped[str] = mapped_column(primary_key=True)
     image_path: Mapped[str] = mapped_column(unique=True, default=config.image_path)
-    category: Mapped[str] = mapped_column(ForeignKey("types.name"))
 
-    type: Mapped["Types"] = relationship("Types", back_populates="collection")
 
     def model_dump(self):
-        return {"name": self.name, "image_path": self.image_path, "category": self.category}
+        return {"name": self.name, "image_path": self.image_path}
 
 class TileSize(Base):
     __tablename__ = "tile_sizes"
