@@ -26,9 +26,9 @@ app = FastAPI(lifespan=lifespan)
 #app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
 app.include_router(presentation_router)
-@app.get("/{full_path:path}")
-async def catch_all(full_path: str):
-    return RedirectResponse("/")
+# @app.get("/{full_path:path}")
+# async def catch_all(full_path: str):
+#     return RedirectResponse("/")
 
 
 @app.exception_handler(NotFoundError)
