@@ -60,9 +60,9 @@ async def get_catalog_tiles_page(
     limit = ITEMS_PER_PAGE
     offset = (page - 1) * limit
 
-    collections, tiles, tile_sizes, tile_colors, total_count = await fetch_tiles(manager, limit, offset, collection=collection, **filters)
+    collections, tiles, total_count = await fetch_tiles(manager, limit, offset, collection=collection, **filters)
 
-    sizes, colors = build_sizes_and_colors(tile_sizes, tile_colors)
+    sizes, colors = await build_sizes_and_colors(manager, category)
     main_images = build_main_images(tiles)
     tiles = [map_to_tile_domain(tile) for tile in tiles]
 
@@ -105,9 +105,9 @@ async def get_catalog_tiles_page(
     limit = ITEMS_PER_PAGE
     offset = (page - 1) * limit
 
-    collections, tiles, tile_sizes, tile_colors, total_count = await fetch_tiles(manager, limit, offset, **filters)
+    collections, tiles, total_count = await fetch_tiles(manager, limit, offset, **filters)
     collections = [Collections(**collection) for collection in collections]
-    sizes, colors = build_sizes_and_colors(tile_sizes, tile_colors)
+    sizes, colors = await build_sizes_and_colors(manager, category)
     main_images = build_main_images(tiles)
     tiles = [map_to_tile_domain(tile) for tile in tiles]
 

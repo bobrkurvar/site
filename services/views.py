@@ -24,7 +24,16 @@ async def build_tile_filters(
     return filters
 
 
-def build_sizes_and_colors(tile_sizes, tile_colors):
+async def build_sizes_and_colors(manager, category: str):
+    category = Types.get_category_from_slug(category)
+    tile_sizes = await manager.read(
+        Tile, to_join=["size"], distinct="tile_size_id", type_name=category
+    )
+    tile_colors = await manager.read(Tile, distinct="color_name",  type_name=category)
+
+    log.debug("sizes: %s", tile_sizes)
+    log.debug("colors: %s", tile_colors)
+
     sizes = [
         TileSize(
             size_id=size["size_id"],
@@ -38,6 +47,9 @@ def build_sizes_and_colors(tile_sizes, tile_colors):
         TileColor(color_name=color["color_name"], feature_name=color["feature_name"])
         for color in tile_colors
     ]
+
+
+
     return sizes, colors
 
 def build_main_images(tiles):
@@ -56,16 +68,8 @@ def extract_quoted_word(name: str) -> str | None:
 
 async def fetch_tiles(manager, limit, offset, page = 1, collection = None, **filters):
     category = None if "type_name" not in filters else filters["type_name"]
-
-    size_color_filter = {}
-    if category:
-        size_color_filter.update({"type_name": category})
-
     log.debug("filters: %s", filters)
-    tile_sizes = await manager.read(
-        Tile, to_join=["size"], distinct="tile_size_id", **size_color_filter
-    )
-    tile_colors = await manager.read(Tile, distinct="color_name", **size_color_filter)
+
 
     tiles = await manager.read(
         Tile, to_join=["images", "size", "box"], limit=limit, offset=offset, **filters
@@ -97,5 +101,5 @@ async def fetch_tiles(manager, limit, offset, page = 1, collection = None, **fil
             colls = []
 
 
-    return colls, tiles, tile_sizes, tile_colors, total_count
+    return colls, tiles, total_count
 
