@@ -19,6 +19,7 @@ async def admin_create_tile_box(
         name: Annotated[str, Form()],
         image: Annotated[UploadFile, File()]
 ):
+    name = name.strip()
     image = await image.read()
     await add_collection(name, image, manager)
     return RedirectResponse("/admin", status_code=303)
