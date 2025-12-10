@@ -41,7 +41,8 @@ async def get_collections_page(
             "request": request,
             "collections": collections,
             "total_pages": total_pages,
-            "categories": categories
+            "categories": categories,
+            "page": page,
         },
     )
 
