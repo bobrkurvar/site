@@ -51,7 +51,7 @@ async def insert_slide_image():
 
 
 @router.post("/delete")
-async def delete_tile_by_criteria_or_all(
+async def delete_tile_by_id_or_all(
     manager: dbManagerDep,
     tile_id: Annotated[int, Form()] = None,
 ):
@@ -81,6 +81,7 @@ async def admin_create_tile(
     surface: Annotated[str, Form()],
     images: Annotated[list[UploadFile], File()],
 ):
+    name, size, color_name, producer, tile_type, color_feature, surface = [value.strip() for value in (name, size, color_name, producer, tile_type, color_feature, surface)]
     bytes_images = [await img.read() for img in images] if images else []
     bytes_main_image = await main_image.read()
     length_str, width_str, height_str = size.split()
@@ -124,6 +125,7 @@ async def admin_update_tile(
     color_feature: Annotated[str, Form()],
     surface: Annotated[str, Form()],
 ):
+    name, size, color_name, producer, tile_type, color_feature, surface = [value.strip() for value in (name, size, color_name, producer, tile_type, color_feature, surface)]
     params = locals()
     params = {
         k: v
