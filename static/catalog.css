@@ -224,6 +224,67 @@
     transform: scale(1.05);
 }
 
+
+
+/* ======================================== Коллекции ================================ */
+/* Layout */
+.collection-layout {
+    display: grid;
+    grid-template-columns: 1fr; /* без сайдбара */
+    gap: 30px;
+    align-items: start;
+}
+
+/* Сетка карточек */
+.collection-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); /* чуть больше чем для товаров */
+    gap: 25px;
+    justify-content: center;
+}
+
+/* Карточка коллекции */
+.collection-item {
+    @apply /* используем те же цвета, тени, hover */;
+    background: rgba(245, 245, 220, 0.95);
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 12px 35px rgba(93, 64, 55, 0.2); /* чуть больше тень */
+    transition: all 0.3s ease;
+    border: 1px solid rgba(188, 170, 164, 0.3);
+    cursor: pointer;
+    height: 100%;
+}
+
+.collection-item:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(93, 64, 55, 0.25);
+}
+
+/* Заголовок и изображение — наследуем из tile-card */
+.collection-item .tile-image-container {
+    height: 240px; /* больше, чем у товаров */
+}
+
+.collection-item .tile-title {
+    font-size: 1.4em; /* чуть крупнее */
+    color: #5d4037; /* тот же коричневый */
+}
+@media (max-width: 900px) {
+    .collection-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+}
+
+@media (max-width: 600px) {
+    .collection-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+
 .no-image {
     width: 100%;
     height: 100%;
@@ -349,71 +410,6 @@
         width: 100%;
         text-align: center;
     }
-}
-
-/* Ссылка-карточка */
-.tile-card-link {
-    text-decoration: none;
-    color: inherit;
-    display: block;
-    transition: all 0.3s ease;
-}
-
-.tile-card-link:hover {
-    text-decoration: none;
-    color: inherit;
-    transform: translateY(-5px);
-}
-
-/* Заголовок карточки */
-.tile-header {
-    padding: 15px 20px 10px;
-    border-bottom: 1px solid #ecf0f1;
-    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-}
-
-.tile-title {
-    margin: 0;
-    font-size: 1.1em;
-    color: #2c3e50;
-    font-weight: 600;
-    text-align: center;
-    /*white-space: nowrap;*/
-    /*overflow: hidden; */
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    /*text-overflow: ellipsis; */
-}
-
-/* Остальной CSS остается таким же, но добавьте: */
-.tile-card {
-    background: white;
-    border-radius: 15px;
-    overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-    transition: all 0.3s ease;
-    position: relative;
-    cursor: pointer; /* Добавьте курсор указателя */
-}
-
-.tile-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-}
-
-.tile-image-container {
-    height: 180px; /* Немного уменьшил высоту из-за добавленного заголовка */
-    overflow: hidden;
-    position: relative;
-}
-
-.tile-content {
-    padding: 15px 20px;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    align-items: center;
 }
 
 /* ================= ПАГИНАЦИЯ ================= */
