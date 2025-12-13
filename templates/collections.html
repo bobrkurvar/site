@@ -1,23 +1,22 @@
 {% extends "base.html" %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="/static/catalog.css">
+<link rel="stylesheet" href="/static/v2catalog.css">
 {% endblock %}
 
 {% block content %}
-<main class="catalog-panel">
-    <div class="catalog-layout">
+<main class="catalog-panel catalog-panel--collections">
+    <div class="collection-layout">
 
-        <!-- Основной контент с товарами и коллекциями -->
         <section class="products-section">
-            <!-- Секции коллекций -->
             <div class="catalog-header">
-                <h2 class="catalog-header">Коллекции</h2>
+                <h2>Коллекции</h2>
             </div>
-            <div class="tile-grid">
+
+            <div class="collection-grid">
                 {% for col in collections %}
-                <a href="/collections/{{ col.slug }}" class="tile-card-link">
-                    <div class="tile-card">
+                <a href="/collections/{{ col.slug }}" class="collection-item-link">
+                    <div class="collection-item">
                         <div class="tile-image-container">
                             {% if col.image_path %}
                             <img src="/{{ col.image_path }}" alt="{{ col.name }}" class="tile-image" loading="lazy">
