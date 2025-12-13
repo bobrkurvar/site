@@ -4,10 +4,13 @@ import pytest
 
 from domain import (Box, Producer, Tile, TileColor, TileImages, TileSize,
                     TileSurface, Types)
-from services.tile import add_tile
+from services.tile import add_tile, delete_tile, update_tile
 
 from .fakes import (FakeCRUD, FakeFileSystem, FakePath, FakeStorage, FakeUoW,
                     Table)
+import logging
+
+log = logging.getLogger(__name__)
 
 
 @pytest.fixture
@@ -269,3 +272,56 @@ async def test_create_tile_success_when_all_handbooks_not_exists(manager_without
     assert len(images_table) == 3
     stored_paths = [row["image_path"] for row in images_table]
     assert stored_paths == expected_paths
+
+
+@pytest.mark.asyncio
+async def test_update_tile_success_when_new_attributes_in_handbooks(manager_with_handbooks, fs):
+    upload_root = FakePath("root")
+    manager = manager_with_handbooks
+    log.debug("tables: %s", manager.storage.tables)
+
+    # выполнение add_tile
+    record = await add_tile(
+        tile_name="Tile",
+        length=Decimal(300),
+        width=Decimal(200),
+        height=Decimal(10),
+        color_name="color",
+        producer_name="producer",
+        box_weight=Decimal(30),
+        box_area=Decimal(1),
+        boxes_count=3,
+        main_image=b"MAIN",
+        tile_type="category",
+        manager=manager,
+        images=[b"A", b"B"],
+        color_feature="feature",
+        surface="surface",
+        fs=fs,  # подделанная файловая система
+        uow_class=FakeUoW,  # поддельная транзакция
+        upload_root=upload_root,  # поддельный путь
+    )
+
+    article = record["id"]
+
+    new_size = "500 300 20"
+
+    await update_tile(
+        manager,
+        article,
+        uow_class=FakeUoW,
+        name="NewTile",
+        size=new_size,
+        color_name="NewColor",
+        producer="NewProducer",
+        box_weight=Decimal(50),
+        box_area=Decimal(5),
+        boxes_count=5,
+        tile_type="NewCategory",
+        color_feature="NewFeature",
+        surface="NewSurface",
+    )
+
+    new_record = await manager.read(Tile, id=article)
+
+    assert new_record['name'] == "NewTile"

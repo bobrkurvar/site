@@ -2,6 +2,8 @@ import logging
 from dataclasses import dataclass
 from typing import Any
 
+from domain import TileSize, Box
+
 log = logging.getLogger(__name__)
 
 
@@ -13,6 +15,11 @@ class Table:
     unique: list[str] | None = None
     foreign_keys: list[tuple[list[str] | str, Any, list[str] | str]] | None = None
     defaults: dict[str, Any] | None = None
+
+    def __iadd__(self, other):
+        if other:
+            self.columns += other.columns
+        return self
 
 
 class FakeCrudError(Exception):
@@ -29,10 +36,15 @@ class FakeStorage:
 
     def __init__(self):
         self.tables: dict[str, Table] = {}
+        self.to_join = {
+            "size": TileSize,
+            "box": Box,
+        }
 
     def register_tables(self, models: list[Table]):
         for model in models:
             self.tables[model.name] = model
+        log.debug("tables: %s", self.tables)
 
     def _check_unique(self, table: Table, new_row: dict):
         if not table.unique:
@@ -91,12 +103,18 @@ class FakeStorage:
         table.rows.append(columns)
         return columns
 
-    def read(self, model, session=None, **filters):
+    def read(self, model, session=None, to_join = None, **filters):
         table = self.tables[model]
         if not table.rows:
             return []
+        #log.info("model: %s table: %s", model.__name__, table)
 
         result = []
+        if to_join:
+            for t in to_join:
+                t = self.to_join.get(t, t)
+                table += self.tables[t]
+
         for row in table.rows:
             if all(row.get(k) == v for k, v in filters.items()):
                 result.append(row)

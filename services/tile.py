@@ -204,7 +204,7 @@ async def map_to_domain_for_filter(
     }
 
 
-async def update_tile(manager, article, **params):
+async def update_tile(manager, article, uow_class=UnitOfWork, **params):
 
     mapper_for_tiles = {
         "surface": "surface_name",
@@ -230,7 +230,7 @@ async def update_tile(manager, article, **params):
 
     mapped = {}
 
-    async with UnitOfWork(manager._session_factory) as uow:
+    async with uow_class(manager._session_factory) as uow:
         domain_tile_filters = []
         for_tiles = {}
         log.debug("params %s", params)
