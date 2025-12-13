@@ -1,0 +1,610 @@
+/* Заголовок каталога */
+.catalog-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.catalog-header h2 {
+    color: #5d4037;
+    font-size: 2.5em;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.catalog-header p {
+    color: rgba(255,255,255,0.8);
+    font-size: 1.2em;
+    margin: 0;
+}
+
+/* Основной layout каталога */
+.catalog-layout {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 30px;
+    align-items: start;
+}
+
+/* Боковая панель фильтров */
+.filters-sidebar {
+    position: sticky;
+    top: 100px;
+    margin-top: 100px;
+}
+
+.filters-panel {
+    background: rgba(245, 245, 220, 0.95); /* Бежевый фон как в шапке */
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 15px 35px rgba(93, 64, 55, 0.15); /* Тени в коричневой гамме */
+    border: 1px solid rgba(188, 170, 164, 0.4); /* Граница как в шапке */
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.filters-panel h3 {
+    margin: 0 0 20px 0;
+    color: #5d4037; /* Коричневый цвет как в шапке */
+    font-size: 1.4em;
+    text-align: center;
+    font-weight: 600;
+    background: linear-gradient(135deg, #8d6e63, #5d4037); /* Коричневый градиент */
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    padding-bottom: 15px;
+    border-bottom: 2px solid rgba(188, 170, 164, 0.3); /* Светло-коричневая граница */
+}
+
+.filters-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+}
+
+.filter-group label {
+    font-weight: 600;
+    color: #5d4037; /* Коричневый цвет */
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+.filter-group input,
+.filter-group select {
+    padding: 12px 14px;
+    border: 2px solid #bcaaa4; /* Светло-коричневая граница */
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background: white;
+    box-shadow: 0 2px 8px rgba(93, 64, 55, 0.05); /* Коричневые тени */
+    width: 100%;
+    box-sizing: border-box;
+    max-width: 100%;
+    color: #5d4037; /* Коричневый текст */
+}
+
+.filter-group input:focus,
+.filter-group select:focus {
+    outline: none;
+    border-color: #8d6e63; /* Средне-коричневый при фокусе */
+    box-shadow: 0 4px 15px rgba(141, 110, 99, 0.2); /* Коричневые тени */
+}
+
+.filter-group input::placeholder {
+    color: #a1887f; /* Светло-коричневый плейсхолдер */
+}
+
+.filter-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 10px;
+    width: 100%;
+}
+
+.filter-btn {
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #8d6e63, #5d4037); /* Коричневый градиент */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(93, 64, 55, 0.3); /* Коричневые тени */
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.filter-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(93, 64, 55, 0.4);
+    background: linear-gradient(135deg, #7d5e53, #4d3027); /* Более темный градиент при hover */
+}
+
+.clear-filters {
+    color: #5d4037; /* Коричневый цвет */
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 10px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    text-align: center;
+    border: 1px solid #8d6e63; /* Коричневая граница */
+    width: 100%;
+    box-sizing: border-box;
+    background: rgba(141, 110, 99, 0.1); /* Светло-коричневый фон */
+}
+
+.clear-filters:hover {
+    background: rgba(141, 110, 99, 0.2); /* Темнее при hover */
+    text-decoration: none;
+    color: #4d3027; /* Темнее текст */
+}
+
+/* Секция с товарами */
+.products-section {
+    min-height: 500px;
+    margin-top: -20px;
+}
+
+/* Сетка товаров */
+.tile-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 25px;
+    justify-content: center;
+}
+
+/* Карточка товара */
+.tile-card {
+    background: rgba(245, 245, 220, 0.95);
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(93, 64, 55, 0.15);
+    transition: all 0.3s ease;
+    position: relative;
+    border: 1px solid rgba(188, 170, 164, 0.3);
+    height: 100%;
+}
+
+.tile-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(93, 64, 55, 0.25);
+    border-color: rgba(141, 110, 99, 0.5);
+}
+
+.tile-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    height: 100%;
+}
+
+.tile-header {
+    padding: 15px 15px 0 15px;
+}
+
+.tile-title {
+    margin: 0 0 15px 0;
+    font-size: 1.2em;
+    color: #5d4037;
+    font-weight: 600;
+    text-align: center;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.tile-image-container {
+    height: 200px;
+    overflow: hidden;
+    position: relative;
+}
+
+.tile-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.tile-card:hover .tile-image {
+    transform: scale(1.05);
+}
+
+
+
+/* ======================================== Коллекции ================================ */
+/* Layout */
+.collection-layout {
+    display: grid;
+    grid-template-columns: 1fr; /* без сайдбара */
+    gap: 30px;
+    align-items: start;
+}
+
+/* Сетка карточек */
+.collection-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); /* чуть больше чем для товаров */
+    gap: 25px;
+    justify-content: center;
+}
+
+.collection-item-link {
+    text-decoration: none; /* убираем подчёркивание */
+    color: inherit;        /* сохраняем цвет заголовка */
+    display: block;
+    transition: all 0.3s ease;
+}
+
+.collection-item-link:hover {
+    text-decoration: none;
+}
+
+
+
+/* Карточка коллекции */
+.collection-item {
+    @apply /* используем те же цвета, тени, hover */;
+    background: rgba(245, 245, 220, 0.95);
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 12px 35px rgba(93, 64, 55, 0.2); /* чуть больше тень */
+    transition: all 0.3s ease;
+    border: 1px solid rgba(188, 170, 164, 0.3);
+    cursor: pointer;
+    height: 100%;
+}
+
+.collection-item:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(93, 64, 55, 0.25);
+}
+
+/* Заголовок и изображение — наследуем из tile-card */
+.collection-item .tile-image-container {
+    height: 240px; /* больше, чем у товаров */
+}
+
+.collection-item .tile-title {
+    font-size: 1.4em; /* чуть крупнее */
+    color: #5d4037; /* тот же коричневый */
+}
+@media (max-width: 900px) {
+    .collection-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+}
+
+@media (max-width: 600px) {
+    .collection-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+.no-image {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #8d6e63, #5d4037);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 500;
+}
+
+/* Сообщение об отсутствии товаров */
+.empty-catalog {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.empty-catalog p {
+    font-size: 1.3em;
+    margin-bottom: 20px;
+    color: #5d4037;
+    opacity: 0.9;
+}
+
+/* Кнопка в пустом каталоге */
+.empty-catalog .clear-filters {
+    display: inline-block;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #8d6e63, #5d4037);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1em;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(93, 64, 55, 0.3);
+    border: none;
+    width: auto; /* Убираем ширину 100% */
+    max-width: 200px; /* Ограничиваем максимальную ширину */
+    margin: 0 auto; /* Центрируем */
+}
+
+.empty-catalog .clear-filters:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(93, 64, 55, 0.4);
+    background: linear-gradient(135deg, #7d5e53, #4d3027);
+    color: white;
+    text-decoration: none;
+}
+
+/* Адаптивность каталога */
+@media (max-width: 1024px) {
+    .catalog-layout {
+        grid-template-columns: 280px 1fr;
+        gap: 25px;
+    }
+
+    .tile-grid {
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 20px;
+    }
+}
+
+@media (max-width: 900px) {
+    .catalog-layout {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .filters-sidebar {
+        position: static;
+        margin-top: 0;
+    }
+
+    .products-section {
+        margin-top: 0;
+    }
+
+    .filters-form {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+    }
+
+    .filter-actions {
+        grid-column: 1 / -1;
+        flex-direction: row;
+        justify-content: center;
+    }
+
+    .tile-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+
+    .catalog-header h2 {
+        font-size: 2em;
+    }
+}
+
+@media (max-width: 600px) {
+    .tile-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .catalog-header h2 {
+        font-size: 1.8em;
+    }
+
+    .filters-panel {
+        padding: 20px;
+    }
+
+    .filter-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .filter-btn,
+    .clear-filters {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+/* ================= ПАГИНАЦИЯ ================= */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin: 50px 0 30px;
+    flex-wrap: wrap;
+    padding: 20px 0;
+    border-top: 2px solid rgba(188, 170, 164, 0.3); /* Светло-коричневая граница */
+}
+
+/* Кнопка страницы */
+.page-btn {
+    padding: 12px 18px;
+    background: rgba(245, 245, 220, 0.95); /* Бежевый фон как в фильтрах */
+    color: #5d4037; /* Коричневый цвет текста */
+    text-decoration: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(93, 64, 55, 0.15); /* Коричневые тени */
+    transition: all 0.3s ease;
+    border: 1px solid rgba(188, 170, 164, 0.4); /* Граница как в фильтрах */
+    min-width: 45px;
+    text-align: center;
+}
+
+.page-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(93, 64, 55, 0.25);
+    background: linear-gradient(135deg, #f0ebe0, #e5e0d0); /* Легкий градиент */
+    border-color: #8d6e63; /* Средне-коричневая граница при hover */
+    color: #4d3027; /* Более темный текст */
+    text-decoration: none;
+}
+
+/* Активная (текущая) страница */
+.page-current {
+    padding: 12px 18px;
+    background: linear-gradient(135deg, #8d6e63, #5d4037); /* Коричневый градиент */
+    color: white;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 14px;
+    box-shadow: 0 4px 15px rgba(141, 110, 99, 0.35); /* Коричневые тени */
+    min-width: 45px;
+    text-align: center;
+    border: 1px solid #a1887f; /* Светло-коричневая граница */
+}
+
+/* Стрелки (Назад/Вперед) */
+.page-arrow {
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #a1887f, #8d6e63); /* Светло-коричневый градиент */
+    color: white;
+    text-decoration: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(141, 110, 99, 0.25);
+    border: 1px solid #bcaaa4;
+    min-width: 110px;
+    text-align: center;
+}
+
+.page-arrow:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(141, 110, 99, 0.35);
+    background: linear-gradient(135deg, #8d6e63, #5d4037); /* Темнее при hover */
+    color: white;
+    text-decoration: none;
+}
+
+/* Неактивные стрелки (когда нельзя нажать) */
+.page-disabled {
+    padding: 12px 20px;
+    background: rgba(188, 170, 164, 0.3); /* Полупрозрачный светло-коричневый */
+    color: rgba(93, 64, 55, 0.5); /* Полупрозрачный коричневый */
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: not-allowed;
+    box-shadow: 0 2px 8px rgba(93, 64, 55, 0.1);
+    border: 1px solid rgba(188, 170, 164, 0.5);
+    min-width: 110px;
+    text-align: center;
+}
+
+/* Эллипсы для многоточия в пагинации */
+.page-ellipsis {
+    padding: 12px 8px;
+    color: #8d6e63;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+/* Контейнер для мобильной пагинации */
+.pagination-mobile {
+    display: none;
+}
+
+/* Адаптивность пагинации */
+@media (max-width: 768px) {
+    .pagination {
+        gap: 8px;
+        margin: 30px 0 20px;
+        padding: 15px 0;
+    }
+
+    .page-btn,
+    .page-current {
+        padding: 10px 14px;
+        font-size: 13px;
+        min-width: 40px;
+    }
+
+    .page-arrow,
+    .page-disabled {
+        padding: 10px 16px;
+        font-size: 13px;
+        min-width: 90px;
+    }
+
+    .page-arrow span,
+    .page-disabled span {
+        display: none; /* Скрываем текст на мобильных */
+    }
+
+    .page-arrow:before {
+        content: '←';
+        font-weight: bold;
+    }
+
+    .page-arrow[href*="page="]:not([href*="page=1"]):before {
+        content: '→'; /* Для кнопки "Вперед" */
+    }
+
+    .page-disabled:before {
+        content: '←';
+        font-weight: bold;
+        opacity: 0.5;
+    }
+
+    .page-disabled:nth-child(2):before {
+        content: '→'; /* Для неактивной "Вперед" */
+    }
+}
+
+@media (max-width: 480px) {
+    .pagination {
+        gap: 6px;
+    }
+
+    .page-btn,
+    .page-current {
+        padding: 8px 12px;
+        font-size: 12px;
+        min-width: 35px;
+    }
+
+    .page-arrow,
+    .page-disabled {
+        padding: 8px 12px;
+        min-width: 35px;
+    }
+}
+
+/* Анимация перехода страниц */
+@keyframes pageChange {
+    0% {
+        opacity: 0.7;
+        transform: translateY(5px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.pagination {
+    animation: pageChange 0.3s ease-out;
+}
