@@ -59,7 +59,7 @@
             <!-- Типы -->
             <div class="form-group">
                 <h3>Типы товаров</h3>
-                <input type="text" name="tile_type" id="tile_type" placeholder="Тип товара" list="tiles-types-list">
+                <input type="text" name="category_name" id="tile_type" placeholder="Тип товара" list="tiles-types-list">
                 <datalist id="tiles-types-list">
                     {% for category in categories %}
                         <option value="{{ category.name }}">
@@ -89,7 +89,7 @@
                     {% endfor %}
                 </datalist>
 
-                <input type="text" name="color_feature" id="color_feature" placeholder="Свойство цвета" list="color-feature-list">
+                <input type="text" name="feature_name" id="color_feature" placeholder="Свойство цвета" list="color-feature-list">
                 <datalist id="color-feature-list">
                     {% for feature in unique_features %}
                         <option value="{{ feature }}">
@@ -100,7 +100,7 @@
             <!-- Поверхность -->
             <div class="form-group">
                 <h3>Поверхность</h3>
-                <input type="text" name="surface" id="surface" placeholder="Название поверхности" list="surface-list">
+                <input type="text" name="surface_name" id="surface" placeholder="Название поверхности" list="surface-list">
                 <datalist id="surface-list">
                     {% for surface in tile_surfaces %}
                         <option value="{{ surface.name }}">
@@ -111,7 +111,7 @@
             <!-- Производитель -->
             <div class="form-group">
                 <h3>Производитель</h3>
-                <input type="text" name="producer" id="producer" placeholder="Выберите производителя" list="producer-list">
+                <input type="text" name="producer_name" id="producer" placeholder="Выберите производителя" list="producer-list">
                 <datalist id="producer-list">
                     {% for producer in producers %}
                         <option value="{{ producer.name }}">

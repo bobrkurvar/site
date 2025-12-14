@@ -1,14 +1,14 @@
+import logging
 from decimal import Decimal
 
 import pytest
 
-from domain import (Box, Producer, Tile, TileColor, TileImages, TileSize,
-                    TileSurface, Types)
+from domain import (Box, Categories, Producer, Tile, TileColor, TileImages,
+                    TileSize, TileSurface)
 from services.tile import add_tile, delete_tile, update_tile
 
 from .fakes import (FakeCRUD, FakeFileSystem, FakePath, FakeStorage, FakeUoW,
                     Table)
-import logging
 
 log = logging.getLogger(__name__)
 
@@ -37,8 +37,8 @@ def storage_with_filled_handbooks():
                 name=TileImages,
                 columns=["image_id", "tile_id", "image_path"],
                 rows=[],
-                foreign_keys=[("tile_id", Tile, "id")],
-                defaults={"image_id": 1}
+                foreign_keys={Tile: {"tile_id": "id"}},
+                defaults={"image_id": 1},
             ),
             Table(
                 name=TileColor,
@@ -46,7 +46,7 @@ def storage_with_filled_handbooks():
                 rows=[{"color_name": "color", "feature_name": "feature"}],
             ),
             Table(name=Producer, columns=["name"], rows=[{"name": "producer"}]),
-            Table(name=Types, columns=["name"], rows=[{"name": "category"}]),
+            Table(name=Categories, columns=["name"], rows=[{"name": "category"}]),
             Table(
                 name=Box,
                 columns=["id", "weight", "area"],
@@ -58,25 +58,27 @@ def storage_with_filled_handbooks():
                 columns=[
                     "id",
                     "name",
-                    "tile_size_id",
+                    "size_id",
                     "color_name",
                     "feature_name",
-                    "type_name",
+                    "category_name",
                     "surface_name",
                     "producer_name",
                     "box_id",
                     "boxes_count",
                 ],
-                rows = [],
-                foreign_keys=[
-                    ("tile_size_id", TileSize, "id"),
-                    (["color_name", "feature_name"], TileColor, ["color_name", "feature_name"]),
-                    ("type_name", Types, "name"),
-                    ("surface_name", TileSurface, "name"),
-                    ("producer_name", Producer, "name"),
-                    ("box_id", Box, "id"),
-                ],
-                defaults={"id": 1}
+                rows=[],
+                foreign_keys={
+                    TileSize: {"size_id": "id"},
+                    TileColor: {
+                        ("color_name", "feature_name"): ("color_name", "feature_name")
+                    },
+                    Categories: {"category_name": "name"},
+                    TileSurface: {"surface_name": "name"},
+                    Producer: {"producer_name": "name"},
+                    Box: {"box_id": "id"},
+                },
+                defaults={"id": 1},
             ),
         ]
     )
@@ -87,6 +89,7 @@ def storage_with_filled_handbooks():
 @pytest.fixture
 def manager_with_handbooks(storage_with_filled_handbooks):
     return FakeCRUD(storage_with_filled_handbooks)
+
 
 @pytest.fixture
 def storage():
@@ -105,8 +108,8 @@ def storage():
                 name=TileImages,
                 columns=["image_id", "tile_id", "image_path"],
                 rows=[],
-                foreign_keys=[("tile_id", Tile, "id")],
-                defaults={"image_id": 1}
+                foreign_keys={Tile: {"tile_id": "id"}},
+                defaults={"image_id": 1},
             ),
             Table(
                 name=TileColor,
@@ -114,7 +117,7 @@ def storage():
                 rows=[],
             ),
             Table(name=Producer, columns=["name"], rows=[{"name": "producer"}]),
-            Table(name=Types, columns=["name"], rows=[{"name": "category"}]),
+            Table(name=Categories, columns=["name"], rows=[{"name": "category"}]),
             Table(
                 name=Box,
                 columns=["id", "weight", "area"],
@@ -126,25 +129,27 @@ def storage():
                 columns=[
                     "id",
                     "name",
-                    "tile_size_id",
+                    "size_id",
                     "color_name",
                     "feature_name",
-                    "type_name",
+                    "category_name",
                     "surface_name",
                     "producer_name",
                     "box_id",
                     "boxes_count",
                 ],
-                rows = [],
-                foreign_keys=[
-                    ("tile_size_id", TileSize, "id"),
-                    (["color_name", "feature_name"], TileColor, ["color_name", "feature_name"]),
-                    ("type_name", Types, "name"),
-                    ("surface_name", TileSurface, "name"),
-                    ("producer_name", Producer, "name"),
-                    ("box_id", Box, "id"),
-                ],
-                defaults={"id": 1}
+                rows=[],
+                foreign_keys={
+                    TileSize: {"size_id": "id"},
+                    TileColor: {
+                        ("color_name", "feature_name"): ("color_name", "feature_name")
+                    },
+                    Categories: {"category_name": "name"},
+                    TileSurface: {"surface_name": "name"},
+                    Producer: {"producer_name": "name"},
+                    Box: {"box_id": "id"},
+                },
+                defaults={"id": 1},
             ),
         ]
     )
@@ -163,13 +168,15 @@ def fs():
 
 
 @pytest.mark.asyncio
-async def test_create_tile_success_when_all_handbooks_exists(manager_with_handbooks, fs):
+async def test_create_tile_success_when_all_handbooks_exists(
+    manager_with_handbooks, fs
+):
     upload_root = FakePath("root")
     manager = manager_with_handbooks
 
     # выполнение add_tile
     record = await add_tile(
-        tile_name="Tile",
+        name="Tile",
         length=Decimal(300),
         width=Decimal(200),
         height=Decimal(10),
@@ -179,7 +186,7 @@ async def test_create_tile_success_when_all_handbooks_exists(manager_with_handbo
         box_area=Decimal(1),
         boxes_count=3,
         main_image=b"MAIN",
-        tile_type="category",
+        category_name="category",
         manager=manager,
         images=[b"A", b"B"],
         color_feature="feature",
@@ -188,7 +195,6 @@ async def test_create_tile_success_when_all_handbooks_exists(manager_with_handbo
         uow_class=FakeUoW,  # поддельная транзакция
         upload_root=upload_root,  # поддельный путь
     )
-
 
     # 1. Tile создан
     assert record is not None
@@ -217,13 +223,15 @@ async def test_create_tile_success_when_all_handbooks_exists(manager_with_handbo
 
 
 @pytest.mark.asyncio
-async def test_create_tile_success_when_all_handbooks_not_exists(manager_without_handbooks, fs):
+async def test_create_tile_success_when_all_handbooks_not_exists(
+    manager_without_handbooks, fs
+):
     upload_root = FakePath("root")
     manager = manager_without_handbooks
 
     # выполнение add_tile
     record = await add_tile(
-        tile_name="Tile",
+        name="Tile",
         length=Decimal(300),
         width=Decimal(200),
         height=Decimal(10),
@@ -233,7 +241,7 @@ async def test_create_tile_success_when_all_handbooks_not_exists(manager_without
         box_area=Decimal(1),
         boxes_count=3,
         main_image=b"MAIN",
-        tile_type="category",
+        category_name="category",
         manager=manager,
         images=[b"A", b"B"],
         color_feature="feature",
@@ -242,7 +250,6 @@ async def test_create_tile_success_when_all_handbooks_not_exists(manager_without
         uow_class=FakeUoW,  # поддельная транзакция
         upload_root=upload_root,  # поддельный путь
     )
-
 
     # 1. Tile создан
     assert record is not None
@@ -275,14 +282,14 @@ async def test_create_tile_success_when_all_handbooks_not_exists(manager_without
 
 
 @pytest.mark.asyncio
-async def test_update_tile_success_when_new_attributes_in_handbooks(manager_with_handbooks, fs):
+async def test_update_tile_success_when_new_attributes_in_handbooks(
+    manager_with_handbooks, fs
+):
     upload_root = FakePath("root")
     manager = manager_with_handbooks
-    log.debug("tables: %s", manager.storage.tables)
 
-    # выполнение add_tile
     record = await add_tile(
-        tile_name="Tile",
+        name="Tile",
         length=Decimal(300),
         width=Decimal(200),
         height=Decimal(10),
@@ -292,36 +299,53 @@ async def test_update_tile_success_when_new_attributes_in_handbooks(manager_with
         box_area=Decimal(1),
         boxes_count=3,
         main_image=b"MAIN",
-        tile_type="category",
+        category_name="category",
         manager=manager,
         images=[b"A", b"B"],
         color_feature="feature",
         surface="surface",
-        fs=fs,  # подделанная файловая система
-        uow_class=FakeUoW,  # поддельная транзакция
-        upload_root=upload_root,  # поддельный путь
+        fs=fs,
+        uow_class=FakeUoW,
+        upload_root=upload_root,
     )
 
     article = record["id"]
 
     new_size = "500 300 20"
 
-    await update_tile(
-        manager,
-        article,
-        uow_class=FakeUoW,
+    new_filters = dict(
         name="NewTile",
         size=new_size,
         color_name="NewColor",
-        producer="NewProducer",
+        producer_name="NewProducer",
         box_weight=Decimal(50),
         box_area=Decimal(5),
         boxes_count=5,
-        tile_type="NewCategory",
-        color_feature="NewFeature",
-        surface="NewSurface",
+        category_name="NewCategory",
+        feature_name="NewFeature",
+        surface_name="NewSurface",
     )
 
-    new_record = await manager.read(Tile, id=article)
+    await update_tile(manager, article, uow_class=FakeUoW, **new_filters)
 
-    assert new_record['name'] == "NewTile"
+    new_record = await manager.read(Tile, id=article, to_join=["box", "size"])
+    new_filters.pop("size")
+    (
+        new_filters["size_length"],
+        new_filters["size_width"],
+        new_filters["size_height"],
+    ) = (Decimal(500), Decimal(300), Decimal(20))
+
+    # 1 проверка всех новых полей
+    for f, v in new_filters.items():
+        assert new_record[0][f] == v
+
+    # 2. Проверка всех справочников
+    should_new_handbooks = [
+        table
+        for table in manager.storage.tables
+        if table is not Tile and table is not TileImages
+    ]
+    for table_name in should_new_handbooks:
+        rows = await manager.read(table_name)
+        assert len(rows) == 2, f"{table_name.__name__} should have at least one row"

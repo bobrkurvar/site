@@ -5,7 +5,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Request
 from fastapi.templating import Jinja2Templates
 
-from domain import Tile, Types
+from domain import Categories, Tile
 from repo import Crud, get_db_manager
 
 router = APIRouter()
@@ -25,9 +25,9 @@ async def get_main_page(request: Request, manager: dbManagerDep):
         if img.is_file()
     ]
 
-    categories = await manager.read(Tile, distinct="type_name")
+    categories = await manager.read(Tile, distinct="category_name")
     log.debug("categories: %s", categories)
-    categories = [Types(name=category["tile_type"]) for category in categories]
+    categories = [Categories(name=category["category_name"]) for category in categories]
 
     log.debug("categories: %s", categories)
 

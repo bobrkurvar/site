@@ -57,7 +57,7 @@ class Box:
         return str(self.weight.normalize())
 
 
-class Types:
+class Categories:
 
     _slug_to_name = {}
 
@@ -84,7 +84,7 @@ class Tile:
         boxes_count: int,
         producer: Producer,
         article: int,
-        tile_type: Types,
+        category_name: Categories,
         surface: TileSurface | None = None,
     ):
         self.name = name
@@ -95,7 +95,7 @@ class Tile:
         self.boxes_count = boxes_count
         self.producer = producer
         self.article = article
-        self.tile_type = tile_type
+        self.tile_type = category_name
 
     @property
     def present(self):
@@ -114,6 +114,7 @@ class TileImages:
     def __init__(self, images: list[bytes]):
         self.images = images
 
+
 class Collections:
     _slug_to_name = {}
 
@@ -131,8 +132,6 @@ class Collections:
         return cls._slug_to_name[slug]
 
 
-
-
 def map_to_tile_domain(tile_dict: dict) -> Tile:
     size = TileSize(
         size_id=tile_dict["id"],
@@ -140,7 +139,9 @@ def map_to_tile_domain(tile_dict: dict) -> Tile:
         width=tile_dict["size_width"],
         length=tile_dict["size_length"],
     )
-    color = TileColor(color_name=tile_dict["color_name"], feature_name=tile_dict["feature_name"])
+    color = TileColor(
+        color_name=tile_dict["color_name"], feature_name=tile_dict["feature_name"]
+    )
     surface = (
         TileSurface(name=tile_dict["surface_name"])
         if tile_dict["surface_name"]
@@ -152,7 +153,7 @@ def map_to_tile_domain(tile_dict: dict) -> Tile:
         weight=tile_dict["box_weight"],
         area=tile_dict["box_area"],
     )
-    tile_type = Types(name=tile_dict["tile_type"])
+    category_name = Categories(name=tile_dict["category_name"])
 
     return Tile(
         size=size,
@@ -162,6 +163,6 @@ def map_to_tile_domain(tile_dict: dict) -> Tile:
         box=box,
         boxes_count=tile_dict["boxes_count"],
         producer=producer,
-        tile_type=tile_type,
+        category_name=category_name,
         article=tile_dict["id"],
     )

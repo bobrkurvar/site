@@ -70,42 +70,53 @@ async def admin_create_tile(
     name: Annotated[str, Form()],
     size: Annotated[str, Form()],
     color_name: Annotated[str, Form()],
-    producer: Annotated[str, Form()],
+    producer_name: Annotated[str, Form()],
     box_weight: Annotated[Decimal, Form()],
     box_area: Annotated[Decimal, Form()],
     boxes_count: Annotated[int, Form()],
     main_image: Annotated[UploadFile, File()],
-    tile_type: Annotated[str, Form()],
+    category_name: Annotated[str, Form()],
     manager: dbManagerDep,
-    color_feature: Annotated[str, Form()],
-    surface: Annotated[str, Form()],
+    feature_name: Annotated[str, Form()],
+    surface_name: Annotated[str, Form()],
     images: Annotated[list[UploadFile], File()],
 ):
-    name, size, color_name, producer, tile_type, color_feature, surface = [value.strip() for value in (name, size, color_name, producer, tile_type, color_feature, surface)]
+    name, size, color_name, producer_name, category_name, feature_name, surface_name = [
+        value.strip()
+        for value in (
+            name,
+            size,
+            color_name,
+            producer_name,
+            category_name,
+            feature_name,
+            surface_name,
+        )
+    ]
     bytes_images = [await img.read() for img in images] if images else []
     bytes_main_image = await main_image.read()
     length_str, width_str, height_str = size.split()
     length = Decimal(length_str)
     width = Decimal(width_str)
     height = Decimal(height_str)
-    surface = surface or None
-    log.debug("tile_type: %s", tile_type)
+    surface_name = surface_name or None
+    log.debug("tile_type: %s", category_name)
     await add_tile(
         name,
         length,
         width,
         height,
         color_name,
-        producer,
+        producer_name,
         box_weight,
         box_area,
         boxes_count,
         bytes_main_image,
-        tile_type,
+        category_name,
         manager,
         bytes_images,
-        color_feature,
-        surface,
+        feature_name,
+        surface_name,
     )
     return RedirectResponse("/admin", status_code=303)
 
@@ -117,15 +128,26 @@ async def admin_update_tile(
     name: Annotated[str, Form()],
     size: Annotated[str, Form()],
     color_name: Annotated[str, Form()],
-    producer: Annotated[str, Form()],
+    producer_name: Annotated[str, Form()],
     box_weight: Annotated[Decimal | str, Form()],
     box_area: Annotated[Decimal | str, Form()],
     boxes_count: Annotated[int | str, Form()],
-    tile_type: Annotated[str, Form()],
-    color_feature: Annotated[str, Form()],
-    surface: Annotated[str, Form()],
+    category_name: Annotated[str, Form()],
+    feature_name: Annotated[str, Form()],
+    surface_name: Annotated[str, Form()],
 ):
-    name, size, color_name, producer, tile_type, color_feature, surface = [value.strip() for value in (name, size, color_name, producer, tile_type, color_feature, surface)]
+    name, size, color_name, producer_name, category_name, feature_name, surface_name = [
+        value.strip()
+        for value in (
+            name,
+            size,
+            color_name,
+            producer_name,
+            category_name,
+            feature_name,
+            surface_name,
+        )
+    ]
     params = locals()
     params = {
         k: v

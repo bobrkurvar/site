@@ -4,9 +4,10 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Request
 from fastapi.templating import Jinja2Templates
 
-from domain import Tile, Types, Collections, map_to_tile_domain
+from domain import Categories, Collections, Tile, map_to_tile_domain
 from repo import Crud, get_db_manager
-from services.views import build_tile_filters, build_main_images, build_sizes_and_colors, fetch_items
+from services.views import (build_main_images, build_sizes_and_colors,
+                            build_tile_filters, fetch_items)
 
 router = APIRouter(tags=["presentation"], prefix="/catalog")
 dbManagerDep = Annotated[Crud, Depends(get_db_manager)]
@@ -16,6 +17,7 @@ log = logging.getLogger(__name__)
 
 ITEMS_PER_PAGE = 20
 
+
 @router.get("/{category}/{tile_id:int}")
 async def get_tile_page(
     request: Request, category: str, tile_id: int, manager: dbManagerDep
@@ -23,7 +25,7 @@ async def get_tile_page(
     tile = await manager.read(
         Tile,
         to_join=["images", "size", "box"],
-        type_name=Types.get_category_from_slug(category),
+        category_name=Categories.get_category_from_slug(category),
         id=tile_id,
     )
     tile = tile[0] if tile else {}
@@ -32,8 +34,8 @@ async def get_tile_page(
         images = tile["images_paths"]
     log.debug("detail images: %s", images)
     tile = map_to_tile_domain(tile)
-    categories = await manager.read(Tile, distinct="type_name")
-    categories = [Types(name=category["tile_type"]) for category in categories]
+    categories = await manager.read(Tile, distinct="category_name")
+    categories = [Categories(name=category["category_name"]) for category in categories]
     return templates.TemplateResponse(
         "tile_detail.html",
         {
@@ -45,29 +47,29 @@ async def get_tile_page(
     )
 
 
-@router.get("/{category}")
+@router.get("/{category_name}")
 async def get_catalog_tiles_page(
     request: Request,
-    category: str,
+    category_name: str,
     manager: dbManagerDep,
     name: str | None = None,
     size: str | None = None,
     color: str | None = None,
     page: int = 1,
 ):
-    filters = await build_tile_filters(manager, name, size, color, category)
+    filters = await build_tile_filters(manager, name, size, color, category_name)
     limit = ITEMS_PER_PAGE
     offset = (page - 1) * limit
 
     tiles, total_count = await fetch_items(manager, limit, offset, **filters)
-    sizes, colors = await build_sizes_and_colors(manager, category)
+    sizes, colors = await build_sizes_and_colors(manager, category_name)
     main_images = build_main_images(tiles)
     tiles = [map_to_tile_domain(tile) for tile in tiles]
 
     total_pages = max((total_count + limit - 1) // limit, 1)
-    categories = await manager.read(Tile, distinct="type_name")
-    categories = [Types(name=category["tile_type"]) for category in categories]
-    path = f"/catalog/{category}"
+    categories = await manager.read(Tile, distinct="category_name")
+    categories = [Categories(name=category["category_name"]) for category in categories]
+    path = f"/catalog/{category_name}"
 
     return templates.TemplateResponse(
         "tiles_catalog.html",
@@ -81,8 +83,7 @@ async def get_catalog_tiles_page(
             "total_count": total_count,
             "main_images": main_images,
             "categories": categories,
-            "category": category,
-            "path": path
+            "category": category_name,
+            "path": path,
         },
     )
-
