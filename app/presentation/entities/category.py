@@ -4,7 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Form
 from fastapi.responses import RedirectResponse
 
-from domain import Types
+from domain import Categories
 from repo import Crud, get_db_manager
 
 router = APIRouter(prefix="/admin/tiles/categories")
@@ -18,5 +18,5 @@ async def admin_create_tile_box(manager: dbManagerDep, name: Annotated[str, Form
     if name is not None:
         filters["name"] = name
 
-    await manager.delete(Types, **filters)
+    await manager.delete(Categories, **filters)
     return RedirectResponse("/admin", status_code=303)

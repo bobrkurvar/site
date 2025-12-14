@@ -53,7 +53,7 @@ async def admin_page(request: Request, manager: dbManagerDep):
 
     log.debug("colors_names: %s", unique_colors)
     log.debug("features_names: %s", unique_features)
-    categories = await manager.read(Types)
+    categories = await manager.read(Categories)
 
     return templates.TemplateResponse(
         "admin.html",

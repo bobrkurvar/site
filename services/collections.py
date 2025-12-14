@@ -1,8 +1,10 @@
-import aiofiles
-from repo.Uow import UnitOfWork
-from domain import Collections
-from pathlib import Path
 import logging
+from pathlib import Path
+
+import aiofiles
+
+from domain import Collections
+from repo.Uow import UnitOfWork
 
 log = logging.getLogger(__name__)
 
@@ -25,8 +27,8 @@ async def add_collection(
         collection_record = await manager.create(
             Collections,
             name=name,
-            image_path = str(image_path),
-            session = uow.session,
+            image_path=str(image_path),
+            session=uow.session,
         )
         try:
             async with fs.open(image_path, "xb") as fw:
@@ -34,7 +36,6 @@ async def add_collection(
         except FileExistsError:
             log.debug("путь %s уже занять", image_path)
             raise
-
 
         return collection_record
 

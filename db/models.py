@@ -19,13 +19,13 @@ class Catalog(Base):
     name: Mapped[str] = mapped_column()
     color_name: Mapped[str]
     feature_name: Mapped[str]
-    tile_size_id: Mapped[int] = mapped_column(ForeignKey("tile_sizes.id"))
+    size_id: Mapped[int] = mapped_column(ForeignKey("tile_sizes.id"))
     box_id: Mapped[int] = mapped_column(ForeignKey("boxes.id"))
     surface_name: Mapped[str] = mapped_column(
         ForeignKey("tile_surface.name"), nullable=True
     )
     producer_name: Mapped[str] = mapped_column(ForeignKey("producers.name"))
-    type_name: Mapped[str] = mapped_column(ForeignKey("types.name"))
+    category_name: Mapped[str] = mapped_column(ForeignKey("categories.name"))
     boxes_count: Mapped[int]
 
     color: Mapped["TileColor"] = relationship("TileColor", back_populates="tiles")
@@ -39,7 +39,7 @@ class Catalog(Base):
         cascade="all, delete-orphan",
         passive_deletes=True,
     )
-    type: Mapped["Types"] = relationship("Types", back_populates="tiles")
+    category: Mapped["Categories"] = relationship("Categories", back_populates="tiles")
 
     __table_args__ = (
         ForeignKeyConstraint(
@@ -58,8 +58,8 @@ class Catalog(Base):
             "surface_name": self.surface_name,
             "producer_name": self.producer_name,
             "boxes_count": self.boxes_count,
-            "tile_type": self.type_name,
-            "size_id": self.tile_size_id,
+            "category_name": self.category_name,
+            "size_id": self.size_id,
         }
 
         try:
@@ -89,10 +89,10 @@ class Catalog(Base):
         return data
 
 
-class Types(Base):
-    __tablename__ = "types"
+class Categories(Base):
+    __tablename__ = "categories"
     name: Mapped[str] = mapped_column(primary_key=True)
-    tiles: Mapped[list["Catalog"]] = relationship("Catalog", back_populates="type")
+    tiles: Mapped[list["Catalog"]] = relationship("Catalog", back_populates="category")
 
     def model_dump(self):
         return {"name": self.name}
@@ -112,14 +112,15 @@ class TileImages(Base):
             "image_path": self.image_path,
         }
 
+
 class Collections(Base):
     __tablename__ = "collections"
     name: Mapped[str] = mapped_column(primary_key=True)
     image_path: Mapped[str] = mapped_column(unique=True, default=config.image_path)
 
-
     def model_dump(self):
         return {"name": self.name, "image_path": self.image_path}
+
 
 class TileSize(Base):
     __tablename__ = "tile_sizes"

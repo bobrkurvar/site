@@ -1,7 +1,7 @@
 import logging
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Form, File, UploadFile
+from fastapi import APIRouter, Depends, File, Form, UploadFile
 from fastapi.responses import RedirectResponse
 
 from domain import Collections
@@ -15,17 +15,20 @@ log = logging.getLogger(__name__)
 
 @router.post("/create")
 async def admin_create_tile_box(
-        manager: dbManagerDep,
-        name: Annotated[str, Form()],
-        image: Annotated[UploadFile, File()]
+    manager: dbManagerDep,
+    name: Annotated[str, Form()],
+    image: Annotated[UploadFile, File()],
 ):
     name = name.strip()
     image = await image.read()
     await add_collection(name, image, manager)
     return RedirectResponse("/admin", status_code=303)
 
+
 @router.post("/delete")
-async def admin_create_tile_box(manager: dbManagerDep, name: Annotated[str, Form()] = None):
+async def admin_create_tile_box(
+    manager: dbManagerDep, name: Annotated[str, Form()] = None
+):
     if name:
         await manager.delete(Collections, name=name)
     else:

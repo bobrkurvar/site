@@ -17,7 +17,7 @@ async def add_items(domain_model, manager, session, **filters):
 
 
 async def add_tile(
-    tile_name: str,
+    name: str,
     length: Decimal,
     width: Decimal,
     height: Decimal,
@@ -27,7 +27,7 @@ async def add_tile(
     box_area: Decimal,
     boxes_count: int,
     main_image: bytes,
-    tile_type: str,
+    category_name: str,
     manager,
     images: list[bytes] | list,
     color_feature: str = "",
@@ -52,17 +52,17 @@ async def add_tile(
             feature_name=color_feature,
         )
         await add_items(Producer, manager, uow.session, name=producer_name)
-        await add_items(Types, manager, uow.session, name=tile_type)
+        await add_items(Categories, manager, uow.session, name=category_name)
         box = await add_items(
             Box, manager, uow.session, weight=box_weight, area=box_area
         )
 
         tile_record = await manager.create(
             Tile,
-            name=tile_name,
-            tile_size_id=size["id"],
+            name=name,
+            size_id=size["id"],
             color_name=color_name,
-            type_name=tile_type,
+            category_name=category_name,
             feature_name=color_feature,
             surface_name=surface,
             producer_name=producer_name,
@@ -97,9 +97,11 @@ async def add_tile(
         return tile_record
 
 
-async def delete_tile(manager, **filters):
+async def delete_tile(
+    manager, fs=aiofiles, uow_class=UnitOfWork, upload_root=None, **filters
+):
 
-    async with UnitOfWork(manager._session_factory) as uow:
+    async with uow_class(manager._session_factory) as uow:
         tiles = await manager.read(
             Tile, to_join=["images"], session=uow.session, **filters
         )
@@ -108,8 +110,8 @@ async def delete_tile(manager, **filters):
 
         for tile in tiles:
             images_paths = tile["images_paths"]
-            project_root = Path(__file__).resolve().parent.parent
-            upload_dir_str = str(project_root).replace(r"\app", "")
+            upload_dir = upload_root or Path(__file__).resolve().parent.parent
+            upload_dir_str = str(upload_dir).replace(r"\app", "")
             absolute_path = Path(upload_dir_str)
             for image in images_paths:
                 image_str = image.lstrip("/")
@@ -122,151 +124,113 @@ async def delete_tile(manager, **filters):
         log.info("Удалено файлов: %s", files_deleted)
 
 
-async def map_to_domain_for_filter(
-    article: int, manager, session, param: str, value, mapped: dict
-):
-    mapper_for_domain_model = {
-        "name": Tile,
-        "boxes_count": Tile,
-        "tile_type": Types,
-        "size": TileSize,
-        "color_name": TileColor,
-        "color_feature": TileColor,
-        "producer": Producer,
-        "box_weight": Box,
-        "box_area": Box,
-        "surface": TileSurface,
-    }
-
-    mapper_for_filters = {
-        "name": {"name": value},
-        "surface": {"name": value},
-        "producer": {"name": value},
-        "tile_type": {"name": value},
-    }
-    if param == "boxes_count":
-        mapper_for_filters["boxes_count"] = {"boxes_count": int(value)}
-
-    if param == "size":
-        length_str, width_str, height_str = value.split()
-        mapper_for_filters[param] = {
-            "length": Decimal(length_str),
-            "width": Decimal(width_str),
-            "height": Decimal(height_str),
-        }
-
-    elif param == "color_feature":
-        color_name = mapped.setdefault(
-            "color_name",
-            (await manager.read(Tile, id=article, session=session))[0]["color_name"],
-        )
-        mapper_for_filters[param] = {"color_name": color_name, "feature_name": value}
-        mapped["feature_name"] = value
-
-    elif param == "color_name":
-        feature_name = mapped.setdefault(
-            "feature_name",
-            (await manager.read(Tile, id=article, session=session))[0]["feature_name"],
-        )
-        mapper_for_filters[param] = {"color_name": value, "feature_name": feature_name}
-        mapped["color_name"] = value
-
-    elif param == "box_weight":
-        box_area = mapped.setdefault(
-            "box_area",
-            (await manager.read(Tile, to_join=["box"], id=article, session=session))[0][
-                "box_area"
-            ],
-        )
-        mapper_for_filters[param] = {
-            "weight": Decimal(value),
-            "area": Decimal(box_area),
-        }
-        mapped["box_weight"] = value
-
-    elif param == "box_area":
-        box_weight = mapped.setdefault(
-            "box_weight",
-            (await manager.read(Tile, to_join=["box"], id=article, session=session))[0][
-                "box_area"
-            ],
-        )
-        mapper_for_filters[param] = {
-            "weight": Decimal(box_weight),
-            "area": Decimal(value),
-        }
-        mapped["box_area"] = value
-
-    return {
-        "param": param,
-        "domain_model": mapper_for_domain_model[param],
-        "filters": mapper_for_filters.get(param, {param: value}),
-    }
-
-
-async def update_tile(manager, article, **params):
-
-    mapper_for_tiles = {
-        "surface": "surface_name",
-        "producer": "producer_name",
-        "size": "tile_size_id",
-        "box_weight": "box_id",
-        "box_area": "box_id",
-        "tile_type": "type_name",
-        "color_feature": "feature_name",
-    }
-
-    mapper_for_item = {
-        "size": "id",
-        "box_weight": "id",
-        "box_area": "id",
-        "producer": "name",
-        "tile_type": "name",
-        "color_feature": "feature_name",
-        "surface": "name",
-    }
-
-    mapper_for_type_tile = {"boxes_count": int}
-
+async def map_to_domain_for_filter(article: int, manager, session, **params):
+    for_tile = {}
+    for_models = {}
     mapped = {}
 
-    async with UnitOfWork(manager._session_factory) as uow:
-        domain_tile_filters = []
-        for_tiles = {}
-        log.debug("params %s", params)
-        for param in params:
-            domain_tile_filters.append(
-                await map_to_domain_for_filter(
-                    article, manager, uow.session, param, params[param], mapped
-                )
+    for param, value in params.items():
+        if param == "name":
+            for_tile.update(name=value)
+
+        elif param == "producer_name":
+            for_tile.update(producer_name=value)
+            for_models[Producer] = {"name": value}
+
+        elif param == "category_name":
+            for_tile.update(category_name=value)
+            for_models[Categories] = {"name": value}
+
+        elif param == "surface_name":
+            for_tile.update(surface_name=value)
+            for_models[TileSurface] = {"name": value}
+
+        elif param == "boxes_count":
+            for_tile.update(boxes_count=int(value))
+
+        elif param == "size":
+            length_str, width_str, height_str = value.split()
+            for_models[TileSize] = {
+                "length": Decimal(length_str),
+                "width": Decimal(width_str),
+                "height": Decimal(height_str),
+            }
+
+        elif param == "feature_name":
+            color_name = mapped.setdefault(
+                "color_name",
+                (await manager.read(Tile, id=article, session=session))[0][
+                    "color_name"
+                ],
             )
-        log.debug("mapped: %s", mapped)
-        log.debug("domain_tile_filters %s", domain_tile_filters)
-        for tile_filter in domain_tile_filters:
-            cur = tile_filter["param"]
-            if cur != "name" and cur != "boxes_count":
-                log.debug("param: %s, model: %s", cur, tile_filter["domain_model"])
-                item = await add_items(
-                    tile_filter["domain_model"],
-                    manager,
-                    uow.session,
-                    **tile_filter["filters"],
-                )
-                for_tiles.update(
-                    **{
-                        mapper_for_tiles.get(cur, cur): item[
-                            mapper_for_item.get(cur, cur)
-                        ]
-                    }
-                )
-            else:
-                for_tiles.update(
-                    **{
-                        mapper_for_tiles.get(cur, cur): mapper_for_type_tile.get(
-                            cur, str
-                        )(params[cur])
-                    }
-                )
+            for_tile.update(feature_name=value)
+            for_models[TileColor] = {"color_name": color_name, "feature_name": value}
+            mapped["feature_name"] = value
+
+        elif param == "color_name":
+            feature_name = mapped.setdefault(
+                "feature_name",
+                (await manager.read(Tile, id=article, session=session))[0][
+                    "feature_name"
+                ],
+            )
+            for_models[TileColor] = {"color_name": value, "feature_name": feature_name}
+            for_tile.update(color_name=value)
+            mapped["color_name"] = value
+
+        elif param == "box_weight":
+            box_area = mapped.setdefault(
+                "box_area",
+                (
+                    await manager.read(
+                        Tile, to_join=["box"], id=article, session=session
+                    )
+                )[0]["box_area"],
+            )
+            for_models[Box] = {
+                "weight": Decimal(value),
+                "area": Decimal(box_area),
+            }
+            mapped["box_weight"] = value
+
+        elif param == "box_area":
+            box_weight = mapped.setdefault(
+                "box_weight",
+                (
+                    await manager.read(
+                        Tile, to_join=["box"], id=article, session=session
+                    )
+                )[0]["box_area"],
+            )
+            for_models[Box] = {
+                "weight": Decimal(box_weight),
+                "area": Decimal(value),
+            }
+            mapped["box_area"] = value
+
+    return for_tile, for_models
+
+
+async def update_tile(manager, article, uow_class=UnitOfWork, **params):
+    log.debug("PARAMS: %s", params)
+
+    async with uow_class(manager._session_factory) as uow:
+        for_tiles, for_models = await map_to_domain_for_filter(
+            article, manager, uow.session, **params
+        )
+        log.debug("for_models: %s", for_models)
+        for model, values in for_models.items():
+            item = await add_items(
+                model,
+                manager,
+                uow.session,
+                **values,
+            )
+            if model is Box:
+                for_tiles["box_id"] = item["id"]
+            elif model is TileSize:
+                for_tiles["size_id"] = item["id"]
+
         log.debug("for_tiles: %s", for_tiles)
 
         await manager.update(

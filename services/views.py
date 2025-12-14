@@ -1,11 +1,17 @@
-from domain import Types, Tile, TileSize, TileColor, Collections
-from decimal import Decimal
 import logging
+from decimal import Decimal
+
+from domain import Categories, Collections, Tile, TileColor, TileSize
 
 log = logging.getLogger(__name__)
 
+
 async def build_tile_filters(
-    manager,  name: str | None, size: str | None, color: str | None, category: str | None = None
+    manager,
+    name: str | None,
+    size: str | None,
+    color: str | None,
+    category: str | None = None,
 ) -> dict:
     filters = {}
     if name:
@@ -17,34 +23,35 @@ async def build_tile_filters(
         tile_size_id = (
             await manager.read(TileSize, length=length, width=width, height=height)
         )[0]
-        filters["tile_size_id"] = tile_size_id["id"]
+        filters["size_id"] = tile_size_id["id"]
 
     if category is not None:
-        filters["type_name"] = Types.get_category_from_slug(category)
+        filters["category_name"] = Categories.get_category_from_slug(category)
     return filters
 
 
-async def build_sizes_and_colors(manager, category: str | None = None, collection: str | None = None):
+async def build_sizes_and_colors(
+    manager, category: str | None = None, collection: str | None = None
+):
     if category:
-        category = Types.get_category_from_slug(category)
+        category = Categories.get_category_from_slug(category)
         tile_sizes = await manager.read(
-            Tile, to_join=["size"], distinct="tile_size_id", type_name=category
+            Tile, to_join=["size"], distinct="size_id", category_name=category
         )
-        tile_colors = await manager.read(Tile, distinct="color_name",  type_name=category)
+        tile_colors = await manager.read(
+            Tile, distinct="color_name", category_name=category
+        )
     else:
         collection = Collections.get_category_from_slug(collection).lower()
         log.debug("collection: %s", collection)
-        # tile_sizes = await manager.read(Tile, to_join=["size"], distinct="tile_size_id")
-        # tile_sizes = [tile for tile in tile_sizes if extract_quoted_word(tile["name"]) == collection]
-        #
-        # tile_colors = await manager.read(Tile, distinct="color_name")
-        # log.debug("tile_colors before collections: %s", tile_colors)
-        # tile_colors = [tile for tile in tile_colors if extract_quoted_word(tile["name"]) == collection]
         seen = set()
         tile_sizes = await manager.read(Tile, to_join=["size"])
         unique = []
         for tile in tile_sizes:
-            if extract_quoted_word(tile["name"]) == collection and tile["size_id"] not in seen:
+            if (
+                extract_quoted_word(tile["name"]) == collection
+                and tile["size_id"] not in seen
+            ):
                 unique.append(tile)
                 seen.add(tile["size_id"])
         tile_sizes = unique
@@ -53,12 +60,19 @@ async def build_sizes_and_colors(manager, category: str | None = None, collectio
         unique = []
         tile_colors = await manager.read(Tile)
         for tile in tile_colors:
-            if extract_quoted_word(tile["name"]) == collection and tile["color_name"] not in seen:
+            if (
+                extract_quoted_word(tile["name"]) == collection
+                and tile["color_name"] not in seen
+            ):
                 unique.append(tile)
                 seen.add(tile["color_name"])
         tile_colors = unique
         log.debug("tile_colors before collections: %s", tile_colors)
-        tile_colors = [tile for tile in tile_colors if extract_quoted_word(tile["name"]) == collection]
+        tile_colors = [
+            tile
+            for tile in tile_colors
+            if extract_quoted_word(tile["name"]) == collection
+        ]
 
     log.debug("tile sizes: %s", tile_sizes)
     log.debug("tile colors: %s", tile_colors)
@@ -79,6 +93,7 @@ async def build_sizes_and_colors(manager, category: str | None = None, collectio
 
     return sizes, colors
 
+
 def build_main_images(tiles):
     main_images = {}
     for tile in tiles:
@@ -93,24 +108,31 @@ def extract_quoted_word(name: str) -> str | None:
         return parts[1].lower()
     return None
 
-async def fetch_items(manager, limit, offset, **filters):
-    category = filters["type_name"]
 
-    items = await manager.read(
-        Tile, to_join=["images", "size", "box"], **filters
-    )
+async def fetch_items(manager, limit, offset, **filters):
+    category = filters["category_name"]
+
+    items = await manager.read(Tile, to_join=["images", "size", "box"], **filters)
 
     colls = await manager.read(Collections)
     colls_names = [coll["name"].lower() for coll in colls]
-    filters.pop("type_name", None)
+    filters.pop("category_name", None)
 
     if not filters:
-        in_collections = [item for item in items if extract_quoted_word(item["name"]) in colls_names]
-        log.debug("collections names: %s in collections: %s", colls_names, in_collections)
+        in_collections = [
+            item for item in items if extract_quoted_word(item["name"]) in colls_names
+        ]
+        log.debug(
+            "collections names: %s in collections: %s", colls_names, in_collections
+        )
         total_count = len(items) - len(in_collections)
         log.debug("total count: %s", total_count)
         log.debug("category: %s colls: %s", category, colls_names)
-        items = [item for item in items if extract_quoted_word(item["name"]) not in colls_names]
+        items = [
+            item
+            for item in items
+            if extract_quoted_word(item["name"]) not in colls_names
+        ]
         log.debug("tiles count without collection: %s", len(items))
     else:
         log.debug("filters: %s", filters)
@@ -118,7 +140,7 @@ async def fetch_items(manager, limit, offset, **filters):
 
     log.debug("offset: %s, limit: %s", offset, limit)
 
-    items = items[offset: offset + limit]
+    items = items[offset : offset + limit]
     log.debug("tiles: %s", items)
     log.debug("colls: %s", colls)
 
@@ -127,7 +149,7 @@ async def fetch_items(manager, limit, offset, **filters):
 
 async def fetch_collections_items(manager, collection, limit, offset, **filters):
 
-    items = await manager.read(Tile, to_join = ["images", "size", "box"], **filters)
+    items = await manager.read(Tile, to_join=["images", "size", "box"], **filters)
     collection = Collections.get_category_from_slug(collection).lower()
     items = [item for item in items if extract_quoted_word(item["name"]) == collection]
     total_count = len(items)
@@ -135,32 +157,8 @@ async def fetch_collections_items(manager, collection, limit, offset, **filters)
 
     log.debug("offset: %s, limit: %s", offset, limit)
 
-    items = items[offset: offset + limit]
+    items = items[offset : offset + limit]
     log.debug("tiles: %s", items)
 
     return items, total_count
-
-
-
-    # if not filters:
-    #     in_collections = [tile for tile in tiles if extract_quoted_word(tile["name"]) in colls_names]
-    #     log.debug("collections names: %s in collections: %s", colls_names, in_collections)
-    #     total_count = len(tiles) - len(in_collections)
-    #     log.debug("total count: %s", total_count)
-    #     if not collection:
-    #         if offset != 0:
-    #             colls = []
-    #         log.debug("category: %s colls: %s", category, colls_names)
-    #         tiles = [tile for tile in tiles if extract_quoted_word(tile["name"]) not in colls_names]
-    #         log.debug("tiles count without collection: %s", len(tiles))
-    #     else:
-    #         collection = Collections.get_category_from_slug(collection).lower()
-    #         tiles = [tile for tile in tiles if extract_quoted_word(tile["name"]) == collection]
-    #         total_count = len(tiles)
-    #         log.debug("collection total count: %s", total_count)
-    #         colls = []
-    # else:
-    #     log.debug("filters: %s", filters)
-    #     total_count = len(tiles)
-    #     colls = []
 
