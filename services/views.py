@@ -112,27 +112,28 @@ def extract_quoted_word(name: str) -> str | None:
 async def fetch_items(manager, limit, offset, **filters):
     category = filters["category_name"]
 
-    items = await manager.read(Tile, to_join=["images", "size", "box"], **filters)
+    items = await manager.read(Tile, to_join=["images", "size", "box"], limit=limit, offset=offset, **filters)
 
-    colls = await manager.read(Collections)
-    colls_names = [coll["name"].lower() for coll in colls]
+    # colls = await manager.read(Collections)
+    # colls_names = [coll["name"].lower() for coll in colls]
     filters.pop("category_name", None)
 
     if not filters:
-        in_collections = [
-            item for item in items if extract_quoted_word(item["name"]) in colls_names
-        ]
-        log.debug(
-            "collections names: %s in collections: %s", colls_names, in_collections
-        )
-        total_count = len(items) - len(in_collections)
+        # in_collections = [
+        #     item for item in items if extract_quoted_word(item["name"]) in colls_names
+        # ]
+        # log.debug(
+        #     "collections names: %s in collections: %s", colls_names, in_collections
+        # )
+        #total_count = len(items) - len(in_collections)
+        total_count = len(items)
         log.debug("total count: %s", total_count)
-        log.debug("category: %s colls: %s", category, colls_names)
-        items = [
-            item
-            for item in items
-            if extract_quoted_word(item["name"]) not in colls_names
-        ]
+        #log.debug("category: %s colls: %s", category, colls_names)
+        # items = [
+        #     item
+        #     for item in items
+        #     if extract_quoted_word(item["name"]) not in colls_names
+        # ]
         log.debug("tiles count without collection: %s", len(items))
     else:
         log.debug("filters: %s", filters)
@@ -140,9 +141,9 @@ async def fetch_items(manager, limit, offset, **filters):
 
     log.debug("offset: %s, limit: %s", offset, limit)
 
-    items = items[offset : offset + limit]
-    log.debug("tiles: %s", items)
-    log.debug("colls: %s", colls)
+    #items = items[offset : offset + limit]
+    # log.debug("tiles: %s", items)
+    # log.debug("colls: %s", colls)
 
     return items, total_count
 
