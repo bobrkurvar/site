@@ -125,9 +125,9 @@ class Collections(Base):
 class TileSize(Base):
     __tablename__ = "tile_sizes"
     id: Mapped[int] = mapped_column(primary_key=True)
-    length: Mapped[Decimal] = mapped_column(DECIMAL(5, 2))
-    height: Mapped[Decimal] = mapped_column(DECIMAL(5, 2))
-    width: Mapped[Decimal] = mapped_column(DECIMAL(5, 2))
+    length: Mapped[Decimal] = mapped_column(DECIMAL(7, 2))
+    height: Mapped[Decimal] = mapped_column(DECIMAL(7, 2))
+    width: Mapped[Decimal] = mapped_column(DECIMAL(7, 2))
     tiles: Mapped[list["Catalog"]] = relationship(
         "Catalog",
         back_populates="size",
