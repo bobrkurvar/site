@@ -24,14 +24,18 @@ class FakeFileSystem:
 
 
 class FakePath:
-    def __init__(self, *parts):
+    def __init__(self, *parts, fs=None):
         self.parts = list(parts)
+        self.fs = fs
 
     def __truediv__(self, other):
-        return FakePath(*self.parts, str(other))
+        return FakePath(*self.parts, str(other), fs=self.fs)
 
     def mkdir(self, parents=False, exist_ok=False):
         pass
+
+    def exists(self):
+        return str(self) in self.fs.files if self.fs is not None else None
 
     def __str__(self):
         return "/".join(self.parts)

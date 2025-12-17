@@ -112,13 +112,14 @@ def extract_quoted_word(name: str) -> str | None:
 async def fetch_items(manager, limit, offset, **filters):
 
     total_items = await manager.read(Tile, to_join=["images", "size", "box"], **filters)
-    items = await manager.read(Tile, to_join=["images", "size", "box"], limit=limit, offset=offset, **filters)
+    items = await manager.read(
+        Tile, to_join=["images", "size", "box"], limit=limit, offset=offset, **filters
+    )
 
     filters.pop("category_name", None)
     total_count = len(total_items)
 
     log.debug("offset: %s, limit: %s", offset, limit)
-
 
     return items, total_count
 
@@ -137,4 +138,3 @@ async def fetch_collections_items(manager, collection, limit, offset, **filters)
     log.debug("tiles: %s", items)
 
     return items, total_count
-

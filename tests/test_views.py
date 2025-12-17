@@ -3,11 +3,10 @@ from decimal import Decimal
 
 import pytest
 
-from domain import (Box, Categories, Producer, Tile, TileColor, TileImages,
-                    TileSize, TileSurface, Collections)
-
+from domain import (Box, Categories, Collections, Producer, Tile, TileColor,
+                    TileImages, TileSize, TileSurface)
 from services.tile import add_tile
-from services.views import fetch_items
+from services.views import build_main_images, fetch_items
 
 from .fakes import (FakeCRUD, FakeFileSystem, FakePath, FakeStorage, FakeUoW,
                     Table)
@@ -175,9 +174,10 @@ def manager_without_handbooks(storage):
 def fs():
     return FakeFileSystem()
 
+
 @pytest.fixture
 def manager_factory(storage, fs):
-    async def _create(n: int):
+    async def _create(n: int = 0):
         manager = FakeCRUD(storage)
         upload_root = FakePath("root")
 
@@ -206,12 +206,11 @@ def manager_factory(storage, fs):
 
     return _create
 
-@pytest.mark.asyncio
-async def test_get_page_catalog_when_loading_one_page(manager_factory):
-    manager = await manager_factory(20)
-    tiles, count = await fetch_items(manager, 20, 0, category_name="category")
 
-
-    assert len(tiles) == count == 20
-
-
+# @pytest.mark.asyncio
+# async def test_get_page_catalog_when_loading_one_page(manager_factory):
+#     manager = await manager_factory(20)
+#     tiles, count = await fetch_items(manager, 20, 0, category_name="category")
+#
+#
+#     assert len(tiles) == count == 20

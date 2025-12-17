@@ -6,6 +6,7 @@ from fastapi.templating import Jinja2Templates
 
 from domain import Categories, Tile, map_to_tile_domain
 from repo import Crud, get_db_manager
+from services.images import get_image_path
 from services.views import (build_main_images, build_sizes_and_colors,
                             build_tile_filters, fetch_items)
 

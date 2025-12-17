@@ -2,7 +2,7 @@ import logging
 from dataclasses import dataclass
 from typing import Any
 
-from domain import Box, TileSize, TileImages
+from domain import Box, TileImages, TileSize
 
 log = logging.getLogger(__name__)
 
@@ -59,7 +59,7 @@ class Table:
                     to_row = {}
                     for row in other.rows:
                         if row["tile_id"] == self.rows[i]["id"] and (
-                                "image_path" in row.keys()
+                            "image_path" in row.keys()
                         ):
                             to_row.update({"image_path": row["image_path"]})
 
