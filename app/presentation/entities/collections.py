@@ -14,7 +14,7 @@ log = logging.getLogger(__name__)
 
 
 @router.post("/create")
-async def admin_create_tile_box(
+async def admin_create_tile_collection(
     manager: dbManagerDep,
     name: Annotated[str, Form()],
     image: Annotated[UploadFile, File()],
@@ -26,11 +26,11 @@ async def admin_create_tile_box(
 
 
 @router.post("/delete")
-async def admin_create_tile_box(
-    manager: dbManagerDep, name: Annotated[str, Form()] = None
+async def admin_delete_tile_collections(
+    manager: dbManagerDep, name: Annotated[str, Form()]
 ):
-    if name:
+    if name != "":
         await manager.delete(Collections, name=name)
-    else:
-        await manager.delete(Collections)
+    # else:
+    #     await manager.delete(Collections)
     return RedirectResponse("/admin", status_code=303)
