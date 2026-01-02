@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="/static/v5catalog.css">
+<link rel="stylesheet" href="/static/v4catalog.css">
 {% endblock %}
 
 {% block content %}
@@ -13,7 +13,7 @@
         </div>
     {% endif %}
 
-    <div class="catalog-layout {% if active_tab == 'None' %}no-tabs{% endif %}">
+    <div class="catalog-layout {% if active_tab == 'collections' %}collections-only{% endif %} {% if active_tab == 'None' %}no-tabs{% endif %}">
         {% if active_tab != 'collections' %}
         <aside class="filters-sidebar">
             <div class="filters-panel">

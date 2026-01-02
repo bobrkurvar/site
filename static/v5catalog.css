@@ -6,6 +6,10 @@
     align-items: start;
 }
 
+.catalog-layout.collections-only {
+    grid-template-columns: 1fr;
+}
+
 
 .catalog-layout.no-tabs {
     margin-top: 120px; /* отступ только когда вкладок нет */
