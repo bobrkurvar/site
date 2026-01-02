@@ -33,7 +33,7 @@ async def get_collections_page(
     collections = await manager.read(Collections, category_name=category_name, offset=offset, limit=limit)
     collections = [Collections(**collection) for collection in collections]
 
-    total_count = len(await manager.read(Collections))
+    total_count = len(await manager.read(Collections, category_name=category_name))
     total_pages = max((total_count + limit - 1) // limit, 1)
     categories = await manager.read(Tile, distinct="category_name")
     categories = [Categories(name=category["category_name"]) for category in categories]
