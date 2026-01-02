@@ -17,11 +17,13 @@ log = logging.getLogger(__name__)
 async def admin_create_tile_collection(
     manager: dbManagerDep,
     name: Annotated[str, Form()],
+    category_name: Annotated[str, Form()],
     image: Annotated[UploadFile, File()],
 ):
     name = name.strip()
+    category_name = category_name.strip()
     image = await image.read()
-    await add_collection(name, image, manager)
+    await add_collection(name, image, category_name, manager)
     return RedirectResponse("/admin", status_code=303)
 
 

@@ -4,7 +4,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
-# import core.logger
+import core.logger
 # from app.exceptions.api_handlers import *
 from app.exceptions.presentation_handlers import *
 from app.presentation import presentation_router

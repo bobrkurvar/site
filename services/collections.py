@@ -12,6 +12,7 @@ log = logging.getLogger(__name__)
 async def add_collection(
     name: str,
     image: bytes,
+    category_name: str,
     manager,
     fs=aiofiles,
     uow_class=UnitOfWork,
@@ -27,6 +28,7 @@ async def add_collection(
         collection_record = await manager.create(
             Collections,
             name=name,
+            category_name=category_name,
             image_path=str(image_path),
             session=uow.session,
         )

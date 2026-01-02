@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="/static/v3catalog.css">
+<link rel="stylesheet" href="/static/v5catalog.css">
 {% endblock %}
 
 {% block content %}
@@ -10,12 +10,22 @@
 
         <section class="products-section">
             <div class="catalog-header">
-                <h2>Коллекции</h2>
+                <div class="catalog-tabs">
+                    <a href="/catalog/{{ category }}/products"
+                       class="catalog-tab {% if active_tab == 'products' %}active{% endif %}">
+                        Товары
+                    </a>
+
+                    <a href="/catalog/{{ category }}/collections"
+                       class="catalog-tab {% if active_tab == 'collections' %}active{% endif %}">
+                        Коллекции
+                    </a>
+                </div>
             </div>
 
             <div class="collection-grid">
                 {% for col in collections %}
-                <a href="/collections/{{ col.slug }}" class="collection-item-link">
+                <a href="catalog/collections/{{ col.slug }}" class="collection-item-link">
                     <div class="collection-item">
                         <div class="tile-image-container">
                             {% if col.image_path %}

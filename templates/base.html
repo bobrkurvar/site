@@ -39,12 +39,22 @@
 
             <div class="dropdown-menu">
                 {% for category in categories %}
-                    <a href="/catalog/{{ category.slug }}">{{ category.name }}</a>
+                    <a href="/catalog/{{ category.slug }}/products">{{ category.name }}</a>
                 {% endfor %}
             </div>
         </div>
 
-        <a href="/collections" class="menu-link {% if request.url.path == '/collections' %}active{% endif %}">Коллекции</a>
+        <!-- <a href="/collections" class="menu-link {% if request.url.path == '/collections' %}active{% endif %}">Коллекции</a> -->
+        <!--<div class="menu-dropdown">
+            <button class="menu-link dropdown-btn">
+                Коллекции
+            </button>
+            <div class="dropdown-menu">
+                {% for category in categories %}
+                    <a href="/collections/{{ category.slug }}">{{ category.name }}</a>
+                {% endfor %}
+            </div>
+        </div>-->
 
         <a href="/clients" class="menu-link {% if request.url.path.startswith('/clients') %}active{% endif %}">Для клиентов</a>
     </nav>

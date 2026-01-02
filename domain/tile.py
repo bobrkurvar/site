@@ -128,7 +128,7 @@ class Collections:
         return self.name
 
     @classmethod
-    def get_category_from_slug(cls, slug: str):
+    def get_collection_from_slug(cls, slug: str):
         return cls._slug_to_name[slug]
 
 

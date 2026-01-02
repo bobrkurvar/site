@@ -172,6 +172,18 @@
                 <input type="file" id="collection_image" name="image" accept="image/*">
             </div>
 
+            <div class="form-group">
+                <label for="category_name">Категория</label>
+                <select id="category_name" name="category_name" required>
+                    <option value="" disabled selected>Выберите категорию</option>
+                    {% for category in categories %}
+                        <option value="{{ category.name }}">
+                            {{ category.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
             <button type="submit" id="create-collection-btn">Создать коллекцию</button>
             <button type="submit" id="delete-collection-btn">Удалить коллекцию</button>
         </form>
@@ -429,15 +441,22 @@ document.getElementById('update-btn').addEventListener('click', () => {
 
 const collectionForm = document.getElementById('collection-form');
 const imageInput = document.getElementById('collection_image');
+const categorySelect = document.getElementById('category_name');
 
 document.getElementById('create-collection-btn').addEventListener('click', () => {
     collectionForm.action = "/admin/tiles/collections/create";
+
     imageInput.required = true;
+    categorySelect.required = true;
 });
 
 document.getElementById('delete-collection-btn').addEventListener('click', () => {
     collectionForm.action = "/admin/tiles/collections/delete";
+
     imageInput.required = false;
+    categorySelect.required = false;
+    categorySelect.value = "";
 });
+
 
 </script>

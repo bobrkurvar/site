@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/v5catalog.css">
+{% endblock %}
+
+{% block content %}
+<main class="catalog-panel">
+    {% if active_tab != "None"%}
+        <div class="catalog-tabs">
+            <a href="/catalog/{{ category }}/products" class="catalog-tab {% if active_tab == 'products' %}active{% endif %}">Товары</a>
+            <a href="/catalog/{{ category }}/collections" class="catalog-tab {% if active_tab == 'collections' %}active{% endif %}">Коллекции</a>
+        </div>
+    {% endif %}
+
+    <div class="catalog-layout {% if active_tab == 'None' %}no-tabs{% endif %}">
+        {% if active_tab != 'collections' %}
+        <aside class="filters-sidebar">
+            <div class="filters-panel">
+                <h3>Фильтры</h3>
+                <form class="filters-form" method="get" action="{{ path }}" id="filtersForm">
+                    <div class="filter-group">
+                        <label>Поиск по названию:</label>
+                        <input type="text" name="name" placeholder="Введите название..." value="{{ request.query_params.get('name', '') }}">
+                    </div>
+                    <div class="filter-group">
+                        <label>Размер:</label>
+                        <select name="size">
+                            <option value="">Все размеры</option>
+                            {% for size in sizes %}
+                            <option value="{{ size }}" {% if request.query_params.get('size') == size.length ~ ' ' ~ size.width ~ ' ' ~ size.height %}selected{% endif %}>{{ size }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Цвет:</label>
+                        <select name="color">
+                            <option value="">Все цвета</option>
+                            {% for color in colors %}
+                            <option value="{{ color.color_name }}" {% if request.query_params.get('color') == color.name %}selected{% endif %}>{{ color.color_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="filter-actions">
+                        <button type="submit" class="filter-btn">Применить фильтры</button>
+                        <a href="{{ path }}" class="clear-filters">Сбросить</a>
+                    </div>
+                </form>
+            </div>
+        </aside>
+        {% endif %}
+
+        <section class="products-section">
+            {% if active_tab != "collections" %}
+                <div class="tile-grid">
+                    {% for tile in tiles %}
+                    <a href="/catalog/{{ tile.present_tile_url }}/products/{{ tile.article }}" class="tile-card-link">
+                        <div class="tile-card">
+                            <div class="tile-image-container">
+                                {% if main_images[tile.article] %}
+                                <img src="{{ main_images[tile.article] }}" alt="{{ tile.name }}" class="tile-image" loading="lazy">
+                                {% else %}
+                                <div class="no-image">Нет изображения</div>
+                                {% endif %}
+                            </div>
+                            <div class="tile-header">
+                                <h3 class="tile-title">{{ tile.present }}</h3>
+                            </div>
+                        </div>
+                    </a>
+                    {% endfor %}
+
+                    {% if not tiles %}
+                    <div class="empty-catalog">
+                        <p>Товары не найдены</p>
+                        <a href="{{ path }}" class="clear-filters">Показать все товары</a>
+                    </div>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="collection-grid">
+                    {% for col in collections %}
+                    <a href="collections/{{ col.slug }}" class="collection-item-link">
+                        <div class="collection-item">
+                            <div class="tile-image-container">
+                                {% if col.image_path %}
+                                <img src="/{{ col.image_path }}" alt="{{ col.name }}" class="tile-image" loading="lazy">
+                                {% else %}
+                                <div class="no-image">Нет изображения</div>
+                                {% endif %}
+                            </div>
+                            <div class="tile-header">
+                                <h3 class="tile-title">{{ col.name }}</h3>
+                            </div>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if total_pages > 1 %}
+            {% set base_query = [] %}
+            {% for k, v in request.query_params.items() %}
+                {% if k != 'page' and v %}
+                    {% set _ = base_query.append(k ~ '=' ~ v) %}
+                {% endif %}
+            {% endfor %}
+            {% set base_query = '&'.join(base_query) %}
+            {% set sep = '&' if base_query else '' %}
+
+            <div class="pagination">
+                {% if page > 1 %}
+                    <a class="page-btn" href="?{{ base_query }}{{ sep }}page={{ page - 1 }}">« Назад</a>
+                {% endif %}
+
+                {% for p in range(1, total_pages + 1) %}
+                    {% if p == page %}
+                        <span class="page-current">{{ p }}</span>
+                    {% else %}
+                        <a class="page-btn" href="?{{ base_query }}{{ sep }}page={{ p }}">{{ p }}</a>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page < total_pages %}
+                    <a class="page-btn" href="?{{ base_query }}{{ sep }}page={{ page + 1 }}">Вперёд »</a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </section>
+    </div>
+</main>
+
+<script>
+document.getElementById('filtersForm').addEventListener('submit', function(event) {
+    const form = event.target;
+    const inputs = Array.from(form.elements);
+    inputs.forEach(input => {
+        if ((input.tagName === 'INPUT' || input.tagName === 'SELECT') && !input.value) {
+            input.disabled = true;
+        }
+    });
+});
+</script>
+{% endblock %}
