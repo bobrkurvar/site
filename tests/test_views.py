@@ -210,7 +210,7 @@ def manager_factory(storage, fs):
 # @pytest.mark.asyncio
 # async def test_get_page_catalog_when_loading_one_page(manager_factory):
 #     manager = await manager_factory(20)
-#     tiles, count = await fetch_items(manager, 20, 0, category_name="category")
+#     products, count = await fetch_items(manager, 20, 0, category_name="category")
 #
 #
-#     assert len(tiles) == count == 20
+#     assert len(products) == count == 20

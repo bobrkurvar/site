@@ -129,6 +129,6 @@ async def fetch_collections_items(manager, collection, limit, offset, **filters)
     log.debug("offset: %s, limit: %s", offset, limit)
 
     items = items[offset : offset + limit]
-    log.debug("tiles: %s", items)
+    log.debug("products: %s", items)
 
     return items, total_count

@@ -5,7 +5,7 @@
     padding: 20px;
 }
 
-/* Хлебные крошки */
+/* Хлебные крошки*/
 .breadcrumbs {
     margin-bottom: 30px;
     font-size: 14px;
@@ -25,6 +25,7 @@
     color: #2c3e50;
     font-weight: 500;
 }
+
 
 /* Основной layout */
 .tile-detail-layout {

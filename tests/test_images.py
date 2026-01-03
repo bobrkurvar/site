@@ -18,7 +18,7 @@
 # async def test_get_image_path_returns_catalog_image(fs):
 #     upload_root = FakePath("", fs=fs)
 #
-#     base_image = "/static/images/tiles/1-0"
+#     base_image = "/static/images/products/1-0"
 #
 #     catalog_image_path = "/static/images/catalog/1-0"
 #     fs.files[catalog_image_path] = b"thumbnail"
@@ -36,7 +36,7 @@
 # async def test_get_image_path_returns_tiles_image(fs):
 #     upload_root = FakePath("", fs=fs)
 #
-#     base_image = "/static/images/tiles/1-0"
+#     base_image = "/static/images/products/1-0"
 #
 #     result = await get_image_path(
 #         my_path=base_image,

@@ -11,7 +11,7 @@ from domain import *
 from repo import Crud, get_db_manager
 from services.tile import add_tile, delete_tile, update_tile
 
-router = APIRouter(prefix="/admin/tiles")
+router = APIRouter(prefix="/admin/products")
 dbManagerDep = Annotated[Crud, Depends(get_db_manager)]
 log = logging.getLogger(__name__)
 

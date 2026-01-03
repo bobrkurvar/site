@@ -72,7 +72,7 @@ async def add_tile(
         )
 
         upload_dir = upload_root or Path(__name__).parent.parent
-        upload_dir = upload_dir / "static" / "images" / "tiles"
+        upload_dir = upload_dir / "static" / "images" / "products"
         upload_dir.mkdir(parents=True, exist_ok=True)
         images = [img for img in images if img]
         images.insert(0, main_image)

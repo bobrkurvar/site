@@ -8,7 +8,7 @@ from fastapi.responses import RedirectResponse
 from domain import Box
 from repo import Crud, get_db_manager
 
-router = APIRouter(prefix="/admin/tiles/boxes")
+router = APIRouter(prefix="/admin/products/boxes")
 dbManagerDep = Annotated[Crud, Depends(get_db_manager)]
 log = logging.getLogger(__name__)
 

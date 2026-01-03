@@ -70,7 +70,6 @@ async def get_catalog_tiles_page(
     tiles, total_count = await fetch_collections_items(
         manager, collection, limit, offset, **filters
     )
-    #sizes, colors = await build_sizes_and_colors(manager, collection=collection, category=category)
     sizes, colors = await build_data_for_filters(manager, collection=collection, category=category)
     main_images = build_main_images(tiles)
     tiles = [map_to_tile_domain(tile) for tile in tiles]
@@ -85,7 +84,7 @@ async def get_catalog_tiles_page(
         "catalog.html",
         {
             "request": request,
-            "tiles": tiles,
+            "products": tiles,
             "colors": colors,
             "sizes": sizes,
             "page": page,

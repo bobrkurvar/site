@@ -76,7 +76,7 @@ async def get_catalog_tiles_page(
         "catalog.html",
         {
             "request": request,
-            "tiles": tiles,
+            "products": tiles,
             "colors": colors,
             "sizes": sizes,
             "page": page,

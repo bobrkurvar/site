@@ -28,18 +28,18 @@ class Catalog(Base):
     category_name: Mapped[str] = mapped_column(ForeignKey("categories.name"))
     boxes_count: Mapped[int]
 
-    color: Mapped["TileColor"] = relationship("TileColor", back_populates="tiles")
-    size: Mapped["TileSize"] = relationship("TileSize", back_populates="tiles")
-    surface: Mapped["TileSurface"] = relationship("TileSurface", back_populates="tiles")
-    producer: Mapped["Producer"] = relationship("Producer", back_populates="tiles")
-    box: Mapped["Box"] = relationship("Box", back_populates="tiles")
+    color: Mapped["TileColor"] = relationship("TileColor", back_populates="products")
+    size: Mapped["TileSize"] = relationship("TileSize", back_populates="products")
+    surface: Mapped["TileSurface"] = relationship("TileSurface", back_populates="products")
+    producer: Mapped["Producer"] = relationship("Producer", back_populates="products")
+    box: Mapped["Box"] = relationship("Box", back_populates="products")
     images: Mapped[list["TileImages"]] = relationship(
         "TileImages",
         back_populates="tile",
         cascade="all, delete-orphan",
         passive_deletes=True,
     )
-    category: Mapped["Categories"] = relationship("Categories", back_populates="tiles")
+    category: Mapped["Categories"] = relationship("Categories", back_populates="products")
 
     __table_args__ = (
         ForeignKeyConstraint(
@@ -65,7 +65,7 @@ class Catalog(Base):
         try:
             if self.images:
                 data["images_paths"] = [
-                    "/static/images/tiles/" + Path(p.image_path).name
+                    "/static/images/products/" + Path(p.image_path).name
                     for p in self.images
                 ]
         except Exception:

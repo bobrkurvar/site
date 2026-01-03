@@ -1,118 +1,129 @@
-# import asyncio
-# import logging
-# from concurrent.futures import ThreadPoolExecutor
-# from pathlib import Path
-# from unittest.mock import MagicMock, patch
-#
-# import pytest
-# from PIL import Image
-#
-# log = logging.getLogger(__name__)
-#
-# IMAGE_PRESETS = {
-#     "catalog": (480, 300),
-#     "tile": (320, 200),
-#     "collection": (640, 400),
-# }
-#
-#
-# def generate_image_variant(
-#     input_path: Path,
-#     upload_root: Path,
-#     target_dir: str,
-#     quality: int = 82,
-# ):
-#     """
-#     Создаёт миниатюру изображения в static/images/{target_dir}
-#     с тем же именем файла, что и оригинал.
-#
-#     Функция идемпотентна — если файл уже существует, ничего не делает.
-#     """
-#
-#     if target_dir not in IMAGE_PRESETS:
-#         raise ValueError(f"Unknown image preset: {target_dir}")
-#
-#     output_dir = upload_root / "static" / "images" / target_dir
-#     output_dir.mkdir(parents=True, exist_ok=True)
-#
-#     output_path = output_dir / input_path.name
-#
-#     if output_path.exists():
-#         log.debug("Image already exists: %s", output_path)
-#         return output_path
-#
-#     width, height = IMAGE_PRESETS[target_dir]
-#
-#     with Image.open(input_path) as img:
-#         img = img.convert("RGB")
-#         resized = img.resize((width, height), Image.LANCZOS)
-#         output_format = output_path.suffix.lower().replace(".", "")
-#         resized.save(
-#             output_path,
-#             output_format.upper(),
-#             quality=quality,
-#             optimize=True,
-#             progressive=True,
-#         )
-#
-#     log.info("Generated %s image: %s", target_dir, output_path)
-#     return output_path
-#
-#
-# async def get_image_path(my_path: str, directory: str | None, upload_root=None):
-#     if directory:
-#         upload_dir = upload_root or Path(__name__).parent.parent
-#         my_path_name = Path(my_path).name
-#         path = upload_dir / "static" / "images" / directory / my_path_name
-#         str_path = str(path)
-#         log.debug("Path: %s", str_path)
-#         if path.exists():
-#             log.debug("MINI Path: %s", str_path)
-#             return str_path
-#     return my_path
-#
-#
-# executor = ThreadPoolExecutor(max_workers=4)
-#
-#
-# async def generate_image_variant_bg(
-#     input_path: Path, upload_root: Path, target_dir: str, quality: int = 82
-# ):
-#     """
-#     Асинхронная обёртка для генерации миниатюры в фоне.
-#     Возвращает путь к файлу (Future), но не блокирует основной поток.
-#     """
-#     loop = asyncio.get_event_loop()
-#     return await loop.run_in_executor(
-#         executor, generate_image_variant, input_path, upload_root, target_dir, quality
-#     )
-#
-#
-#
-#
-# @pytest.mark.asyncio
-# async def test_generate_image_variant_mocked():
-#     input_path = Path("/fake/path/1-0.png")
-#     upload_root = Path("/fake/upload")
-#
-#     with patch("your_module.Image.open") as mock_open:
-#         mock_img = MagicMock()
-#         mock_open.return_value.__enter__.return_value = mock_img
-#
-#         mock_img.convert.return_value = mock_img
-#         mock_img.resize.return_value = mock_img
-#
-#         with patch.object(Path, "mkdir") as mock_mkdir:
-#             # вызываем функцию
-#             result = generate_image_variant(
-#                 input_path, upload_root, "catalog", quality=82
-#             )
-#
-#         # Проверяем, что mkdir создал папку
-#         mock_mkdir.assert_called_once_with(parents=True, exist_ok=True)
-#
-#         # Проверяем, что resize вызван с правильными размерами
-#         mock_img.resize.assert_called_once_with((480, 300), mock_img.LANCZOS)
-#
-#         # Проверяем, что save вызван
-#         mock_img.save.assert_called_once()
+import asyncio
+import logging
+from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
+from PIL import Image, ImageOps
+
+log = logging.getLogger(__name__)
+
+
+IMAGE_PRESETS = {
+    "products": {"size": (640, 400), "mode": "cover"},       # каталог товаров
+    "collections": {"size": (960, 480), "mode": "cover"},    # карточки коллекций
+    "main_image": {"size": (2400, None), "mode": "contain"}, # детальная картинка
+    "images": {"size": (160, 160), "mode": "cover"},         # миниатюры
+}
+
+BASE_DIR = Path("static/images")
+OUTPUT_DIRS = {
+    "products": BASE_DIR / "products" / "catalog",
+    "collections": BASE_DIR / "collections" / "catalog",
+    "main_image": BASE_DIR / "products" / "details" / "main",
+    "images": BASE_DIR / "products" / "details" / "mini",
+}
+
+def resize_image(
+    img: Image.Image,
+    target_size: tuple[int, int],
+    mode: str,
+) -> Image.Image:
+    if mode == "fit":
+        img.thumbnail(target_size, Image.LANCZOS)
+        return img
+
+    if mode == "cover":
+        return ImageOps.fit(
+            img,
+            target_size,
+            method=Image.LANCZOS,
+            centering=(0.5, 0.5),
+        )
+
+    raise ValueError(f"Unknown resize mode: {mode}")
+
+
+def generate_image_variant(
+    input_path: Path,
+    target: str,
+    quality: int = 82,
+):
+    """
+    Генерирует вариант изображения для сайта.
+
+    - сохраняет пропорции
+    - не апскейлит маленькие изображения
+    - идемпотентна
+    """
+
+    if target not in IMAGE_PRESETS:
+        raise ValueError(f"Unknown image preset: {target}")
+
+    preset = IMAGE_PRESETS[target]
+    width, height = preset["size"]
+    mode = preset["mode"]
+    output_dir = OUTPUT_DIRS[target]
+    output_dir.mkdir(parents=True, exist_ok=True)
+    output_path = output_dir / input_path.name
+
+    if output_path.exists():
+        log.debug("Image already exists: %s", output_path)
+        return output_path
+
+    with Image.open(input_path) as img:
+        img = img.convert("RGB")
+
+        # 🔒 защита от апскейла
+        if img.width < width or img.height < height:
+            log.warning(
+                "Image smaller than target (%s < %s), saving original size",
+                img.size,
+                (width, height),
+            )
+            resized = img
+        else:
+            resized = resize_image(img, (width, height), mode)
+
+        output_format = output_path.suffix.lstrip(".").upper()
+        if not output_format:
+            output_format = "JPEG"  # дефолтный формат для файлов без расширения
+
+        resized.save(
+            output_path,
+            output_format,
+            quality=quality,
+            optimize=True,
+            progressive=True,
+        )
+
+    log.info("Generated %s image: %s", target, output_path)
+    return output_path
+
+
+
+async def get_image_path(my_path: str, directory: str | None, upload_root=None):
+    if directory:
+        upload_dir = upload_root or Path(__name__).parent.parent
+        my_path_name = Path(my_path).name
+        path = upload_dir / "static" / "images" / directory / my_path_name
+        str_path = str(path)
+        log.debug("Path: %s", str_path)
+        if path.exists():
+            log.debug("MINI Path: %s", str_path)
+            return str_path
+    return my_path
+
+
+executor = ThreadPoolExecutor(max_workers=4)
+
+
+async def generate_image_variant_bg(
+    input_path: Path, upload_root: Path, target_dir: str, quality: int = 82
+):
+    """
+    Асинхронная обёртка для генерации миниатюры в фоне.
+    Возвращает путь к файлу (Future), но не блокирует основной поток.
+    """
+    loop = asyncio.get_event_loop()
+    return await loop.run_in_executor(
+        executor, generate_image_variant, input_path, upload_root, target_dir, quality
+    )

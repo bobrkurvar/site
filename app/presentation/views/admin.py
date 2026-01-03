@@ -59,7 +59,7 @@ async def admin_page(request: Request, manager: dbManagerDep):
         "admin.html",
         {
             "request": request,
-            "tiles": tiles,
+            "products": tiles,
             "tile_sizes": tile_sizes,
             "tile_colors": tile_colors,
             "tile_surfaces": surfaces,

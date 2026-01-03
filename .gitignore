@@ -2,7 +2,9 @@
 .venv
 .idea/
 alembic.ini
-static/images/tiles/**
+static/images/base/porducts/**
+static/images/base/collections/**
+static/images/products/**
 static/images/collections/**
 static/images/slides/**
 
