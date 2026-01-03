@@ -111,17 +111,24 @@ async def delete_tile(
 
         for tile in tiles:
             images_paths = tile["images_paths"]
-            upload_dir = upload_root or Path(__file__).resolve().parent.parent
-            upload_dir_str = str(upload_dir).replace(r"\app", "")
-            absolute_path = Path(upload_dir_str)
+            upload_dir = upload_root or Path(__file__).parent.parent
             for image in images_paths:
-                image_str = image.lstrip("/")
-                image_path = absolute_path / image_str
+                image_str = image.lstrip("/").lstrip("\\")
+                image_path = upload_dir / Path(image_str)
                 log.debug("for delete image_path: %s", str(image_path))
                 if image_path.exists():
                     image_path.unlink(missing_ok=True)
                     files_deleted += 1
                     log.info(f"Удален файл: {image_path}")
+                product_catalog_path = upload_dir / "static" / "images" / "products" / "catalog" / Path(image).name
+                product_details_path = upload_dir / "static" / "images" / "products" / "details" / Path(image).name
+                other_paths = [product_catalog_path, product_details_path]
+                for i in other_paths:
+                    if i.exists():
+                        i.unlink(missing_ok=True)
+                        files_deleted += 1
+                        log.info(f"Удален файл: {i}")
+
         log.info("Удалено файлов: %s", files_deleted)
 
 
