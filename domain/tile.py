@@ -118,7 +118,7 @@ class TileImages:
 class Collections:
     _slug_to_name = {}
 
-    def __init__(self, name: str, image_path: str):
+    def __init__(self, name: str, image_path: str, category_name:str):
         self.name = name
         self.image_path = image_path
         self.slug = slugify(name)

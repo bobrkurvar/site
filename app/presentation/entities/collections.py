@@ -8,7 +8,7 @@ from domain import Collections
 from repo import Crud, get_db_manager
 from services.collections import add_collection
 
-router = APIRouter(prefix="/admin/products/collections")
+router = APIRouter(prefix="/admin/tiles/collections")
 dbManagerDep = Annotated[Crud, Depends(get_db_manager)]
 log = logging.getLogger(__name__)
 

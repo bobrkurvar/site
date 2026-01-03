@@ -7,7 +7,7 @@ from fastapi.responses import RedirectResponse
 from domain import Categories
 from repo import Crud, get_db_manager
 
-router = APIRouter(prefix="/admin/products/categories")
+router = APIRouter(prefix="/admin/tiles/categories")
 dbManagerDep = Annotated[Crud, Depends(get_db_manager)]
 log = logging.getLogger(__name__)
 

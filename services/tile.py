@@ -5,6 +5,7 @@ import aiofiles
 
 from domain.tile import *
 from repo.Uow import UnitOfWork
+from services.images import generate_image_variant_bg
 
 log = logging.getLogger(__name__)
 
@@ -70,9 +71,8 @@ async def add_tile(
             boxes_count=boxes_count,
             session=uow.session,
         )
-
         upload_dir = upload_root or Path(__name__).parent.parent
-        upload_dir = upload_dir / "static" / "images" / "products"
+        upload_dir = upload_dir / "static" / "images" / "base" / "products"
         upload_dir.mkdir(parents=True, exist_ok=True)
         images = [img for img in images if img]
         images.insert(0, main_image)
@@ -90,15 +90,16 @@ async def add_tile(
             try:
                 async with fs.open(image_path, "xb") as fw:
                     await fw.write(img)
+                generate_image_variant_bg(image_path, "products")
+                generate_image_variant_bg(image_path, "details")
             except FileExistsError:
                 log.debug("путь %s уже занять", image_path)
                 raise
-
         return tile_record
 
 
 async def delete_tile(
-    manager, fs=aiofiles, uow_class=UnitOfWork, upload_root=None, **filters
+    manager, uow_class=UnitOfWork, upload_root=None, **filters
 ):
 
     async with uow_class(manager._session_factory) as uow:

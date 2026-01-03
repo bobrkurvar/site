@@ -3,6 +3,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.templating import Jinja2Templates
+from services.images import get_image_path
 
 from domain import Categories, Collections, Tile, map_to_tile_domain
 from repo import Crud, get_db_manager

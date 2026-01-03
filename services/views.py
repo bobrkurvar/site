@@ -36,7 +36,7 @@ async def build_data_for_filters(
     category = Categories.get_category_from_slug(category) if category else None
     if collection is not None:
         collection = Collections.get_collection_from_slug(collection).lower()
-        log.debug("collection: %s", collection)
+        #log.debug("collection: %s", collection)
         seen = set()
         tile_sizes = await manager.read(Tile, to_join=["size"], category_name=category)
         unique = []
@@ -60,17 +60,17 @@ async def build_data_for_filters(
                 unique.append(tile)
                 seen.add(tile["color_name"])
         tile_colors = unique
-        log.debug("tile_colors before collections: %s", tile_colors)
+        #log.debug("tile_colors before collections: %s", tile_colors)
     else:
         filters = {"category_name": category} if category else {}
-        log.debug("filters: %s", filters)
+        #log.debug("filters: %s", filters)
         tile_sizes = await manager.read(
             Tile, to_join=["size"], distinct="size_id", **filters
         )
         tile_colors = await manager.read(
             Tile, distinct="color_name", **filters
         )
-        log.debug("tile_sizes before collection filter: %s", tile_sizes)
+        #log.debug("tile_sizes before collection filter: %s", tile_sizes)
 
     sizes = [
         TileSize(
@@ -93,6 +93,7 @@ def build_main_images(tiles):
     main_images = {}
     for tile in tiles:
         img = tile["images_paths"][0]
+        log.debug("image: %s", img)
         main_images[tile["id"]] = img[:-2] + "-0"
     return main_images
 
@@ -110,6 +111,7 @@ async def fetch_items(manager, limit, offset, **filters):
     items = await manager.read(
         Tile, to_join=["images", "size", "box"], limit=limit, offset=offset, **filters
     )
+    log.debug("items: %s", items)
 
     filters.pop("category_name", None)
     total_count = len(total_items)

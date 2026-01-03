@@ -10,16 +10,14 @@ log = logging.getLogger(__name__)
 IMAGE_PRESETS = {
     "products": {"size": (640, 400), "mode": "cover"},       # каталог товаров
     "collections": {"size": (960, 480), "mode": "cover"},    # карточки коллекций
-    "main_image": {"size": (2400, None), "mode": "contain"}, # детальная картинка
-    "images": {"size": (160, 160), "mode": "cover"},         # миниатюры
+    "details": {"size": (2400, None), "mode": "contain"}, # детальная картинка
 }
 
 BASE_DIR = Path("static/images")
 OUTPUT_DIRS = {
     "products": BASE_DIR / "products" / "catalog",
     "collections": BASE_DIR / "collections" / "catalog",
-    "main_image": BASE_DIR / "products" / "details" / "main",
-    "images": BASE_DIR / "products" / "details" / "mini",
+    "details": BASE_DIR / "products" / "details",
 }
 
 def resize_image(
@@ -100,12 +98,16 @@ def generate_image_variant(
 
 
 
-async def get_image_path(my_path: str, directory: str | None, upload_root=None):
-    if directory:
+async def get_image_path(my_path: str, *directories, upload_root=None):
+    if directories:
         upload_dir = upload_root or Path(__name__).parent.parent
         my_path_name = Path(my_path).name
-        path = upload_dir / "static" / "images" / directory / my_path_name
+        path = upload_dir / "static" / "images"
+        for directory in directories:
+            path /= directory
+        path /= my_path_name
         str_path = str(path)
+        str_path = '\\'+str_path
         log.debug("Path: %s", str_path)
         if path.exists():
             log.debug("MINI Path: %s", str_path)
@@ -116,14 +118,10 @@ async def get_image_path(my_path: str, directory: str | None, upload_root=None):
 executor = ThreadPoolExecutor(max_workers=4)
 
 
-async def generate_image_variant_bg(
-    input_path: Path, upload_root: Path, target_dir: str, quality: int = 82
+def generate_image_variant_bg(
+    input_path: Path, target: str, quality: int = 82
 ):
-    """
-    Асинхронная обёртка для генерации миниатюры в фоне.
-    Возвращает путь к файлу (Future), но не блокирует основной поток.
-    """
-    loop = asyncio.get_event_loop()
-    return await loop.run_in_executor(
-        executor, generate_image_variant, input_path, upload_root, target_dir, quality
+    loop = asyncio.get_running_loop()
+    loop.run_in_executor(
+        executor, generate_image_variant, input_path, target, quality
     )

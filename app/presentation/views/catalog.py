@@ -6,7 +6,7 @@ from fastapi.templating import Jinja2Templates
 
 from domain import Categories, Tile, map_to_tile_domain
 from repo import Crud, get_db_manager
-#from services.images import get_image_path
+from services.images import get_image_path
 from services.views import (build_main_images,
                             build_tile_filters, fetch_items, build_data_for_filters)
 
@@ -32,7 +32,8 @@ async def get_tile_page(
     tile = tile[0] if tile else {}
     images = []
     if tile:
-        images = tile["images_paths"]
+        images = [await get_image_path(i, "products", "details") for i in tile["images_paths"]]
+        #images = tile["images_paths"]
     log.debug("detail images: %s", images)
     tile = map_to_tile_domain(tile)
     categories = await manager.read(Tile, distinct="category_name")
@@ -65,18 +66,22 @@ async def get_catalog_tiles_page(
     tiles, total_count = await fetch_items(manager, limit, offset, **filters)
     sizes, colors = await build_data_for_filters(manager, category_name)
     main_images = build_main_images(tiles)
-    tiles = [map_to_tile_domain(tile) for tile in tiles]
+    log.debug("Main images: %s", main_images)
+    for k in main_images:
+        main_images[k] = await get_image_path(main_images[k], "products", "catalog")
 
+    tiles = [map_to_tile_domain(tile) for tile in tiles]
     total_pages = max((total_count + limit - 1) // limit, 1)
     categories = await manager.read(Tile, distinct="category_name")
     categories = [Categories(name=category["category_name"]) for category in categories]
     path = f"/catalog/{category_name}/products"
 
+
     return templates.TemplateResponse(
         "catalog.html",
         {
             "request": request,
-            "products": tiles,
+            "tiles": tiles,
             "colors": colors,
             "sizes": sizes,
             "page": page,

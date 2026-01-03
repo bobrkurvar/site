@@ -26,12 +26,12 @@ async def get_main_page(request: Request, manager: dbManagerDep):
     ]
 
     categories = await manager.read(Tile, distinct="category_name")
-    log.debug("categories: %s", categories)
+    #log.debug("categories: %s", categories)
     categories = [Categories(name=category["category_name"]) for category in categories]
 
-    log.debug("categories: %s", categories)
+    #log.debug("categories: %s", categories)
 
-    log.debug("home slide_images: %s", slide_images)
+    #log.debug("home slide_images: %s", slide_images)
     return templates.TemplateResponse(
         "home.html",
         {

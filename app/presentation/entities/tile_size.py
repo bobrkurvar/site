@@ -8,12 +8,12 @@ from fastapi.responses import RedirectResponse
 from domain import TileSize
 from repo import Crud, get_db_manager
 
-router = APIRouter(prefix="/admin/products")
+router = APIRouter(prefix="/admin/tiles/sizes")
 dbManagerDep = Annotated[Crud, Depends(get_db_manager)]
 log = logging.getLogger(__name__)
 
 
-@router.post("/sizes/delete")
+@router.post("/delete")
 async def admin_delete_tile_size(
     manager: dbManagerDep,
     height: Annotated[Decimal, Form(gt=0)] = None,

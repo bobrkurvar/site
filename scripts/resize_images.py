@@ -8,10 +8,9 @@ log = logging.getLogger(__name__)
 BASE_PATH = Path("static/images/base")
 
 PROCESS_MAP = {
-    "products": ["products", "images", "main_image"],         # исходные товары
-    "collections": ["collections"],                            # исходные коллекции
+    "products": ["products", "details"],      # исходные товары
+    "collections": ["collections"],           # исходные коллекции
 }
-
 
 def process_all_folders():
     for src_dir, presets in PROCESS_MAP.items():
