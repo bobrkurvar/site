@@ -1,8 +1,8 @@
-import asyncio
+
 import logging
-from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from PIL import Image, ImageOps
+
 
 log = logging.getLogger(__name__)
 
@@ -115,13 +115,9 @@ async def get_image_path(my_path: str, *directories, upload_root=None):
     return my_path
 
 
-executor = ThreadPoolExecutor(max_workers=4)
 
-
-def generate_image_variant_bg(
-    input_path: Path, target: str, quality: int = 82
-):
-    loop = asyncio.get_running_loop()
-    loop.run_in_executor(
-        executor, generate_image_variant, input_path, target, quality
-    )
+def generate_image_variant_bg(input_path: Path, target: str, quality: int = 82):
+    task_queue = get_task_queue()
+    task = (str(input_path), target, quality, 0)  # (args..., retry_count)
+    task_queue.put(task)
+    log.info(f"Task queued: {task}")

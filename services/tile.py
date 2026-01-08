@@ -113,6 +113,7 @@ async def delete_tile(
             images_paths = tile["images_paths"]
             upload_dir = upload_root or Path(__file__).parent.parent
             for image in images_paths:
+                log.debug("image from db: %s", image)
                 image_str = image.lstrip("/").lstrip("\\")
                 image_path = upload_dir / Path(image_str)
                 log.debug("for delete image_path: %s", str(image_path))
