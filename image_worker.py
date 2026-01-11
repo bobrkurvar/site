@@ -68,8 +68,6 @@ async def worker_loop(task_queue):
             await asyncio.sleep(1)  # Backoff
 
 if __name__ == "__main__":
-    from multiprocessing import freeze_support
-    freeze_support()
     task_queue = get_task_queue()
     log.info("IMAGE WORKER START")
     asyncio.run(worker_loop(task_queue))

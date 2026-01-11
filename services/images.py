@@ -2,6 +2,7 @@
 import logging
 from pathlib import Path
 from PIL import Image, ImageOps
+from shared_queue import get_task_queue
 
 
 log = logging.getLogger(__name__)
@@ -41,7 +42,7 @@ def resize_image(
 
 
 def generate_image_variant(
-    input_path: Path,
+    input_path: Path | str,
     target: str,
     quality: int = 82,
 ):
@@ -55,6 +56,9 @@ def generate_image_variant(
 
     if target not in IMAGE_PRESETS:
         raise ValueError(f"Unknown image preset: {target}")
+
+    if isinstance(input_path, str):
+        input_path = Path(input_path)
 
     preset = IMAGE_PRESETS[target]
     width, height = preset["size"]
@@ -70,7 +74,7 @@ def generate_image_variant(
     with Image.open(input_path) as img:
         img = img.convert("RGB")
 
-        # 🔒 защита от апскейла
+        #защита от апскейла
         if img.width < width or img.height < height:
             log.warning(
                 "Image smaller than target (%s < %s), saving original size",
