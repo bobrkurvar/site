@@ -98,9 +98,7 @@ async def add_tile(
         return tile_record
 
 
-async def delete_tile(
-    manager, uow_class=UnitOfWork, upload_root=None, **filters
-):
+async def delete_tile(manager, uow_class=UnitOfWork, upload_root=None, **filters):
 
     async with uow_class(manager._session_factory) as uow:
         tiles = await manager.read(
@@ -121,8 +119,22 @@ async def delete_tile(
                     image_path.unlink(missing_ok=True)
                     files_deleted += 1
                     log.info(f"Удален файл: {image_path}")
-                product_catalog_path = upload_dir / "static" / "images" / "products" / "catalog" / Path(image).name
-                product_details_path = upload_dir / "static" / "images" / "products" / "details" / Path(image).name
+                product_catalog_path = (
+                    upload_dir
+                    / "static"
+                    / "images"
+                    / "products"
+                    / "catalog"
+                    / Path(image).name
+                )
+                product_details_path = (
+                    upload_dir
+                    / "static"
+                    / "images"
+                    / "products"
+                    / "details"
+                    / Path(image).name
+                )
                 other_paths = [product_catalog_path, product_details_path]
                 for i in other_paths:
                     if i.exists():

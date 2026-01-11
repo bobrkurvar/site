@@ -1,5 +1,6 @@
 import logging
 from decimal import Decimal
+import core.logger
 
 import pytest
 

@@ -1,6 +1,6 @@
 import logging
-from multiprocessing.managers import BaseManager
 from multiprocessing import Queue
+from multiprocessing.managers import BaseManager
 
 log = logging.getLogger(__name__)
 
@@ -11,11 +11,10 @@ if __name__ == "__main__":
     class QueueManager(BaseManager):
         pass
 
-    QueueManager.register('get_queue', callable=lambda: real_queue)
+    QueueManager.register("get_queue", callable=lambda: real_queue)
 
     manager = QueueManager(
-        address=('localhost', 50000),  # ← ФИКСИРОВАННЫЙ АДРЕС!
-        authkey=b'secret-key'
+        address=("localhost", 50000), authkey=b"secret-key"  # ← ФИКСИРОВАННЫЙ АДРЕС!
     )
 
     # 3. Запускаем сервер
@@ -23,30 +22,31 @@ if __name__ == "__main__":
     server = manager.get_server()
     server.serve_forever()
 
-else:
-    class ClientManager(BaseManager):
-        pass
+
+class ClientManager(BaseManager):
+    pass
 
 
-    _queue_proxy = None
+_queue_proxy = None
 
-    def get_task_queue():
-        global _queue_proxy
 
-        if _queue_proxy is None:
-            ClientManager.register('get_queue')
+def get_task_queue():
+    global _queue_proxy
 
-            manager = ClientManager(
-                address=('localhost', 50000),  # ← Тот же адрес!
-                authkey=b'secret-key'  # ← Тот же ключ!
-            )
+    if _queue_proxy is None:
+        ClientManager.register("get_queue")
 
-            try:
-                manager.connect()
-                _queue_proxy = manager.get_queue()
-                log.info("Подключились к серверу очереди")
-            except ConnectionRefusedError:
-                log.error("Сервер очереди не запущен!")
-                raise
+        manager = ClientManager(
+            address=("localhost", 50000),  # ← Тот же адрес!
+            authkey=b"secret-key",  # ← Тот же ключ!
+        )
 
-        return _queue_proxy
+        try:
+            manager.connect()
+            _queue_proxy = manager.get_queue()
+            log.info("Подключились к серверу очереди")
+        except ConnectionRefusedError:
+            log.error("Сервер очереди не запущен!")
+            raise
+
+    return _queue_proxy

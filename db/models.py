@@ -64,10 +64,7 @@ class Catalog(Base):
 
         try:
             if self.images:
-                data["images_paths"] = [
-                    '\\'+str(p.image_path)
-                    for p in self.images
-                ]
+                data["images_paths"] = ["\\" + str(p.image_path) for p in self.images]
         except Exception:
             pass
 
@@ -94,7 +91,9 @@ class Categories(Base):
     name: Mapped[str] = mapped_column(primary_key=True)
     tiles: Mapped[list["Catalog"]] = relationship("Catalog", back_populates="category")
 
-    collections: Mapped[list["Collections"]] = relationship("Collections", back_populates="category")
+    collections: Mapped[list["Collections"]] = relationship(
+        "Collections", back_populates="category"
+    )
 
     def model_dump(self):
         return {"name": self.name}
@@ -118,13 +117,21 @@ class TileImages(Base):
 class Collections(Base):
     __tablename__ = "collections"
     name: Mapped[str] = mapped_column(primary_key=True)
-    category_name: Mapped[str] = mapped_column(ForeignKey("categories.name"), primary_key=True)
+    category_name: Mapped[str] = mapped_column(
+        ForeignKey("categories.name"), primary_key=True
+    )
     image_path: Mapped[str] = mapped_column(unique=True, default=config.image_path)
 
-    category: Mapped["Categories"] = relationship("Categories", back_populates="collections")
+    category: Mapped["Categories"] = relationship(
+        "Categories", back_populates="collections"
+    )
 
     def model_dump(self):
-        return {"name": self.name, "image_path": self.image_path, "category_name": self.category_name}
+        return {
+            "name": self.name,
+            "image_path": self.image_path,
+            "category_name": self.category_name,
+        }
 
 
 class TileSize(Base):

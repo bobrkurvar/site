@@ -45,6 +45,7 @@ def generate_image_variant(
     input_path: Path | str,
     target: str,
     quality: int = 82,
+    output_dir = None
 ):
     """
     Генерирует вариант изображения для сайта.
@@ -63,7 +64,7 @@ def generate_image_variant(
     preset = IMAGE_PRESETS[target]
     width, height = preset["size"]
     mode = preset["mode"]
-    output_dir = OUTPUT_DIRS[target]
+    output_dir = output_dir or OUTPUT_DIRS[target]
     output_dir.mkdir(parents=True, exist_ok=True)
     output_path = output_dir / input_path.name
 

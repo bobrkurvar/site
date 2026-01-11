@@ -1,74 +1,119 @@
 import asyncio
 import concurrent.futures
-import multiprocessing
-from services.images import generate_image_variant
-import core.logger
 import logging
-import psutil  # Для мониторинга процессов
+import multiprocessing
+
+import core.logger
+from services.images import generate_image_variant
 from shared_queue import get_task_queue
 
 log = logging.getLogger(__name__)
 
-task_queue = None
+NUM_WORKERS = 4  # процессов для CPU
+MAX_IN_FLIGHT = 8  # сколько задач одновременно в системе
+MAX_RETRIES = 3
+QUEUE_TIMEOUT = 1.0
 
 
-MAX_RETRIES = 3  # Макс. попыток для задачи
-MONITOR_INTERVAL = 10  # Секунды между проверками пула
-NUM_WORKERS = 4  # Кол-во процессов в пуле
+async def queue_reader(mp_queue, async_queue, stop_event):
+    """
+    Единственное место в программе, где мы:
+    - трогаем multiprocessing.Queue
+    - используем run_in_executor(None, ...)
+    """
 
-async def process_task(executor, task, task_queue):
-    """Асинхронно запускает задачу в executor'е с ретраями"""
-    input_path, target, quality, retry_count = task
-    log.debug("TASK: input_path: %s", input_path)
-    try:
-        loop = asyncio.get_running_loop()
-        result = await loop.run_in_executor(executor, generate_image_variant, input_path, target, quality)
-        log.info(f"Task completed: {task}")
-        return result
-    except Exception as e:
-        log.error(f"Task failed: {task}, error: {e}")
-        if retry_count < MAX_RETRIES:
-            retry_task = (input_path, target, quality, retry_count + 1)
-            task_queue.put(retry_task)  # Перекидываем обратно в queue
-            log.info(f"Retrying task: {retry_task}")
-        else:
-            log.critical(f"Task max retries exceeded: {task}")
-        raise
+    loop = asyncio.get_running_loop()
 
-async def monitor_pool(executor):
-    """Мониторит процессы в пуле, рестартует при краше"""
-    while True:
-        await asyncio.sleep(MONITOR_INTERVAL)
+    while not stop_event.is_set():
         try:
-            # Проверяем процессы executor'а
-            for proc in executor._processes.values():
-                p = psutil.Process(proc.pid)
-                if p.status() == psutil.STATUS_ZOMBIE or not p.is_running():
-                    log.warning(f"Detected dead process {proc.pid}, restarting pool")
-                    executor.shutdown(wait=True)
-                    executor = concurrent.futures.ProcessPoolExecutor(max_workers=NUM_WORKERS)
-                    log.info("Pool restarted")
-                    break  # После рестарта выходим из цикла проверки
-        except Exception as e:
-            log.error(f"Monitor error: {e}")
+            task = await loop.run_in_executor(
+                None,
+                mp_queue.get,
+                True,
+                QUEUE_TIMEOUT,
+            )
+            await async_queue.put(task)
 
-async def worker_loop(task_queue):
-    """Основной asyncio loop: читает queue, запускает задачи, мониторит"""
-    executor = concurrent.futures.ProcessPoolExecutor(max_workers=NUM_WORKERS)
-    monitor_task = asyncio.create_task(monitor_pool(executor))  # Запускаем мониторинг
-    while True:
-        try:
-            # Асинхронно ждём задачу из queue (с таймаутом, чтобы не блокировать)
-            task = await asyncio.get_running_loop().run_in_executor(None, task_queue.get, True, 1.0)
-            asyncio.create_task(process_task(executor, task, task_queue))  # Асинхронно запускаем
         except multiprocessing.queues.Empty:
-            await asyncio.sleep(0.1)  # Короткий sleep, если queue пустая
+            # mp_queue пустая — это нормально
+            await asyncio.sleep(0.1)
+
+
+async def handle_task(executor, task, mp_queue, semaphore):
+    input_path, target, quality, retry = task
+
+    async with semaphore:
+        try:
+            loop = asyncio.get_running_loop()
+            await loop.run_in_executor(
+                executor,
+                generate_image_variant,
+                input_path,
+                target,
+                quality,
+            )
+            log.info("Task completed: %s", task)
+
         except Exception as e:
-            log.error(f"Worker error: {e}")
-            await asyncio.sleep(1)  # Backoff
+            log.error("Task failed %s: %s", task, e)
+
+            if retry < MAX_RETRIES:
+                mp_queue.put((input_path, target, quality, retry + 1))
+            else:
+                log.critical("Retries exceeded: %s", task)
+
+
+async def worker_loop(mp_queue):
+    stop_event = asyncio.Event()
+
+    # Внутренняя asyncio-очередь
+    async_queue = asyncio.Queue(maxsize=MAX_IN_FLIGHT)
+
+    # Ограничение одновременных задач
+    semaphore = asyncio.Semaphore(MAX_IN_FLIGHT)
+
+    executor = concurrent.futures.ProcessPoolExecutor(max_workers=NUM_WORKERS)
+
+    reader_task = asyncio.create_task(queue_reader(mp_queue, async_queue, stop_event))
+
+    active_tasks = set()
+
+    try:
+        while True:
+            task = await async_queue.get()
+
+            t = asyncio.create_task(handle_task(executor, task, mp_queue, semaphore))
+
+            active_tasks.add(t)
+            t.add_done_callback(active_tasks.discard)
+
+    except (KeyboardInterrupt, asyncio.CancelledError):
+        log.info("Shutdown requested")
+
+    finally:
+        # Останавливаем чтение внешней очереди
+        stop_event.set()
+        reader_task.cancel()
+
+        # Дожидаемся завершения активных задач
+        for t in active_tasks:
+            t.cancel()
+
+        await asyncio.gather(*active_tasks, return_exceptions=True)
+
+        executor.shutdown(wait=True, cancel_futures=True)
+        log.info("Worker stopped")
+
 
 if __name__ == "__main__":
-    task_queue = get_task_queue()
+    multiprocessing.set_start_method("spawn", force=True)
+
+    mp_queue = get_task_queue()
     log.info("IMAGE WORKER START")
-    asyncio.run(worker_loop(task_queue))
+
+    try:
+        asyncio.run(worker_loop(mp_queue))
+    except KeyboardInterrupt:
+        log.info("Process interrupted")
+
     log.info("IMAGE WORKER END")

@@ -3,12 +3,12 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.templating import Jinja2Templates
-from services.images import get_image_path
 
 from domain import Categories, Collections, Tile, map_to_tile_domain
 from repo import Crud, get_db_manager
-from services.views import (build_main_images,
-                            build_tile_filters, fetch_collections_items, build_data_for_filters)
+from services.images import get_image_path
+from services.views import (build_data_for_filters, build_main_images,
+                            build_tile_filters, fetch_collections_items)
 
 router = APIRouter(tags=["presentation"], prefix="/catalog")
 dbManagerDep = Annotated[Crud, Depends(get_db_manager)]
@@ -31,7 +31,9 @@ async def get_collections_page(
 
     category_name = Categories.get_category_from_slug(category)
 
-    collections = await manager.read(Collections, category_name=category_name, offset=offset, limit=limit)
+    collections = await manager.read(
+        Collections, category_name=category_name, offset=offset, limit=limit
+    )
     collections = [Collections(**collection) for collection in collections]
 
     total_count = len(await manager.read(Collections, category_name=category_name))
@@ -71,7 +73,9 @@ async def get_catalog_tiles_page(
     tiles, total_count = await fetch_collections_items(
         manager, collection, limit, offset, **filters
     )
-    sizes, colors = await build_data_for_filters(manager, collection=collection, category=category)
+    sizes, colors = await build_data_for_filters(
+        manager, collection=collection, category=category
+    )
     main_images = build_main_images(tiles)
     tiles = [map_to_tile_domain(tile) for tile in tiles]
 
