@@ -11,7 +11,7 @@ log = logging.getLogger(__name__)
 IMAGE_PRESETS = {
     "products": {"size": (640, 400), "mode": "cover"},       # каталог товаров
     "collections": {"size": (960, 480), "mode": "cover"},    # карточки коллекций
-    "details": {"size": (2400, None), "mode": "contain"}, # детальная картинка
+    "details": {"size": (2400, None), "mode": "fit"}, # детальная картинка
 }
 
 BASE_DIR = Path("static/images")
