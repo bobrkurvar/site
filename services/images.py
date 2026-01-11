@@ -1,17 +1,18 @@
-
 import logging
 from pathlib import Path
-from PIL import Image, ImageOps
-from shared_queue import get_task_queue
+import core.logger
 
+from PIL import Image, ImageOps
+
+from shared_queue import get_task_queue
 
 log = logging.getLogger(__name__)
 
 
 IMAGE_PRESETS = {
-    "products": {"size": (640, 400), "mode": "cover"},       # каталог товаров
-    "collections": {"size": (960, 480), "mode": "cover"},    # карточки коллекций
-    "details": {"size": (2400, None), "mode": "contain"}, # детальная картинка
+    "products": {"size": (640, 400), "mode": "cover"},  # каталог товаров
+    "collections": {"size": (960, 480), "mode": "cover"},  # карточки коллекций
+    "details": {"size": (2400, None), "mode": "contain"},  # детальная картинка
 }
 
 BASE_DIR = Path("static/images")
@@ -20,6 +21,7 @@ OUTPUT_DIRS = {
     "collections": BASE_DIR / "collections" / "catalog",
     "details": BASE_DIR / "products" / "details",
 }
+
 
 def resize_image(
     img: Image.Image,
@@ -45,6 +47,7 @@ def generate_image_variant(
     input_path: Path | str,
     target: str,
     quality: int = 82,
+    output_dir = None
 ):
     """
     Генерирует вариант изображения для сайта.
@@ -63,7 +66,7 @@ def generate_image_variant(
     preset = IMAGE_PRESETS[target]
     width, height = preset["size"]
     mode = preset["mode"]
-    output_dir = OUTPUT_DIRS[target]
+    output_dir = output_dir or OUTPUT_DIRS[target]
     output_dir.mkdir(parents=True, exist_ok=True)
     output_path = output_dir / input_path.name
 
@@ -74,7 +77,7 @@ def generate_image_variant(
     with Image.open(input_path) as img:
         img = img.convert("RGB")
 
-        #защита от апскейла
+        # защита от апскейла
         if img.width < width or img.height < height:
             log.warning(
                 "Image smaller than target (%s < %s), saving original size",
@@ -101,7 +104,6 @@ def generate_image_variant(
     return output_path
 
 
-
 async def get_image_path(my_path: str, *directories, upload_root=None):
     if directories:
         upload_dir = upload_root or Path(__name__).parent.parent
@@ -111,13 +113,12 @@ async def get_image_path(my_path: str, *directories, upload_root=None):
             path /= directory
         path /= my_path_name
         str_path = str(path)
-        str_path = '\\'+str_path
+        str_path = "\\" + str_path
         log.debug("Path: %s", str_path)
         if path.exists():
             log.debug("MINI Path: %s", str_path)
             return str_path
     return my_path
-
 
 
 def generate_image_variant_bg(input_path: Path, target: str, quality: int = 82):

@@ -1,16 +1,19 @@
 import logging
 from pathlib import Path
-from services.images import generate_image_variant, IMAGE_PRESETS  # твоя функция и пресеты
+
 from core import logger
+from services.images import (IMAGE_PRESETS,  # твоя функция и пресеты
+                             generate_image_variant)
 
 log = logging.getLogger(__name__)
 
 BASE_PATH = Path("static/images/base")
 
 PROCESS_MAP = {
-    "products": ["products", "details"],      # исходные товары
-    "collections": ["collections"],           # исходные коллекции
+    "products": ["products", "details"],  # исходные товары
+    "collections": ["collections"],  # исходные коллекции
 }
+
 
 def process_all_folders():
     for src_dir, presets in PROCESS_MAP.items():

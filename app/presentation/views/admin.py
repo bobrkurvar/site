@@ -51,8 +51,8 @@ async def admin_page(request: Request, manager: dbManagerDep):
     tiles = [map_to_tile_domain(t) for t in tiles]
     boxes_unique_count = set(tile.boxes_count for tile in tiles)
 
-    #log.debug("colors_names: %s", unique_colors)
-    #log.debug("features_names: %s", unique_features)
+    # log.debug("colors_names: %s", unique_colors)
+    # log.debug("features_names: %s", unique_features)
     categories = await manager.read(Categories)
 
     return templates.TemplateResponse(

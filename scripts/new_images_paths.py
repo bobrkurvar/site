@@ -1,8 +1,9 @@
-import logging
-from repo import get_db_manager
-from core import logger
-from domain.tile import TileImages, Collections
 import asyncio
+import logging
+
+from core import logger
+from domain.tile import Collections, TileImages
+from repo import get_db_manager
 
 log = logging.getLogger(__name__)
 
@@ -14,9 +15,12 @@ async def new_images_paths_for_products():
         new_path = path["image_path"].split("\\")
         new_path[2] = "base"
         new_path.append(new_path[3])
-        new_path[3]="products"
+        new_path[3] = "products"
         new_path = "\\".join(new_path)
-        await manager.update(TileImages, {"image_id": path["image_id"]}, image_path=new_path)
+        await manager.update(
+            TileImages, {"image_id": path["image_id"]}, image_path=new_path
+        )
+
 
 async def new_images_paths_for_colletions():
     manager = get_db_manager()
@@ -27,7 +31,12 @@ async def new_images_paths_for_colletions():
         new_path.append(new_path[3])
         new_path[3] = "collections"
         new_path = "\\".join(new_path)
-        await manager.update(Collections, {"name": collection["name"], "category_name": collection["category_name"]}, image_path=new_path)
+        await manager.update(
+            Collections,
+            {"name": collection["name"], "category_name": collection["category_name"]},
+            image_path=new_path,
+        )
+
 
 async def main():
     await new_images_paths_for_products()
