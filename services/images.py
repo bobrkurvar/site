@@ -85,7 +85,11 @@ def generate_image_variant(
             )
             resized = img
         else:
-            resized = resize_image(img, (width, height), mode)
+            target_size = (
+                width if width is not None else img.width,
+                height if height is not None else img.height,
+            )
+            resized = resize_image(img, target_size, mode)
 
         output_format = output_path.suffix.lstrip(".").upper()
         if not output_format:
