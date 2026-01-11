@@ -73,9 +73,10 @@ def generate_image_variant(
 
     with Image.open(input_path) as img:
         img = img.convert("RGB")
-
+        smaller_width = width is not None and img.width < width
+        smaller_height = height is not None and img.height < height
         #защита от апскейла
-        if img.width < width or img.height < height:
+        if smaller_width or smaller_height:
             log.warning(
                 "Image smaller than target (%s < %s), saving original size",
                 img.size,
