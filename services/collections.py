@@ -5,6 +5,7 @@ import aiofiles
 
 from domain import Collections
 from repo.Uow import UnitOfWork
+from services.images import generate_image_variant_bg
 
 log = logging.getLogger(__name__)
 
@@ -38,7 +39,6 @@ async def add_collection(
         except FileExistsError:
             log.debug("путь %s уже занять", image_path)
             raise
+        generate_image_variant_bg(image_path, "collections")
 
         return collection_record
-
-
