@@ -6,7 +6,7 @@ from fastapi.responses import RedirectResponse
 
 from domain import Collections
 from repo import Crud, get_db_manager
-from services.collections import add_collection
+from services.collections import add_collection, delete_collection
 
 router = APIRouter(prefix="/admin/tiles/collections")
 dbManagerDep = Annotated[Crud, Depends(get_db_manager)]
@@ -31,8 +31,5 @@ async def admin_create_tile_collection(
 async def admin_delete_tile_collections(
     manager: dbManagerDep, name: Annotated[str, Form()]
 ):
-    if name != "":
-        await manager.delete(Collections, name=name)
-    # else:
-    #     await manager.delete(Collections)
+    await delete_collection(name, manager)
     return RedirectResponse("/admin", status_code=303)

@@ -64,7 +64,7 @@ class Catalog(Base):
 
         try:
             if self.images:
-                data["images_paths"] = ["\\" + str(p.image_path) for p in self.images]
+                data["images_paths"] = [str(p.image_path) for p in self.images]
         except Exception:
             pass
 

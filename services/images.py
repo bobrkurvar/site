@@ -124,10 +124,10 @@ async def get_image_path(my_path: str, *directories, upload_root=None):
             path /= directory
         path /= my_path_name
         str_path = str(path)
-        str_path = '\\'+str_path
-        log.debug("Path: %s", str_path)
+        #log.debug("Path: %s", str_path)
         if path.exists():
-            log.debug("MINI Path: %s", str_path)
+            #log.debug("MINI Path: %s", str_path)
+            log.debug("Path: %s", str_path)
             return str_path
     return my_path
 

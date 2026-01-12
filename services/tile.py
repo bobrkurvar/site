@@ -6,7 +6,6 @@ import aiofiles
 from domain.tile import *
 from repo.Uow import UnitOfWork
 from services.images import generate_image_variant_bg
-import asyncio
 
 log = logging.getLogger(__name__)
 
@@ -73,8 +72,8 @@ async def add_tile(
             boxes_count=boxes_count,
             session=uow.session,
         )
-        upload_dir = upload_root or Path(__name__).parent.parent
-        upload_dir = upload_dir / "static" / "images" / "base" / "products"
+        upload_dir = upload_root or Path('static/images')
+        upload_dir = upload_dir / "base" / "products"
         upload_dir.mkdir(parents=True, exist_ok=True)
         images = [img for img in images if img]
         images.insert(0, main_image)
@@ -112,34 +111,26 @@ async def delete_tile(manager, uow_class=UnitOfWork, upload_root=None, **filters
 
         for tile in tiles:
             images_paths = tile["images_paths"]
-            upload_dir = upload_root or Path(__file__).parent.parent
+            upload_dir = upload_root or Path()
             for image in images_paths:
-                log.debug("image from db: %s", image)
-                image_str = image.lstrip("/").lstrip("\\")
-                image_path = upload_dir / Path(image_str)
-                log.debug("for delete image_path: %s", str(image_path))
-                if image_path.exists():
-                    image_path.unlink(missing_ok=True)
-                    files_deleted += 1
-                    log.info(f"Удален файл: {image_path}")
+                image_path = upload_dir / image
                 product_catalog_path = (
-                    upload_dir
-                    / "static"
+                    (upload_root or Path("static"))
                     / "images"
                     / "products"
                     / "catalog"
                     / Path(image).name
                 )
                 product_details_path = (
-                    upload_dir
-                    / "static"
+                    (upload_root or Path("static"))
                     / "images"
                     / "products"
                     / "details"
                     / Path(image).name
                 )
-                other_paths = [product_catalog_path, product_details_path]
-                for i in other_paths:
+                all_paths = [image_path, product_catalog_path, product_details_path]
+                for i in all_paths:
+                    log.debug("for delete: %s", str(i))
                     if i.exists():
                         i.unlink(missing_ok=True)
                         files_deleted += 1

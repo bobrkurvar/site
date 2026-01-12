@@ -45,3 +45,27 @@ async def add_collection(
             await generate_image_variant_bg(image_path, "collections")
 
         return collection_record
+
+
+async def delete_collection(
+        name: str,
+        manager,
+        fs=aiofiles,
+        uow_class=UnitOfWork,
+        upload_root=None,
+):
+    async with uow_class(manager._session_factory) as uow:
+        collections = await manager.read(
+            Collections, session=uow.session, name=name
+        )
+        files_deleted = 0
+        await manager.delete(Collections, name=name, session=uow.session)
+        root = upload_root or Path('static/images')
+        base_root = root / 'base' / 'collections'
+        collection_root = root / 'collections' / 'catalog'
+        paths = [base_root / name, collection_root / name]
+        for path in paths:
+            log.debug("for delete collection_path: %s", str(path))
+            path.unlink(missing_ok=True)
+            files_deleted += 1
+
