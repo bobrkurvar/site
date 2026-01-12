@@ -6,6 +6,7 @@ import aiofiles
 from domain.tile import *
 from repo.Uow import UnitOfWork
 from services.images import generate_image_variant_bg
+import asyncio
 
 log = logging.getLogger(__name__)
 
@@ -36,6 +37,7 @@ async def add_tile(
     fs=aiofiles,
     uow_class=UnitOfWork,
     upload_root=None,
+    bg = True
 ):
 
     async with uow_class(manager._session_factory) as uow:
@@ -90,8 +92,9 @@ async def add_tile(
             try:
                 async with fs.open(image_path, "xb") as fw:
                     await fw.write(img)
-                generate_image_variant_bg(image_path, "products")
-                generate_image_variant_bg(image_path, "details")
+                if bg:
+                    await generate_image_variant_bg(image_path, "products")
+                    await generate_image_variant_bg(image_path, "details")
             except FileExistsError:
                 log.debug("путь %s уже занять", image_path)
                 raise

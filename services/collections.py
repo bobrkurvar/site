@@ -1,5 +1,6 @@
 import logging
 from pathlib import Path
+import asyncio
 
 import aiofiles
 
@@ -18,6 +19,7 @@ async def add_collection(
     fs=aiofiles,
     uow_class=UnitOfWork,
     upload_root=None,
+    bg=True
 ):
 
     async with uow_class(manager._session_factory) as uow:
@@ -39,6 +41,7 @@ async def add_collection(
         except FileExistsError:
             log.debug("путь %s уже занять", image_path)
             raise
-        generate_image_variant_bg(image_path, "collections")
+        if bg:
+            await generate_image_variant_bg(image_path, "collections")
 
         return collection_record

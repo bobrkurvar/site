@@ -3,6 +3,7 @@ import logging
 from pathlib import Path
 from PIL import Image, ImageOps
 from shared_queue import get_task_queue
+import asyncio
 import core.logger
 
 
@@ -73,6 +74,9 @@ def generate_image_variant(
         log.debug("Image already exists: %s", output_path)
         return output_path
 
+    if not input_path.exists():
+        return
+
     with Image.open(input_path) as img:
         img = img.convert("RGB")
         smaller_width = width is not None and img.width < width
@@ -95,6 +99,8 @@ def generate_image_variant(
         output_format = output_path.suffix.lstrip(".").upper()
         if not output_format:
             output_format = "JPEG"  # дефолтный формат для файлов без расширения
+        if not input_path.exists():
+            return
 
         resized.save(
             output_path,
@@ -126,9 +132,19 @@ async def get_image_path(my_path: str, *directories, upload_root=None):
     return my_path
 
 
-
-def generate_image_variant_bg(input_path: Path, target: str, quality: int = 82):
+def enqueue_resize_task(input_path: Path, target: str, quality: int = 82):
     task_queue = get_task_queue()
-    task = (str(input_path), target, quality, 0)  # (args..., retry_count)
+    task = (str(input_path), target, quality, 0)
     task_queue.put(task)
-    log.info(f"Task queued: {task}")
+    log.info("Task queued: %s", task)
+
+
+async def generate_image_variant_bg(input_path: Path, target: str, quality: int = 82):
+    loop = asyncio.get_running_loop()
+    await loop.run_in_executor(
+        None,
+        enqueue_resize_task,
+        input_path,
+        target,
+        quality
+    )

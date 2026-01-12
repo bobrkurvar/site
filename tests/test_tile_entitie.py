@@ -195,6 +195,7 @@ async def test_create_tile_success_when_all_handbooks_exists(
         fs=fs,  # подделанная файловая система
         uow_class=FakeUoW,  # поддельная транзакция
         upload_root=upload_root,  # поддельный путь
+        bg=False
     )
 
     # 1. Tile создан
@@ -205,9 +206,9 @@ async def test_create_tile_success_when_all_handbooks_exists(
 
     # 2. Все изображения записались во фейковую ФС
     expected_paths = [
-        f"root/static/images/tiles/{tile_id}-0",
-        f"root/static/images/tiles/{tile_id}-1",
-        f"root/static/images/tiles/{tile_id}-2",
+        f"root/static/images/base/products/{tile_id}-0",
+        f"root/static/images/base/products/{tile_id}-1",
+        f"root/static/images/base/products/{tile_id}-2",
     ]
 
     assert set(fs.files.keys()) == set(expected_paths)
@@ -249,7 +250,8 @@ async def test_create_tile_success_when_all_handbooks_not_exists(
         surface="surface",
         fs=fs,  # подделанная файловая система
         uow_class=FakeUoW,  # поддельная транзакция
-        upload_root=upload_root,  # поддельный путь
+        upload_root=upload_root, # поддельный путь
+        bg=False
     )
 
     # 1. Tile создан
@@ -264,9 +266,9 @@ async def test_create_tile_success_when_all_handbooks_not_exists(
     # 3. Все изображения записались во фейковую ФС
     tile_id = record["id"]
     expected_paths = [
-        f"root/static/images/tiles/{tile_id}-0",
-        f"root/static/images/tiles/{tile_id}-1",
-        f"root/static/images/tiles/{tile_id}-2",
+        f"root/static/images/base/products/{tile_id}-0",
+        f"root/static/images/base/products/{tile_id}-1",
+        f"root/static/images/base/products/{tile_id}-2",
     ]
 
     assert set(fs.files.keys()) == set(expected_paths)
@@ -308,6 +310,7 @@ async def test_update_tile_success_when_new_attributes_in_handbooks(
         fs=fs,
         uow_class=FakeUoW,
         upload_root=upload_root,
+        bg=False
     )
 
     article = record["id"]
