@@ -3,6 +3,7 @@ import logging
 from pathlib import Path
 from PIL import Image, ImageOps
 from shared_queue import get_task_queue
+import core.logger
 
 
 log = logging.getLogger(__name__)
