@@ -5,6 +5,7 @@ import aiofiles
 
 from domain import Collections
 from repo.Uow import UnitOfWork
+from services.images import generate_image_variant_bg
 
 log = logging.getLogger(__name__)
 
@@ -38,30 +39,6 @@ async def add_collection(
         except FileExistsError:
             log.debug("путь %s уже занять", image_path)
             raise
+        generate_image_variant_bg(image_path, "collections")
 
         return collection_record
-
-
-# async def delete_tile(manager, **filters):
-#
-#     async with UnitOfWork(manager._session_factory) as uow:
-#         products = await manager.read(
-#             Tile, to_join=["images"], session=uow.session, **filters
-#         )
-#         files_deleted = 0
-#         await manager.delete(Tile, session=uow.session, **filters)
-#
-#         for tile in products:
-#             images_paths = tile["images_paths"]
-#             project_root = Path(__file__).resolve().parent.parent
-#             upload_dir_str = str(project_root).replace(r"\app", "")
-#             absolute_path = Path(upload_dir_str)
-#             for image in images_paths:
-#                 image_str = image.lstrip("/")
-#                 image_path = absolute_path / image_str
-#                 log.debug("for delete image_path: %s", str(image_path))
-#                 if image_path.exists():
-#                     image_path.unlink(missing_ok=True)
-#                     files_deleted += 1
-#                     log.info(f"Удален файл: {image_path}")
-#         log.info("Удалено файлов: %s", files_deleted)

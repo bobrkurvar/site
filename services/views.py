@@ -109,12 +109,12 @@ async def fetch_items(manager, limit, offset, **filters):
     items = await manager.read(
         Tile, to_join=["images", "size", "box"], limit=limit, offset=offset, **filters
     )
-    log.debug("items: %s", items)
+    #log.debug("items: %s", items)
 
     filters.pop("category_name", None)
     total_count = len(total_items)
 
-    log.debug("offset: %s, limit: %s", offset, limit)
+    #log.debug("offset: %s, limit: %s", offset, limit)
 
     return items, total_count
 
