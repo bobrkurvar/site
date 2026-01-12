@@ -172,7 +172,7 @@ def fs():
 async def test_create_tile_success_when_all_handbooks_exists(
     manager_with_handbooks, fs
 ):
-    upload_root = FakePath("root")
+    upload_root = FakePath("static/images")
     manager = manager_with_handbooks
 
     # выполнение add_tile
@@ -206,9 +206,9 @@ async def test_create_tile_success_when_all_handbooks_exists(
 
     # 2. Все изображения записались во фейковую ФС
     expected_paths = [
-        f"root/static/images/base/products/{tile_id}-0",
-        f"root/static/images/base/products/{tile_id}-1",
-        f"root/static/images/base/products/{tile_id}-2",
+        f"static/images/base/products/{tile_id}-0",
+        f"static/images/base/products/{tile_id}-1",
+        f"static/images/base/products/{tile_id}-2",
     ]
 
     assert set(fs.files.keys()) == set(expected_paths)
@@ -228,7 +228,7 @@ async def test_create_tile_success_when_all_handbooks_exists(
 async def test_create_tile_success_when_all_handbooks_not_exists(
     manager_without_handbooks, fs
 ):
-    upload_root = FakePath("root")
+    upload_root = FakePath("static/images")
     manager = manager_without_handbooks
 
     # выполнение add_tile
@@ -266,9 +266,9 @@ async def test_create_tile_success_when_all_handbooks_not_exists(
     # 3. Все изображения записались во фейковую ФС
     tile_id = record["id"]
     expected_paths = [
-        f"root/static/images/base/products/{tile_id}-0",
-        f"root/static/images/base/products/{tile_id}-1",
-        f"root/static/images/base/products/{tile_id}-2",
+        f"static/images/base/products/{tile_id}-0",
+        f"static/images/base/products/{tile_id}-1",
+        f"static/images/base/products/{tile_id}-2",
     ]
 
     assert set(fs.files.keys()) == set(expected_paths)
