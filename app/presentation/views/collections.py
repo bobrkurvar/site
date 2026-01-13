@@ -80,6 +80,8 @@ async def get_catalog_tiles_page(
         manager, collection=collection, category=category
     )
     main_images = build_main_images(tiles)
+    for k in main_images:
+        main_images[k] = await get_image_path(main_images[k], "products", "catalog")
     tiles = [map_to_tile_domain(tile) for tile in tiles]
 
     total_pages = max((total_count + limit - 1) // limit, 1)
