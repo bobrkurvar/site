@@ -123,9 +123,9 @@ async def fetch_collections_items(manager, collection, limit, offset, **filters)
     items = await manager.read(
         Tile, to_join=["images", "size", "box"], **filters
     )
-    total_count = len(items)
     collection = Collections.get_collection_from_slug(collection).lower()
     items = [item for item in items if extract_quoted_word(item["name"]) == collection]
+    total_count = len(items)
     log.debug("collection total count: %s", total_count)
 
     items = items[offset : offset + limit]
