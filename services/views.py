@@ -113,7 +113,6 @@ async def fetch_items(manager, limit, offset, **filters):
     filters.pop("category_name", None)
     total_count = len(total_items)
 
-
     return items, total_count
 
 
@@ -124,6 +123,7 @@ async def fetch_collections_items(manager, collection, limit, offset, **filters)
     )
     collection = Collections.get_collection_from_slug(collection).lower()
     items = [item for item in items if extract_quoted_word(item["name"]) == collection]
+    total_items = [total_item for total_item in total_items if extract_quoted_word(total_item["name"]) == collection]
     total_count = len(total_items)
     log.debug("collection total count: %s", total_count)
     log.debug("collection count: %s", len(items))
