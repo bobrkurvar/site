@@ -68,7 +68,7 @@ async def get_catalog_tiles_page(
     tiles, total_count = await fetch_items(manager, limit, offset, **filters)
     sizes, colors = await build_data_for_filters(manager, category_name)
     main_images = build_main_images(tiles)
-    log.debug("Main images: %s", main_images)
+    #log.debug("Main images: %s", main_images)
     for k in main_images:
         main_images[k] = await get_image_path(main_images[k], "products", "catalog")
 

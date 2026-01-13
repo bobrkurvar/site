@@ -27,6 +27,7 @@ async def build_tile_filters(
 
     if category is not None:
         filters["category_name"] = Categories.get_category_from_slug(category)
+
     return filters
 
 
@@ -117,9 +118,11 @@ async def fetch_items(manager, limit, offset, **filters):
 
 
 async def fetch_collections_items(manager, collection, limit, offset, **filters):
+    log.debug("offset: %s, limit: %s", offset, limit)
+    log.debug("filters: %s", filters)
     total_items = await manager.read(Tile, to_join=["images", "size", "box"], **filters)
     items = await manager.read(
-        Tile, to_join=["images", "size", "box"], limit=limit, offset=offset, **filters
+        Tile, to_join=["images", "size", "box"], **filters
     )
     collection = Collections.get_collection_from_slug(collection).lower()
     items = [item for item in items if extract_quoted_word(item["name"]) == collection]
@@ -128,8 +131,7 @@ async def fetch_collections_items(manager, collection, limit, offset, **filters)
     log.debug("collection total count: %s", total_count)
     log.debug("collection count: %s", len(items))
 
-    #log.debug("offset: %s, limit: %s", offset, limit)
-    #items = items[offset : offset + limit]
-    #log.debug("products: %s", items)
+    items = items[offset : offset + limit]
+    log.debug("products: %s", items)
 
     return items, total_count
