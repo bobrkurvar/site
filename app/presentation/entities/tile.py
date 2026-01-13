@@ -55,7 +55,7 @@ async def delete_tile_by_id_or_all(
     manager: dbManagerDep,
     tile_id: Annotated[int, Form()] = None,
 ):
-    #log.debug("tile id for delete: %s", tile_id)
+    # log.debug("tile id for delete: %s", tile_id)
     params = {}
     log.debug("tile_id: %s", tile_id)
     if tile_id is not None:

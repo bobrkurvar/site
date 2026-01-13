@@ -35,11 +35,13 @@ async def get_collections_page(
         Collections, category_name=category_name, offset=offset, limit=limit
     )
     collections = [Collections(**collection) for collection in collections]
-
+    for coll in collections:
+        coll.image_path = await get_image_path(coll.image_path, 'collections', 'catalog')
     total_count = len(await manager.read(Collections, category_name=category_name))
     total_pages = max((total_count + limit - 1) // limit, 1)
     categories = await manager.read(Tile, distinct="category_name")
     categories = [Categories(name=category["category_name"]) for category in categories]
+
 
     return templates.TemplateResponse(
         "catalog.html",
@@ -73,6 +75,7 @@ async def get_catalog_tiles_page(
     tiles, total_count = await fetch_collections_items(
         manager, collection, limit, offset, **filters
     )
+
     sizes, colors = await build_data_for_filters(
         manager, collection=collection, category=category
     )
@@ -89,7 +92,7 @@ async def get_catalog_tiles_page(
         "catalog.html",
         {
             "request": request,
-            "products": tiles,
+            "tiles": tiles,
             "colors": colors,
             "sizes": sizes,
             "page": page,

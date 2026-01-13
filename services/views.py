@@ -109,26 +109,27 @@ async def fetch_items(manager, limit, offset, **filters):
     items = await manager.read(
         Tile, to_join=["images", "size", "box"], limit=limit, offset=offset, **filters
     )
-    #log.debug("items: %s", items)
 
     filters.pop("category_name", None)
     total_count = len(total_items)
 
-    #log.debug("offset: %s, limit: %s", offset, limit)
 
     return items, total_count
 
 
 async def fetch_collections_items(manager, collection, limit, offset, **filters):
-    items = await manager.read(Tile, to_join=["images", "size", "box"], **filters)
+    total_items = await manager.read(Tile, to_join=["images", "size", "box"], **filters)
+    items = await manager.read(
+        Tile, to_join=["images", "size", "box"], limit=limit, offset=offset, **filters
+    )
     collection = Collections.get_collection_from_slug(collection).lower()
     items = [item for item in items if extract_quoted_word(item["name"]) == collection]
-    total_count = len(items)
+    total_count = len(total_items)
     log.debug("collection total count: %s", total_count)
+    log.debug("collection count: %s", len(items))
 
-    log.debug("offset: %s, limit: %s", offset, limit)
-
-    items = items[offset : offset + limit]
-    log.debug("products: %s", items)
+    #log.debug("offset: %s, limit: %s", offset, limit)
+    #items = items[offset : offset + limit]
+    #log.debug("products: %s", items)
 
     return items, total_count

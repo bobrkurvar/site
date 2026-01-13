@@ -4,6 +4,7 @@ import logging
 from core import logger
 from domain.tile import Collections, TileImages
 from repo import get_db_manager
+from pathlib import Path
 
 log = logging.getLogger(__name__)
 
@@ -12,35 +13,35 @@ async def new_images_paths_for_products():
     manager = get_db_manager()
     images_paths = await manager.read(TileImages)
     for path in images_paths:
-        new_path = path["image_path"].split("\\")
-        new_path[2] = "base"
-        new_path.append(new_path[3])
-        new_path[3] = "products"
-        new_path = "\\".join(new_path)
+        path_parts = list(Path(path).parts)
+        path_parts[2] = "base"
+        path_parts.append(path_parts[3])
+        path_parts[3] = "products"
+        new_path = Path(*path_parts)
         await manager.update(
-            TileImages, {"image_id": path["image_id"]}, image_path=new_path
+            TileImages, {"image_id": path["image_id"]}, image_path=str(new_path)
         )
 
 
-async def new_images_paths_for_colletions():
+async def new_images_paths_for_collcetions():
     manager = get_db_manager()
     collections = await manager.read(Collections)
     for collection in collections:
-        new_path = collection["image_path"].split("\\")
-        new_path[2] = "base"
-        new_path.append(new_path[3])
-        new_path[3] = "collections"
-        new_path = "\\".join(new_path)
+        path_parts = list(Path(collection["image_path"]).parts)
+        path_parts[2] = "base"
+        path_parts.append(path_parts[3])
+        path_parts[3] = "collections"
+        new_path = Path(*path_parts)
         await manager.update(
             Collections,
             {"name": collection["name"], "category_name": collection["category_name"]},
-            image_path=new_path,
+            image_path=str(new_path),
         )
 
 
 async def main():
     await new_images_paths_for_products()
-    await new_images_paths_for_colletions()
+    await new_images_paths_for_collcetions()
 
 
 if __name__ == "__main__":

@@ -36,7 +36,7 @@ async def add_tile(
     fs=aiofiles,
     uow_class=UnitOfWork,
     upload_root=None,
-    bg = True
+    bg=True,
 ):
 
     async with uow_class(manager._session_factory) as uow:
@@ -72,7 +72,7 @@ async def add_tile(
             boxes_count=boxes_count,
             session=uow.session,
         )
-        upload_dir = upload_root or Path('static/images')
+        upload_dir = upload_root or Path("static/images")
         upload_dir = upload_dir / "base" / "products"
         upload_dir.mkdir(parents=True, exist_ok=True)
         images = [img for img in images if img]

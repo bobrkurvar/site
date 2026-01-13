@@ -1,6 +1,6 @@
+import asyncio
 import logging
 from pathlib import Path
-import asyncio
 
 import aiofiles
 
@@ -19,12 +19,12 @@ async def add_collection(
     fs=aiofiles,
     uow_class=UnitOfWork,
     upload_root=None,
-    bg=True
+    bg=True,
 ):
 
     async with uow_class(manager._session_factory) as uow:
         upload_dir = upload_root or Path(__name__).parent.parent
-        upload_dir = upload_dir / "static" / "images" / "base" /"collections"
+        upload_dir = upload_dir / "static" / "images" / "base" / "collections"
         upload_dir.mkdir(parents=True, exist_ok=True)
         extra_num = len([f for f in upload_dir.iterdir() if f.is_file()])
         image_path = upload_dir / str(extra_num)
@@ -48,24 +48,21 @@ async def add_collection(
 
 
 async def delete_collection(
-        name: str,
-        manager,
-        fs=aiofiles,
-        uow_class=UnitOfWork,
-        upload_root=None,
+    name: str,
+    manager,
+    fs=aiofiles,
+    uow_class=UnitOfWork,
+    upload_root=None,
 ):
     async with uow_class(manager._session_factory) as uow:
-        collections = await manager.read(
-            Collections, session=uow.session, name=name
-        )
+        collections = await manager.read(Collections, session=uow.session, name=name)
         files_deleted = 0
         await manager.delete(Collections, name=name, session=uow.session)
-        root = upload_root or Path('static/images')
-        base_root = root / 'base' / 'collections'
-        collection_root = root / 'collections' / 'catalog'
+        root = upload_root or Path("static/images")
+        base_root = root / "base" / "collections"
+        collection_root = root / "collections" / "catalog"
         paths = [base_root / name, collection_root / name]
         for path in paths:
             log.debug("for delete collection_path: %s", str(path))
             path.unlink(missing_ok=True)
             files_deleted += 1
-

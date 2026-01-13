@@ -1,19 +1,18 @@
-
+import asyncio
 import logging
 from pathlib import Path
-from PIL import Image, ImageOps
-from shared_queue import get_task_queue
-import asyncio
-import core.logger
 
+from PIL import Image, ImageOps
+
+from shared_queue import get_task_queue
 
 log = logging.getLogger(__name__)
 
 
 IMAGE_PRESETS = {
-    "products": {"size": (640, 400), "mode": "cover"},       # каталог товаров
-    "collections": {"size": (960, 480), "mode": "cover"},    # карточки коллекций
-    "details": {"size": (2400, None), "mode": "fit"}, # детальная картинка
+    "products": {"size": (640, 400), "mode": "cover"},  # каталог товаров
+    "collections": {"size": (960, 480), "mode": "cover"},  # карточки коллекций
+    "details": {"size": (2400, None), "mode": "fit"},  # детальная картинка
 }
 
 BASE_DIR = Path("static/images")
@@ -22,6 +21,7 @@ OUTPUT_DIRS = {
     "collections": BASE_DIR / "collections" / "catalog",
     "details": BASE_DIR / "products" / "details",
 }
+
 
 def resize_image(
     img: Image.Image,
@@ -44,10 +44,7 @@ def resize_image(
 
 
 def generate_image_variant(
-    input_path: Path | str,
-    target: str,
-    quality: int = 82,
-    output_dir = None
+    input_path: Path | str, target: str, quality: int = 82, output_dir=None
 ):
     """
     Генерирует вариант изображения для сайта.
@@ -81,7 +78,7 @@ def generate_image_variant(
         img = img.convert("RGB")
         smaller_width = width is not None and img.width < width
         smaller_height = height is not None and img.height < height
-        #защита от апскейла
+        # защита от апскейла
         if smaller_width or smaller_height:
             log.warning(
                 "Image smaller than target (%s < %s), saving original size",
@@ -114,7 +111,6 @@ def generate_image_variant(
     return output_path
 
 
-
 async def get_image_path(my_path: str, *directories, upload_root=None):
     if directories:
         upload_dir = upload_root or Path(__name__).parent.parent
@@ -124,9 +120,9 @@ async def get_image_path(my_path: str, *directories, upload_root=None):
             path /= directory
         path /= my_path_name
         str_path = str(path)
-        #log.debug("Path: %s", str_path)
+        # log.debug("Path: %s", str_path)
         if path.exists():
-            #log.debug("MINI Path: %s", str_path)
+            # log.debug("MINI Path: %s", str_path)
             log.debug("Path: %s", str_path)
             return str_path
     return my_path
@@ -141,10 +137,4 @@ def enqueue_resize_task(input_path: Path, target: str, quality: int = 82):
 
 async def generate_image_variant_bg(input_path: Path, target: str, quality: int = 82):
     loop = asyncio.get_running_loop()
-    await loop.run_in_executor(
-        None,
-        enqueue_resize_task,
-        input_path,
-        target,
-        quality
-    )
+    await loop.run_in_executor(None, enqueue_resize_task, input_path, target, quality)

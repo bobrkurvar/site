@@ -1,9 +1,9 @@
 import logging
 from decimal import Decimal
-import core.logger
 
 import pytest
 
+import core.logger
 from domain import (Box, Categories, Producer, Tile, TileColor, TileImages,
                     TileSize, TileSurface)
 from services.tile import add_tile, delete_tile, update_tile
@@ -195,7 +195,7 @@ async def test_create_tile_success_when_all_handbooks_exists(
         fs=fs,  # подделанная файловая система
         uow_class=FakeUoW,  # поддельная транзакция
         upload_root=upload_root,  # поддельный путь
-        bg=False
+        bg=False,
     )
 
     # 1. Tile создан
@@ -250,8 +250,8 @@ async def test_create_tile_success_when_all_handbooks_not_exists(
         surface="surface",
         fs=fs,  # подделанная файловая система
         uow_class=FakeUoW,  # поддельная транзакция
-        upload_root=upload_root, # поддельный путь
-        bg=False
+        upload_root=upload_root,  # поддельный путь
+        bg=False,
     )
 
     # 1. Tile создан
@@ -310,7 +310,7 @@ async def test_update_tile_success_when_new_attributes_in_handbooks(
         fs=fs,
         uow_class=FakeUoW,
         upload_root=upload_root,
-        bg=False
+        bg=False,
     )
 
     article = record["id"]
