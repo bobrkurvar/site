@@ -5,37 +5,37 @@ from services.tile import add_tile
 from domain import TileSize, TileColor, Box, Categories, Producer, TileSurface, TileImages, Tile, Collections
 
 # Генератор размеров
-def generate_tile_sizes(count=15):
+def generate_tile_sizes(count):
     return [
         {"length": Decimal(i), "width": Decimal(i), "height": Decimal(i)}
         for i in range(1, count + 1)
     ]
 
 # Генератор цветов
-def generate_tile_colors(count=15):
-    return [
-        {"color_name": f"color{i}", "feature_name": f"feature{i}"}
-        for i in range(1, count + 1)
-    ]
+def generate_tile_colors(count, fix=False):
+    if fix:
+        return [
+            {"color_name": f"color", "feature_name": f"feature{i}"}
+            for i in range(1, count + 1)
+        ]
+    else:
+        return [
+            {"color_name": f"color{i}", "feature_name": f"feature{i}"}
+            for i in range(1, count + 1)
+        ]
+
 
 # Генератор боксов
-def generate_boxes(count=15):
+def generate_boxes(count):
     return [
         {"weight": Decimal(i * 10), "area": Decimal(i)}
         for i in range(1, count + 1)
     ]
 
 # Генератор категорий
-def generate_categories(count=5):
+def generate_categories(count):
     return [{"name": f"category{i}"} for i in range(1, count + 1)]
 
-# Генератор производителей
-def generate_producers(count=5):
-    return [{"name": f"producer{i}"} for i in range(1, count + 1)]
-
-# Генератор поверхностей
-def generate_surfaces(count=3):
-    return [{"name": f"surface{i}"} for i in range(1, count + 1)]
 
 @pytest.fixture
 def storage():
@@ -121,9 +121,9 @@ def fs():
 def manager_factory(fake_manager, fs):
     upload_root = FakePath("static/images", fs=fs)
 
-    async def _manage_with_items(n: int = 0):
+    async def _manage_with_items(n: int = 0, color_fix: bool = False):
         sizes = generate_tile_sizes(n)
-        colors = generate_tile_colors(n)
+        colors = generate_tile_colors(n, True) if color_fix else generate_tile_colors(n)
         boxes = generate_boxes(n)
 
         for i in range(n):

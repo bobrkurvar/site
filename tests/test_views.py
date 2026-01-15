@@ -50,3 +50,23 @@ async def test_build_data_for_filters_catalog_with_categories_when_exists_handbo
     category = Categories("category")
     sizes, colors = await build_data_for_filters(manager, category=category.slug)
     assert len(sizes) == n and len(colors) == n
+
+
+@pytest.mark.asyncio
+async def test_build_data_for_filters_catalog_with_categories_when_exists_handbooks_and_exists_items_with_repeats_colors(manager_factory):
+    n = 5
+    manager = await manager_factory(n, True)
+    category = Categories("category")
+    sizes, colors = await build_data_for_filters(manager, category=category.slug)
+    assert len(sizes) == n and len(colors) == 1
+
+
+@pytest.mark.asyncio
+async def test_build_main_images():
+    image1 = "image-image-110"
+    tiles = [{"id": 1, "images_paths": [image1]}]
+    assert build_main_images(tiles) == {1: 'image-image-0'}
+    image2 = "image-image-0"
+    tiles = [{"id": 1, "images_paths": [image2]}]
+    assert build_main_images(tiles) == {1: 'image-image-0'}
+

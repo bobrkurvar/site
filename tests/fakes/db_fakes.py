@@ -162,6 +162,8 @@ class FakeStorage:
                         )
                     }
                 )
+                if isinstance(table.defaults[table_column], int):
+                    table.defaults[table_column] += 1
 
         self._check_unique(table, columns)
         self._check_row_foreign_keys(table, columns)
@@ -169,7 +171,7 @@ class FakeStorage:
         table.rows.append(columns)
         return columns
 
-    def read(self, model, to_join=None, **filters):
+    def read(self, model, to_join=None, distinct = None, **filters):
         table = self.tables[model]
         if not table.rows:
             return []
@@ -185,6 +187,20 @@ class FakeStorage:
         for row in table.rows:
             if all(row.get(k) == v for k, v in filters.items()):
                 result.append(row)
+
+        if distinct:
+            if isinstance(distinct, str):
+                distinct = [distinct]
+            seen = set()
+            unique_result = []
+            for row in result:
+                key = tuple(row.get(f) for f in distinct)
+                log.debug("DISTINCT: %s", key)
+                if key not in seen:
+                    seen.add(key)
+                    unique_result.append(row)
+            result = unique_result
+
         return result
 
     def update(self, model, filters, **values):
@@ -216,7 +232,7 @@ class FakeCRUD:
         return self.storage.add(model, **columns)
 
     async def read(self, model, session = None, to_join = None, distinct = None, **filters):
-        return self.storage.read(model, to_join=to_join, **filters)
+        return self.storage.read(model, to_join=to_join, distinct=distinct, **filters)
 
     async def update(self, model, filters: dict, session=None, **values):
         return self.storage.update(model, filters,  **values)

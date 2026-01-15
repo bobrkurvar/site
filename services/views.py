@@ -86,7 +86,6 @@ async def build_data_for_filters(
         TileColor(color_name=color["color_name"], feature_name=color["feature_name"])
         for color in tile_colors
     ]
-
     return sizes, colors
 
 
@@ -95,7 +94,10 @@ def build_main_images(tiles):
     for tile in tiles:
         img = tile["images_paths"][0]
         log.debug("image: %s", img)
-        main_images[tile["id"]] = img[:-2] + "-0"
+        images_part = img.split("-")
+        images_part[-1] = "0"
+        main_images[tile["id"]] = "-".join(images_part)
+        #main_images[tile["id"]] = img[:-2] + "-0"
     return main_images
 
 
