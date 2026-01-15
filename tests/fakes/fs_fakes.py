@@ -37,6 +37,9 @@ class FakePath:
     def exists(self):
         return str(self) in self.fs.files if self.fs is not None else None
 
+    def unlink(self):
+        del self.fs.files[str(self)]
+
     def __str__(self):
         return "/".join(self.parts)
 

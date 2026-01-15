@@ -107,10 +107,11 @@ async def delete_tile(manager, uow_class=UnitOfWork, upload_root=None, **filters
             Tile, to_join=["images"], session=uow.session, **filters
         )
         files_deleted = 0
-        await manager.delete(Tile, session=uow.session, **filters)
+        del_res = await manager.delete(Tile, session=uow.session, **filters)
 
         for tile in tiles:
-            images_paths = tile["images_paths"]
+            images_paths = tile.get("images_paths", [])
+            log.debug("images paths: %s", images_paths)
             upload_dir = upload_root or Path()
             for image in images_paths:
                 image_path = upload_dir / image
@@ -137,7 +138,7 @@ async def delete_tile(manager, uow_class=UnitOfWork, upload_root=None, **filters
                         log.info(f"Удален файл: {i}")
 
         log.info("Удалено файлов: %s", files_deleted)
-
+        return del_res
 
 async def map_to_domain_for_filter(article: int, manager, session, **params):
     for_tile = {}

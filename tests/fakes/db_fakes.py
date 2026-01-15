@@ -1,6 +1,7 @@
 import logging
 from dataclasses import dataclass
 from typing import Any
+from copy import deepcopy
 
 from domain import Box, TileImages, TileSize
 
@@ -16,57 +17,67 @@ class Table:
     foreign_keys: dict | None = None
     defaults: dict[str, Any] | None = None
 
-    def __iadd__(self, other):
-        son_parent = self.foreign_keys.get(other.name, None)
-        if son_parent and other:
-            if other.name is Box:
-                self.columns += ["box_weight", "box_area"]
-                for i in range(len(self.rows)):
-                    to_row = {}
-                    for row in other.rows:
-                        if row[son_parent["box_id"]] == self.rows[i]["box_id"] and (
-                            "weight" in row.keys() or "area" in row.keys()
-                        ):
-                            to_row.update(
-                                {"box_area": row["area"], "box_weight": row["weight"]}
-                            )
+    def __add__(self, other):
+        son_parent = self.foreign_keys.get(other.name, None) or other.foreign_keys.get(self.name, None)
+        if not son_parent or not other or not self.rows:
+            return self
 
-                    self.rows[i].update(to_row)
+        # создаём новую таблицу
+        new_table = Table(
+            name=self.name,
+            columns=self.columns.copy(),
+            rows=deepcopy(self.rows),
+            unique=self.unique,
+            foreign_keys=self.foreign_keys,
+            defaults=self.defaults,
+        )
 
-            elif other.name is TileSize:
-                self.columns += ["size_length", "size_width", "size_height"]
-                for i in range(len(self.rows)):
-                    to_row = {}
-                    for row in other.rows:
-                        if row[son_parent["size_id"]] == self.rows[i]["size_id"] and (
-                            "length" in row.keys()
-                            or "width" in row.keys()
-                            or "height" in row.keys()
-                        ):
-                            to_row.update(
-                                {
-                                    "size_length": row["length"],
-                                    "size_width": row["width"],
-                                    "size_height": row["height"],
-                                }
-                            )
+        if other.name is Box:
+            new_table.columns += ["box_weight", "box_area"]
 
-                    self.rows[i].update(to_row)
+            for i in range(len(new_table.rows)):
+                to_row = {}
+                for row in other.rows or []:
+                    if row[son_parent["box_id"]] == new_table.rows[i]["box_id"] and (
+                            "weight" in row or "area" in row
+                    ):
+                        to_row.update(
+                            {"box_area": row["area"], "box_weight": row["weight"]}
+                        )
+                new_table.rows[i].update(to_row)
 
-            elif other.name is TileImages:
-                self.columns += ["image_path"]
-                for i in range(len(self.rows)):
-                    to_row = {}
-                    for row in other.rows:
-                        if row["tile_id"] == self.rows[i]["id"] and (
-                            "image_path" in row.keys()
-                        ):
-                            to_row.update({"image_path": row["image_path"]})
+        elif other.name is TileSize:
+            new_table.columns += ["size_length", "size_width", "size_height"]
 
-                    self.rows[i].update(to_row)
+            for i in range(len(new_table.rows)):
+                to_row = {}
+                for row in other.rows or []:
+                    if row[son_parent["size_id"]] == new_table.rows[i]["size_id"] and (
+                            "length" in row or "width" in row or "height" in row
+                    ):
+                        to_row.update(
+                            {
+                                "size_length": row["length"],
+                                "size_width": row["width"],
+                                "size_height": row["height"],
+                            }
+                        )
+                new_table.rows[i].update(to_row)
 
-        return self
+        elif other.name is TileImages:
+            new_table.columns += ["images_paths"]
 
+            for i in range(len(new_table.rows)):
+                images = [
+                    row["image_path"]
+                    for row in (other.rows or [])
+                    if row["tile_id"] == new_table.rows[i]["id"]
+                       and "image_path" in row
+                ]
+
+                if images:
+                    new_table.rows[i]["images_paths"] = images
+        return new_table
 
 class FakeCrudError(Exception):
 
@@ -81,7 +92,7 @@ class FakeCrudError(Exception):
 class FakeStorage:
 
     def __init__(self):
-        self.tables: dict[str, Table] = {}
+        self.tables: dict[Any, Table] = {}
         self.to_join = {
             "size": TileSize,
             "box": Box,
@@ -158,20 +169,18 @@ class FakeStorage:
         table.rows.append(columns)
         return columns
 
-    def read(self, model, session=None, to_join=None, **filters):
+    def read(self, model, to_join=None, **filters):
         table = self.tables[model]
         if not table.rows:
             return []
-        # log.info("model: %s table: %s", model.__name__, table)
 
         result = []
-        # log.debug("to_join: %s", to_join)
         if to_join:
             for t in to_join:
+                log.debug("FAKE JOIN %s", t)
                 t = self.to_join.get(t, t)
                 t = self.tables[t]
-                table += t
-        # log.debug("table columns: %s, table rows: %s", table.columns, table.rows)
+                table = table + t
 
         for row in table.rows:
             if all(row.get(k) == v for k, v in filters.items()):
@@ -186,6 +195,16 @@ class FakeStorage:
                 for k, v in values.items():
                     table.rows[i][k] = v
 
+    def delete(self, model, **filters):
+        table = self.tables[model]
+        del_res = []
+        log.debug("DELETE TABLE %s FILTERS: %s", model, filters)
+        for i in range(len(table.rows)):
+            if all(table.rows[i][f] == v for f, v in filters.items()):
+                del_res.append(table.rows[i])
+                del table.rows[i]
+        return del_res
+
 
 class FakeCRUD:
     _session_factory = None
@@ -193,14 +212,17 @@ class FakeCRUD:
     def __init__(self, storage: FakeStorage):
         self.storage = storage
 
-    async def create(self, model, **columns):
+    async def create(self, model, session = None, **columns):
         return self.storage.add(model, **columns)
 
-    async def read(self, model, **filters):
-        return self.storage.read(model, **filters)
+    async def read(self, model, session = None, to_join = None, distinct = None, **filters):
+        return self.storage.read(model, to_join=to_join, **filters)
 
     async def update(self, model, filters: dict, session=None, **values):
-        return self.storage.update(model, filters, **values)
+        return self.storage.update(model, filters,  **values)
+
+    async def delete(self, model, session=None, **filters):
+        return self.storage.delete(model, **filters)
 
 
 class FakeUoW:

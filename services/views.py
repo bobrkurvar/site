@@ -22,8 +22,10 @@ async def build_tile_filters(
         length, width, height = (Decimal(i) for i in size.split("×"))
         tile_size_id = (
             await manager.read(TileSize, length=length, width=width, height=height)
-        )[0]
-        filters["size_id"] = tile_size_id["id"]
+        )
+        if len(tile_size_id) != 0:
+            tile_size_id = tile_size_id[0]
+            filters["size_id"] = tile_size_id["id"]
 
     if category is not None:
         filters["category_name"] = Categories.get_category_from_slug(category)
@@ -37,7 +39,7 @@ async def build_data_for_filters(
     category = Categories.get_category_from_slug(category) if category else None
     if collection is not None:
         collection = Collections.get_collection_from_slug(collection).lower()
-        # log.debug("collection: %s", collection)
+        log.debug("collection: %s", collection)
         seen = set()
         tile_sizes = await manager.read(Tile, to_join=["size"], category_name=category)
         unique = []
@@ -64,12 +66,12 @@ async def build_data_for_filters(
         # log.debug("tile_colors before collections: %s", tile_colors)
     else:
         filters = {"category_name": category} if category else {}
-        # log.debug("filters: %s", filters)
+        log.debug("filters: %s", filters)
         tile_sizes = await manager.read(
             Tile, to_join=["size"], distinct="size_id", **filters
         )
         tile_colors = await manager.read(Tile, distinct="color_name", **filters)
-        # log.debug("tile_sizes before collection filter: %s", tile_sizes)
+        log.debug("tile_sizes before collection filter: %s", tile_sizes)
 
     sizes = [
         TileSize(
