@@ -10,13 +10,14 @@ from services.images import get_image_path
 from services.views import (build_data_for_filters, build_main_images,
                             build_tile_filters, fetch_collections_items)
 
+from core.config import COLLECTIONS_PER_PAGE
+
 router = APIRouter(tags=["presentation"], prefix="/catalog")
 dbManagerDep = Annotated[Crud, Depends(get_db_manager)]
 templates = Jinja2Templates("templates")
 log = logging.getLogger(__name__)
 
 
-ITEMS_PER_PAGE = 20
 
 
 @router.get("/{category}/collections")
@@ -26,7 +27,7 @@ async def get_collections_page(
     category: str,
     page: int = 1,
 ):
-    limit = ITEMS_PER_PAGE
+    limit = COLLECTIONS_PER_PAGE
     offset = (page - 1) * limit
 
     category_name = Categories.get_category_from_slug(category)

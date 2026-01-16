@@ -1,7 +1,8 @@
 from pathlib import Path
-
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+COLLECTIONS_PER_PAGE = 20
+ITEMS_PER_PAGE = 20
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")

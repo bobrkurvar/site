@@ -171,7 +171,7 @@ class FakeStorage:
         table.rows.append(columns)
         return columns
 
-    def read(self, model, to_join=None, distinct = None, **filters):
+    def read(self, model, to_join=None, distinct = None, limit=None, offset=None, **filters):
         table = self.tables[model]
         if not table.rows:
             return []
@@ -200,6 +200,11 @@ class FakeStorage:
                     seen.add(key)
                     unique_result.append(row)
             result = unique_result
+
+        if offset:
+            result = result[offset:]
+        if limit:
+            result = result[:limit]
 
         return result
 
@@ -231,8 +236,8 @@ class FakeCRUD:
     async def create(self, model, session = None, **columns):
         return self.storage.add(model, **columns)
 
-    async def read(self, model, session = None, to_join = None, distinct = None, **filters):
-        return self.storage.read(model, to_join=to_join, distinct=distinct, **filters)
+    async def read(self, model, session = None, to_join = None, distinct = None, limit = None, offset=None, **filters):
+        return self.storage.read(model, to_join=to_join, distinct=distinct, limit=limit, offset=offset, **filters)
 
     async def update(self, model, filters: dict, session=None, **values):
         return self.storage.update(model, filters,  **values)

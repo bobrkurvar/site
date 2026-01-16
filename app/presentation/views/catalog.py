@@ -9,6 +9,7 @@ from repo import Crud, get_db_manager
 from services.images import get_image_path
 from services.views import (build_data_for_filters, build_main_images,
                             build_tile_filters, fetch_items)
+from core.config import ITEMS_PER_PAGE
 
 router = APIRouter(tags=["presentation"], prefix="/catalog")
 dbManagerDep = Annotated[Crud, Depends(get_db_manager)]
@@ -16,7 +17,6 @@ templates = Jinja2Templates("templates")
 log = logging.getLogger(__name__)
 
 
-ITEMS_PER_PAGE = 20
 
 
 @router.get("/{category}/products/{tile_id:int}")

@@ -5,6 +5,7 @@ from tests.conftest import manager_factory
 
 from domain import Categories
 from services.views import build_main_images, fetch_items, extract_quoted_word, build_tile_filters, build_data_for_filters
+from core.config import COLLECTIONS_PER_PAGE, ITEMS_PER_PAGE
 
 
 log = logging.getLogger(__name__)
@@ -69,4 +70,19 @@ async def test_build_main_images():
     image2 = "image-image-0"
     tiles = [{"id": 1, "images_paths": [image2]}]
     assert build_main_images(tiles) == {1: 'image-image-0'}
+
+
+@pytest.mark.asyncio
+async def test_fetch_items(manager_factory):
+    n = 3 * ITEMS_PER_PAGE
+    limit = ITEMS_PER_PAGE
+    manager = await manager_factory(n)
+    pages = (1, 2, 3)
+    for page in pages:
+        log.debug("page: %s", page)
+        offset = (page - 1) * limit
+        items, count = await fetch_items(manager, limit, offset)
+        assert len(items) == ITEMS_PER_PAGE and count == n
+        exp_id = offset + 1
+        assert items[0]["id"] == exp_id
 
