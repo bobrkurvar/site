@@ -6,6 +6,13 @@
 <link rel="stylesheet" href="/static/slider.css">
 {% endblock %}
 
+{% block extra_head %}
+<!-- Предзагрузка ПЕРВОГО слайда (самый важный после фона) -->
+<link rel="preload" href="{{ slide_images[0] }}" as="image" fetchpriority="high">
+<!-- Предзагрузка ВТОРОГО слайда (для мгновенного переключения) -->
+<link rel="preload" href="{{ slide_images[1] }}" as="image" fetchpriority="low">
+{% endblock %}
+
 {% block content %}
 
 <!-- СЛАЙДЕР + Чек-лист + Производители -->

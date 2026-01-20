@@ -5,13 +5,15 @@
     <meta name="google-site-verification" content="0UaXRS2jVp-IZaGTRrl3ORajES3srOT5c4QIRz6gMuY" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Керамовыбор{% endblock %}</title>
-    <link rel="icon" href="/static/images/logo2.png">
+    <!--<link rel="icon" href="/static/images/logo2.png">-->
     <link rel="stylesheet" href="/static/base.css">
+    <link rel="preload" href="/static/images/background.jpg" as="image" fetchpriority="high">
+    <link rel="preload" href="/static/images/logo2.png" as="image">
+    {% block extra_head %}{% endblock %}
     {% block extra_css %}{% endblock %}
 </head>
+
 <body>
-
-
 <header class="main-header">
 
     <!-- Верхняя часть шапки -->
