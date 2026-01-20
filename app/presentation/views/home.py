@@ -17,21 +17,16 @@ log = logging.getLogger(__name__)
 
 @router.get("/")
 async def get_main_page(request: Request, manager: dbManagerDep):
-    slides_dir = Path.cwd() / "static" / "images" / "slides"
+    slides_dir = Path('static/images/slides')
 
     slide_images = [
         f"/static/images/slides/{img.name}"
         for img in slides_dir.iterdir()
         if img.is_file()
     ]
-
     categories = await manager.read(Tile, distinct="category_name")
-    # log.debug("categories: %s", categories)
     categories = [Categories(name=category["category_name"]) for category in categories]
 
-    # log.debug("categories: %s", categories)
-
-    # log.debug("home slide_images: %s", slide_images)
     return templates.TemplateResponse(
         "home.html",
         {

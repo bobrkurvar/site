@@ -13,6 +13,7 @@ IMAGE_PRESETS = {
     "products": {"size": (640, 400), "mode": "cover"},  # каталог товаров
     "collections": {"size": (960, 480), "mode": "cover"},  # карточки коллекций
     "details": {"size": (2400, None), "mode": "fit"},  # детальная картинка
+    "slides": {"size": (1100, 825), "mode": "cover"}
 }
 
 BASE_DIR = Path("static/images")
@@ -20,6 +21,7 @@ OUTPUT_DIRS = {
     "products": BASE_DIR / "products" / "catalog",
     "collections": BASE_DIR / "collections" / "catalog",
     "details": BASE_DIR / "products" / "details",
+    "slides": BASE_DIR / 'slides'
 }
 
 

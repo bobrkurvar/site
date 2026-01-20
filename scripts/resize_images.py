@@ -12,6 +12,7 @@ BASE_PATH = Path("static/images/base")
 PROCESS_MAP = {
     "products": ["products", "details"],  # исходные товары
     "collections": ["collections"],  # исходные коллекции
+    "slides": ["slides"]
 }
 
 
