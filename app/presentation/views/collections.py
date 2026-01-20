@@ -70,7 +70,7 @@ async def get_catalog_tiles_page(
     page: int = 1,
 ):
     filters = await build_tile_filters(manager, name, size, color, category)
-    limit = ITEMS_PER_PAGE
+    limit = COLLECTIONS_PER_PAGE
     offset = (page - 1) * limit
 
     tiles, total_count = await fetch_collections_items(
