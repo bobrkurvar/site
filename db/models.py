@@ -204,3 +204,11 @@ class Box(Base):
 
     def model_dump(self):
         return {"id": self.id, "weight": self.weight, "area": self.area}
+
+class Admins(Base):
+    __tablename__ = "admins"
+    username: Mapped[str] = mapped_column(primary_key=True)
+    password: Mapped[str]
+
+    def model_dump(self):
+        return {"username": self.username, "password": self.password}

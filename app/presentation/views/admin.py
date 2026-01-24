@@ -1,11 +1,13 @@
 import logging
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Form
 from fastapi.templating import Jinja2Templates
+from starlette.responses import RedirectResponse
 
 from domain import *
 from repo import Crud, get_db_manager
+from services.tokens import get_tokens
 
 router = APIRouter(tags=["admin"], prefix="/admin")
 dbManagerDep = Annotated[Crud, Depends(get_db_manager)]
@@ -15,9 +17,11 @@ log = logging.getLogger(__name__)
 
 @router.get("")
 async def admin_page(request: Request, manager: dbManagerDep):
+    access_token = request.cookies.get("access_token")
+    if access_token is None:
+        return RedirectResponse('/admin/login', status_code=303)
+
     tiles = await manager.read(Tile, to_join=["images", "size", "box"])
-    # for t in tiles:
-    #     log.debug("images: %s", t["images_paths"])
     tile_sizes = await manager.read(TileSize)
     tile_sizes = [
         TileSize(
@@ -51,8 +55,6 @@ async def admin_page(request: Request, manager: dbManagerDep):
     tiles = [map_to_tile_domain(t) for t in tiles]
     boxes_unique_count = set(tile.boxes_count for tile in tiles)
 
-    # log.debug("colors_names: %s", unique_colors)
-    # log.debug("features_names: %s", unique_features)
     categories = await manager.read(Categories)
 
     return templates.TemplateResponse(
@@ -71,5 +73,35 @@ async def admin_page(request: Request, manager: dbManagerDep):
             "boxes_unique_area": boxes_unique_area,
             "categories": categories,
             "boxes_unique_count": boxes_unique_count,
+            "access_token": access_token
         },
     )
+
+@router.get("/login")
+async def admin_login(
+    request: Request,
+    manager: dbManagerDep
+):
+    refresh_token = request.cookies.get("refresh_token")
+    if refresh_token is not None:
+        access_token, refresh_token = await get_tokens(manager, refresh_token)
+        response = RedirectResponse("/admin", status_code=303)
+        response.set_cookie("access_token", access_token, httponly=True, max_age=900)
+        response.set_cookie("refresh_token", refresh_token, httponly=True, max_age=86400 * 7)
+    else:
+        response = templates.TemplateResponse("admin_login.html", {"request": request, "error": None})
+    return response
+
+
+@router.post('/login/submit')
+async def admin_login_submit(
+    manager: dbManagerDep,
+    username: Annotated[str, Form()],
+    password: Annotated[str, Form()],
+):
+    access_token, refresh_token = await get_tokens(manager, username=username, password=password)
+    if access_token and refresh_token:
+        response = RedirectResponse("/admin", status_code=303)
+        response.set_cookie("access_token", access_token, httponly=True, max_age=900)
+        response.set_cookie("refresh_token", refresh_token, httponly=True, max_age=86400 * 7)
+        return response
