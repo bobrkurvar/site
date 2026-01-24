@@ -4,8 +4,8 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, File, Form, UploadFile
 from fastapi.responses import RedirectResponse
 
-from domain import Collections
-from repo import Crud, get_db_manager
+from adapters.images import generate_image_variant_bg
+from adapters.repo import Crud, get_db_manager
 from services.collections import add_collection, delete_collection
 
 router = APIRouter(prefix="/admin/tiles/collections")
@@ -23,7 +23,7 @@ async def admin_create_tile_collection(
     name = name.strip()
     category_name = category_name.strip()
     image = await image.read()
-    await add_collection(name, image, category_name, manager)
+    await add_collection(name, image, category_name, manager, generate_image_variant_callback=generate_image_variant_bg)
     return RedirectResponse("/admin", status_code=303)
 
 

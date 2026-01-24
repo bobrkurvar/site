@@ -1,10 +1,10 @@
 import asyncio
 import logging
 
-from core import logger, config
+from core import config
 from domain.user import Admin
-from repo import get_db_manager
-from core.security import get_password_hash
+from adapters.repo import get_db_manager
+from domain.policies import get_password_hash
 
 log = logging.getLogger(__name__)
 

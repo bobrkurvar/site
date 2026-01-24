@@ -1,12 +1,12 @@
 import logging
 
-from sqlalchemy import and_, delete, select, update
+from sqlalchemy import delete, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.orm import selectinload
 
-from repo.exceptions import (AlreadyExistsError,
-                             CustomForeignKeyViolationError, NotFoundError)
+from adapters.repo.exceptions import (AlreadyExistsError,
+                                      CustomForeignKeyViolationError, NotFoundError)
 
 log = logging.getLogger(__name__)
 

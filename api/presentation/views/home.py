@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, Request
 from fastapi.templating import Jinja2Templates
 
 from domain import Categories, Tile
-from repo import Crud, get_db_manager
+from adapters.repo import Crud, get_db_manager
 
 router = APIRouter()
 templates = Jinja2Templates("templates")

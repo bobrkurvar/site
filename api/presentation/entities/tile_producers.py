@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, Form
 from fastapi.responses import RedirectResponse
 
 from domain import Producer
-from repo import Crud, get_db_manager
+from adapters.repo import Crud, get_db_manager
 
 router = APIRouter(prefix="/admin/tiles/producers")
 dbManagerDep = Annotated[Crud, Depends(get_db_manager)]

@@ -1,14 +1,13 @@
 import logging
-from decimal import Decimal
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Form
 from fastapi.responses import RedirectResponse
 
-from domain import Box
-from repo import Crud, get_db_manager
+from domain import TileSurface
+from adapters.repo import Crud, get_db_manager
 
-router = APIRouter(prefix="/admin/tiles/boxes")
+router = APIRouter(prefix="/admin/tiles/surfaces")
 dbManagerDep = Annotated[Crud, Depends(get_db_manager)]
 log = logging.getLogger(__name__)
 
@@ -16,14 +15,11 @@ log = logging.getLogger(__name__)
 @router.post("/delete")
 async def admin_create_tile_box(
     manager: dbManagerDep,
-    weight: Annotated[Decimal, Form()] = None,
-    area: Annotated[Decimal, Form()] = None,
+    name: Annotated[str, Form()] = None,
 ):
     filters = {}
-    if weight is not None:
-        filters["weight"] = weight
-    if area is not None:
-        filters["area"] = area
+    if name is not None:
+        filters["name"] = name
 
-    await manager.delete(Box, **filters)
+    await manager.delete(TileSurface, **filters)
     return RedirectResponse("/admin", status_code=303)

@@ -1,12 +1,11 @@
 from pathlib import Path
-from services.images import generate_image_variant_bg
 import aiofiles
 import logging
 
 BASE_DIR = Path("static/images")
 log = logging.getLogger(__name__)
 
-async def add_slides(images: list[bytes], fs=aiofiles, bg=True):
+async def add_slides(images: list[bytes], fs=aiofiles, generate_image_variant_callback=None):
     upload_dir = BASE_DIR / "slides"
     if not upload_dir.exists():
         upload_dir.mkdir(parents=True, exist_ok=True)
@@ -16,8 +15,8 @@ async def add_slides(images: list[bytes], fs=aiofiles, bg=True):
         try:
             async with fs.open(image_path, "xb") as fw:
                 await fw.write(image)
-            if bg:
-                await generate_image_variant_bg(image_path, "slides")
+            if generate_image_variant_callback:
+                await generate_image_variant_callback(image_path, "slides")
         except FileExistsError:
             log.debug("путь %s уже занять", image_path)
 

@@ -1,0 +1,124 @@
+import asyncio
+import logging
+from pathlib import Path
+
+from PIL import Image
+from domain.policies.images import resize_image
+
+from shared_queue import get_task_queue
+
+log = logging.getLogger(__name__)
+
+
+IMAGE_PRESETS = {
+    "products": {"size": (640, 400), "mode": "cover"},  # каталог товаров
+    "collections": {"size": (960, 480), "mode": "cover"},  # карточки коллекций
+    "details": {"size": (2400, None), "mode": "fit"},  # детальная картинка
+    "slides": {"size": (1100, 825), "mode": "cover"}
+}
+
+BASE_DIR = Path("static/images")
+OUTPUT_DIRS = {
+    "products": BASE_DIR / "products" / "catalog",
+    "collections": BASE_DIR / "collections" / "catalog",
+    "details": BASE_DIR / "products" / "details",
+    "slides": BASE_DIR / 'slides'
+}
+
+
+
+def generate_image_variant(
+    input_path: Path | str, target: str, quality: int = 82, output_dir=None
+):
+    """
+    Генерирует вариант изображения для сайта.
+
+    - сохраняет пропорции
+    - не апскейлит маленькие изображения
+    - идемпотентна
+    """
+
+    if target not in IMAGE_PRESETS:
+        raise ValueError(f"Unknown image preset: {target}")
+
+    if isinstance(input_path, str):
+        input_path = Path(input_path)
+
+    preset = IMAGE_PRESETS[target]
+    width, height = preset["size"]
+    mode = preset["mode"]
+    output_dir = output_dir or OUTPUT_DIRS[target]
+    output_dir.mkdir(parents=True, exist_ok=True)
+    output_path = output_dir / input_path.name
+
+    if output_path.exists():
+        log.debug("Image already exists: %s", output_path)
+        return output_path
+
+    if not input_path.exists():
+        return
+
+    with Image.open(input_path) as img:
+        img = img.convert("RGB")
+        smaller_width = width is not None and img.width < width
+        smaller_height = height is not None and img.height < height
+        # защита от апскейла
+        if smaller_width or smaller_height:
+            log.warning(
+                "Image smaller than target (%s < %s), saving original size",
+                img.size,
+                (width, height),
+            )
+            resized = img
+        else:
+            target_size = (
+                width if width is not None else img.width,
+                height if height is not None else img.height,
+            )
+            resized = resize_image(img, target_size, mode)
+
+        output_format = output_path.suffix.lstrip(".").upper()
+        if not output_format:
+            output_format = "JPEG"  # дефолтный формат для файлов без расширения
+        if not input_path.exists():
+            return
+
+        resized.save(
+            output_path,
+            output_format,
+            quality=quality,
+            optimize=True,
+            progressive=True,
+        )
+
+    log.info("Generated %s image: %s", target, output_path)
+    return output_path
+
+
+async def get_image_path(my_path: str, *directories, upload_root=None):
+    if directories:
+        upload_dir = upload_root or Path(__name__).parent.parent
+        my_path_name = Path(my_path).name
+        path = upload_dir / "static" / "images"
+        for directory in directories:
+            path /= directory
+        path /= my_path_name
+        str_path = str(path)
+        # log.debug("Path: %s", str_path)
+        if path.exists():
+            # log.debug("MINI Path: %s", str_path)
+            log.debug("Path: %s", str_path)
+            return str_path
+    return my_path
+
+
+def enqueue_resize_task(input_path: Path, target: str, quality: int = 82):
+    task_queue = get_task_queue()
+    task = (str(input_path), target, quality, 0)
+    task_queue.put(task)
+    log.info("Task queued: %s", task)
+
+
+async def generate_image_variant_bg(input_path: Path, target: str, quality: int = 82):
+    loop = asyncio.get_running_loop()
+    await loop.run_in_executor(None, enqueue_resize_task, input_path, target, quality)

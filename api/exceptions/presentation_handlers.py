@@ -1,11 +1,11 @@
 import logging
 
-from fastapi import Request, status
+from fastapi import Request
 from fastapi.responses import RedirectResponse
 
-from repo.exceptions import (AlreadyExistsError,
-                             CustomForeignKeyViolationError, DatabaseError,
-                             NotFoundError)
+from adapters.repo.exceptions import (AlreadyExistsError,
+                                      CustomForeignKeyViolationError, DatabaseError,
+                                      NotFoundError)
 
 log = logging.getLogger(__name__)
 

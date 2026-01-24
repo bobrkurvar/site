@@ -1,4 +1,4 @@
-from app.schemas.exceptions import ErrorResponse
+from api.schemas.exceptions import ErrorResponse
 
 from .api_handlers import (data_base_exception_handler,
                            entity_already_exists_in_db_exceptions_handler,

@@ -6,8 +6,8 @@ from fastapi.templating import Jinja2Templates
 from starlette.responses import RedirectResponse
 
 from domain import *
-from repo import Crud, get_db_manager
-from services.tokens import get_tokens
+from adapters.repo import Crud, get_db_manager
+from services.auth import get_tokens_and_check_user
 
 router = APIRouter(tags=["admin"], prefix="/admin")
 dbManagerDep = Annotated[Crud, Depends(get_db_manager)]
@@ -84,7 +84,7 @@ async def admin_login(
 ):
     refresh_token = request.cookies.get("refresh_token")
     if refresh_token is not None:
-        access_token, refresh_token = await get_tokens(manager, refresh_token)
+        access_token, refresh_token = await get_tokens_and_check_user(manager, refresh_token)
         response = RedirectResponse("/admin", status_code=303)
         response.set_cookie("access_token", access_token, httponly=True, max_age=900)
         response.set_cookie("refresh_token", refresh_token, httponly=True, max_age=86400 * 7)
@@ -99,7 +99,7 @@ async def admin_login_submit(
     username: Annotated[str, Form()],
     password: Annotated[str, Form()],
 ):
-    access_token, refresh_token = await get_tokens(manager, username=username, password=password)
+    access_token, refresh_token = await get_tokens_and_check_user(manager, username=username, password=password)
     if access_token and refresh_token:
         response = RedirectResponse("/admin", status_code=303)
         response.set_cookie("access_token", access_token, httponly=True, max_age=900)

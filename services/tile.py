@@ -1,11 +1,10 @@
 import logging
 from pathlib import Path
 
-import aiofiles
-
+#import aiofiles
+from domain.policies.files import save_flies, delete_files
 from domain.tile import *
-from repo.Uow import UnitOfWork
-from services.images import generate_image_variant_bg
+from adapters.repo.Uow import UnitOfWork
 
 log = logging.getLogger(__name__)
 
@@ -33,10 +32,10 @@ async def add_tile(
     images: list[bytes] | list,
     color_feature: str = "",
     surface: str | None = None,
-    fs=aiofiles,
+    #fs=aiofiles,
     uow_class=UnitOfWork,
     upload_root=None,
-    bg=True,
+    generate_image_variant_callback=None,
 ):
 
     async with uow_class(manager._session_factory) as uow:
@@ -89,11 +88,12 @@ async def add_tile(
             )
 
             try:
-                async with fs.open(image_path, "xb") as fw:
-                    await fw.write(img)
-                if bg:
-                    await generate_image_variant_bg(image_path, "products")
-                    await generate_image_variant_bg(image_path, "details")
+                # async with fs.open(image_path, "xb") as fw:
+                #     await fw.write(img)
+                await save_flies(image_path, img)
+                if generate_image_variant_callback:
+                    await generate_image_variant_callback(image_path, "products")
+                    await generate_image_variant_callback(image_path, "details")
             except FileExistsError:
                 log.debug("путь %s уже занять", image_path)
                 raise
@@ -106,38 +106,39 @@ async def delete_tile(manager, uow_class=UnitOfWork, upload_root=None, **filters
         tiles = await manager.read(
             Tile, to_join=["images"], session=uow.session, **filters
         )
-        files_deleted = 0
+        #files_deleted = 0
         del_res = await manager.delete(Tile, session=uow.session, **filters)
 
         for tile in tiles:
             images_paths = tile.get("images_paths", [])
-            log.debug("images paths: %s", images_paths)
-            upload_dir = upload_root or Path()
-            for image in images_paths:
-                image_path = upload_dir / image
-                product_catalog_path = (
-                    (upload_root or Path("static"))
-                    / "images"
-                    / "products"
-                    / "catalog"
-                    / Path(image).name
-                )
-                product_details_path = (
-                    (upload_root or Path("static"))
-                    / "images"
-                    / "products"
-                    / "details"
-                    / Path(image).name
-                )
-                all_paths = [image_path, product_catalog_path, product_details_path]
-                for i in all_paths:
-                    log.debug("for delete: %s", str(i))
-                    if i.exists():
-                        i.unlink(missing_ok=True)
-                        files_deleted += 1
-                        log.info(f"Удален файл: {i}")
+            # log.debug("images paths: %s", images_paths)
+            # upload_dir = upload_root or Path()
+            # for image in images_paths:
+            #     image_path = upload_dir / image
+            #     product_catalog_path = (
+            #         (upload_root or Path("static"))
+            #         / "images"
+            #         / "products"
+            #         / "catalog"
+            #         / Path(image).name
+            #     )
+            #     product_details_path = (
+            #         (upload_root or Path("static"))
+            #         / "images"
+            #         / "products"
+            #         / "details"
+            #         / Path(image).name
+            #     )
+            #     all_paths = [image_path, product_catalog_path, product_details_path]
+            #     for i in all_paths:
+            #         log.debug("for delete: %s", str(i))
+            #         if i.exists():
+            #             i.unlink(missing_ok=True)
+            #             files_deleted += 1
+            #             log.info(f"Удален файл: {i}")
+            await delete_files(images_paths, upload_root)
 
-        log.info("Удалено файлов: %s", files_deleted)
+        #log.info("Удалено файлов: %s", files_deleted)
         return del_res
 
 async def map_to_domain_for_filter(article: int, manager, session, **params):

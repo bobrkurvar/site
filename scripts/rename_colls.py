@@ -1,9 +1,8 @@
 import asyncio
 import logging
 
-from core import logger
 from domain.tile import Collections
-from repo import get_db_manager
+from adapters.repo import get_db_manager
 from pathlib import Path
 
 log = logging.getLogger(__name__)

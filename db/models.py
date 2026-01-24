@@ -1,11 +1,9 @@
 from decimal import Decimal
-from pathlib import Path
 
 from sqlalchemy import ForeignKey, ForeignKeyConstraint, UniqueConstraint
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.types import DECIMAL
-
 from core import config
 
 

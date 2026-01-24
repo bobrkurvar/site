@@ -1,7 +1,7 @@
 import domain
 from core import config
 from db import models
-from repo.crud import Crud
+from adapters.repo.crud import Crud
 
 
 def get_db_manager() -> Crud:

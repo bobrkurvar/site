@@ -4,8 +4,7 @@ from pathlib import Path
 import aiofiles
 
 from domain import Collections
-from repo.Uow import UnitOfWork
-from services.images import generate_image_variant_bg
+from adapters.repo.Uow import UnitOfWork
 
 log = logging.getLogger(__name__)
 
@@ -18,7 +17,7 @@ async def add_collection(
     fs=aiofiles,
     uow_class=UnitOfWork,
     upload_root=None,
-    bg=True,
+    generate_image_variant_callback=None,
 ):
 
     async with uow_class(manager._session_factory) as uow:
@@ -40,8 +39,8 @@ async def add_collection(
         except FileExistsError:
             log.debug("путь %s уже занять", image_path)
             raise
-        if bg:
-            await generate_image_variant_bg(image_path, "collections")
+        if generate_image_variant_callback:
+            await generate_image_variant_callback(image_path, "collections")
 
         return collection_record
 
