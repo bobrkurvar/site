@@ -8,8 +8,9 @@ from domain import (Box, Categories, Producer, Tile, TileColor, TileImages,
                     TileSize, TileSurface)
 from services.tile import add_tile, delete_tile, update_tile
 
-from .fakes import (FakeCRUD, FakePath, FakeStorage, FakeUoW, Table)
-from .conftest import storage, fs
+from .fakes import (FakeCRUD, FakeStorage, FakeUoW, Table)
+from .fakes import get_fake_save_files_function_with_fs, get_fake_delete_files_function_with_fs
+from .conftest import storage
 
 log = logging.getLogger(__name__)
 
@@ -99,11 +100,10 @@ def manager_without_handbooks(storage):
 
 @pytest.mark.asyncio
 async def test_create_tile_success_when_all_handbooks_exists(
-    manager_with_handbooks, fs
+    manager_with_handbooks
 ):
-    upload_root = FakePath("static/images")
     manager = manager_with_handbooks
-
+    fs = {}
     # выполнение add_tile
     record = await add_tile(
         name="Tile",
@@ -120,11 +120,10 @@ async def test_create_tile_success_when_all_handbooks_exists(
         manager=manager,
         images=[b"A", b"B"],
         color_feature="feature",
-        surface="surface",
-        fs=fs,  # подделанная файловая система
+        surface="surface",  # подделанная файловая система
         uow_class=FakeUoW,  # поддельная транзакция
-        upload_root=upload_root,  # поддельный путь
-        bg=False,
+        save_files=get_fake_save_files_function_with_fs(fs),
+        generate_image_variant_callback=lambda path, _type: None
     )
 
     # 1. Tile создан
@@ -140,11 +139,11 @@ async def test_create_tile_success_when_all_handbooks_exists(
         f"static/images/base/products/{tile_id}-2",
     ]
 
-    assert set(fs.files.keys()) == set(expected_paths)
+    assert set(fs.keys()) == set(expected_paths)
 
-    assert fs.files[expected_paths[0]] == b"MAIN"
-    assert fs.files[expected_paths[1]] == b"A"
-    assert fs.files[expected_paths[2]] == b"B"
+    assert fs[expected_paths[0]] == b"MAIN"
+    assert fs[expected_paths[1]] == b"A"
+    assert fs[expected_paths[2]] == b"B"
 
     images_table = await manager.read(TileImages)
 
@@ -155,10 +154,10 @@ async def test_create_tile_success_when_all_handbooks_exists(
 
 @pytest.mark.asyncio
 async def test_create_tile_success_when_all_handbooks_not_exists(
-    manager_without_handbooks, fs
+    manager_without_handbooks
 ):
-    upload_root = FakePath("static/images")
     manager = manager_without_handbooks
+    fs = {}
 
     # выполнение add_tile
     record = await add_tile(
@@ -177,10 +176,9 @@ async def test_create_tile_success_when_all_handbooks_not_exists(
         images=[b"A", b"B"],
         color_feature="feature",
         surface="surface",
-        fs=fs,  # подделанная файловая система
         uow_class=FakeUoW,  # поддельная транзакция
-        upload_root=upload_root,  # поддельный путь
-        bg=False,
+        save_files=get_fake_save_files_function_with_fs(fs),
+        generate_image_variant_callback=lambda path, _type: None
     )
 
     # 1. Tile создан
@@ -202,11 +200,11 @@ async def test_create_tile_success_when_all_handbooks_not_exists(
         f"static/images/base/products/{tile_id}-2",
     ]
 
-    assert set(fs.files.keys()) == set(expected_paths)
+    assert set(fs.keys()) == set(expected_paths)
 
-    assert fs.files[expected_paths[0]] == b"MAIN"
-    assert fs.files[expected_paths[1]] == b"A"
-    assert fs.files[expected_paths[2]] == b"B"
+    assert fs[expected_paths[0]] == b"MAIN"
+    assert fs[expected_paths[1]] == b"A"
+    assert fs[expected_paths[2]] == b"B"
 
     images_table = await manager.read(TileImages)
 
@@ -217,9 +215,8 @@ async def test_create_tile_success_when_all_handbooks_not_exists(
 
 @pytest.mark.asyncio
 async def test_update_tile_success_when_new_attributes_in_handbooks(
-    manager_with_handbooks, fs
+    manager_with_handbooks
 ):
-    upload_root = FakePath("static/images")
     manager = manager_with_handbooks
 
     record = await add_tile(
@@ -238,10 +235,9 @@ async def test_update_tile_success_when_new_attributes_in_handbooks(
         images=[b"A", b"B"],
         color_feature="feature",
         surface="surface",
-        fs=fs,
         uow_class=FakeUoW,
-        upload_root=upload_root,
-        bg=False,
+        save_files=lambda upload_dir, image_path, img: None,
+        generate_image_variant_callback=lambda path, _type: None
     )
     article = record["id"] # фильтр для обновления по артикулу
 
@@ -287,10 +283,10 @@ async def test_update_tile_success_when_new_attributes_in_handbooks(
 
 @pytest.mark.asyncio
 async def test_delete_tile_by_article(
-    manager_with_handbooks, fs
+    manager_with_handbooks
 ):
-    upload_root = FakePath()
     manager = manager_with_handbooks
+    fs = {}
 
     record = await add_tile(
         name="Tile",
@@ -308,10 +304,9 @@ async def test_delete_tile_by_article(
         images=[b"A", b"B"],
         color_feature="feature",
         surface="surface",
-        fs=fs,
         uow_class=FakeUoW,
-        upload_root=upload_root,
-        bg=False,
+        save_files=get_fake_save_files_function_with_fs(fs),
+        generate_image_variant_callback=lambda path, _type: None
     )
 
     article = record["id"]
@@ -321,11 +316,11 @@ async def test_delete_tile_by_article(
         f"static/images/base/products/{article}-2",
     ]
 
-    records = await delete_tile(manager, upload_root=upload_root, uow_class=FakeUoW, id=article)
+    records = await delete_tile(manager, uow_class=FakeUoW, id=article, delete_files=get_fake_delete_files_function_with_fs(fs))
     assert len(records) == 1
 
     for path in expected_paths:
-        assert path not in fs.files.keys()
+        assert path not in fs.keys()
 
     for i in records:
         assert i['id'] == article

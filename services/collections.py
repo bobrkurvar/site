@@ -1,10 +1,8 @@
 import logging
 from pathlib import Path
 
-import aiofiles
-
 from domain import Collections
-from adapters.repo.Uow import UnitOfWork
+from services.Uow import UnitOfWork
 
 log = logging.getLogger(__name__)
 
@@ -14,18 +12,16 @@ async def add_collection(
     image: bytes,
     category_name: str,
     manager,
-    fs=aiofiles,
     uow_class=UnitOfWork,
     upload_root=None,
     generate_image_variant_callback=None,
+    save_files = None,
 ):
 
     async with uow_class(manager._session_factory) as uow:
-        upload_dir = upload_root or Path(__name__).parent.parent
-        upload_dir = upload_dir / "static" / "images" / "base" / "collections"
-        upload_dir.mkdir(parents=True, exist_ok=True)
-        extra_num = len([f for f in upload_dir.iterdir() if f.is_file()])
-        image_path = upload_dir / str(extra_num)
+        upload_dir = upload_root or Path("static/images/base/collections")
+        name = f"{name}-{category_name}"
+        image_path = upload_dir / name
         collection_record = await manager.create(
             Collections,
             name=name,
@@ -34,13 +30,14 @@ async def add_collection(
             session=uow.session,
         )
         try:
-            async with fs.open(image_path, "xb") as fw:
-                await fw.write(image)
+            await save_files(upload_dir, image_path, image)
+            await generate_image_variant_callback(image_path, "collections")
+        except TypeError:
+            log.debug("generate_image_variant_callback  или save_files не получили нужную функцию")
+            raise
         except FileExistsError:
             log.debug("путь %s уже занять", image_path)
             raise
-        if generate_image_variant_callback:
-            await generate_image_variant_callback(image_path, "collections")
 
         return collection_record
 
@@ -48,19 +45,14 @@ async def add_collection(
 async def delete_collection(
     name: str,
     manager,
-    fs=aiofiles,
     uow_class=UnitOfWork,
     upload_root=None,
+    delete_files=None
 ):
     async with uow_class(manager._session_factory) as uow:
-        collections = await manager.read(Collections, session=uow.session, name=name)
-        files_deleted = 0
         await manager.delete(Collections, name=name, session=uow.session)
         root = upload_root or Path("static/images")
         base_root = root / "base" / "collections"
         collection_root = root / "collections" / "catalog"
         paths = [base_root / name, collection_root / name]
-        for path in paths:
-            log.debug("for delete collection_path: %s", str(path))
-            path.unlink(missing_ok=True)
-            files_deleted += 1
+        delete_files(paths)

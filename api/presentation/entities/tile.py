@@ -7,6 +7,7 @@ from fastapi.responses import RedirectResponse
 
 from domain import *
 from adapters.repo import Crud, get_db_manager
+from adapters.files import save_files
 from services.tile import add_tile, delete_tile, update_tile
 
 router = APIRouter(prefix="/admin/tiles")
@@ -15,46 +16,11 @@ dbManagerDep = Annotated[Crud, Depends(get_db_manager)]
 log = logging.getLogger(__name__)
 
 
-# @router.post("/insert/slide-image")
-# async def insert_slide_image(images: Annotated[list[UploadFile], File()]):
-#
-#     path = Path(__file__).resolve().parent.parent.parent.parent
-#     upload_dir = Path(path) / "static" / "images" / "slides"
-#
-#     if not upload_dir.exists():
-#         upload_dir.mkdir(parents=True, exist_ok=True)
-#     extra_num = len([f for f in upload_dir.iterdir() if f.is_file()])
-#     for i, image in enumerate(images):
-#         image_byte = await image.read()
-#         image_path = upload_dir / str(extra_num + i)
-#         log.debug("slide image: %s", image_path)
-#         try:
-#             async with aiofiles.open(image_path, "xb") as fw:
-#                 await fw.write(image_byte)
-#         except FileExistsError:
-#             log.debug("путь %s уже занять", image_path)
-#
-#     return RedirectResponse("/admin", status_code=303)
-#
-#
-# @router.post("/delete/all-slide-image")
-# async def insert_slide_image():
-#     project_root = Path(__file__).resolve().parent.parent.parent.parent
-#     upload_dir = project_root / "static" / "images" / "slides"
-#     log.debug("deleted slite dir: %s", upload_dir)
-#     for f in upload_dir.iterdir():
-#         if f.is_file() and f.exists():
-#             f.unlink()
-#
-#     return RedirectResponse("/admin", status_code=303)
-
-
 @router.post("/delete")
 async def delete_tile_by_id_or_all(
     manager: dbManagerDep,
     tile_id: Annotated[int, Form()] = None,
 ):
-    # log.debug("tile id for delete: %s", tile_id)
     params = {}
     log.debug("tile_id: %s", tile_id)
     if tile_id is not None:
@@ -116,7 +82,8 @@ async def admin_create_tile(
         bytes_images,
         feature_name,
         surface_name,
-        generate_image_variant_callback=generate_image_variant_bg
+        generate_image_variant_callback=generate_image_variant_bg,
+        save_files=save_files
     )
     return RedirectResponse("/admin", status_code=303)
 

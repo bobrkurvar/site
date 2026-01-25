@@ -1,10 +1,8 @@
 import logging
 from pathlib import Path
 
-#import aiofiles
-from domain.policies.files import save_flies, delete_files
 from domain.tile import *
-from adapters.repo.Uow import UnitOfWork
+from services.Uow import UnitOfWork
 
 log = logging.getLogger(__name__)
 
@@ -32,10 +30,10 @@ async def add_tile(
     images: list[bytes] | list,
     color_feature: str = "",
     surface: str | None = None,
-    #fs=aiofiles,
     uow_class=UnitOfWork,
     upload_root=None,
     generate_image_variant_callback=None,
+    save_files = None
 ):
 
     async with uow_class(manager._session_factory) as uow:
@@ -71,9 +69,10 @@ async def add_tile(
             boxes_count=boxes_count,
             session=uow.session,
         )
-        upload_dir = upload_root or Path("static/images")
-        upload_dir = upload_dir / "base" / "products"
-        upload_dir.mkdir(parents=True, exist_ok=True)
+        upload_dir = upload_root or "/static/images/base/products"
+        # upload_dir = upload_root or Path("static/images")
+        # upload_dir = upload_dir / "base" / "products"
+        # upload_dir.mkdir(parents=True, exist_ok=True)
         images = [img for img in images if img]
         images.insert(0, main_image)
         for n, img in enumerate(images):
@@ -90,57 +89,45 @@ async def add_tile(
             try:
                 # async with fs.open(image_path, "xb") as fw:
                 #     await fw.write(img)
-                await save_flies(image_path, img)
-                try:
-                    await generate_image_variant_callback(image_path, "products")
-                    await generate_image_variant_callback(image_path, "details")
-                except TypeError:
-                    log.debug("generate_image_variant_callback не получил нужную функцию")
+                await save_files(upload_dir, image_path, img)
+                await generate_image_variant_callback(image_path, "products")
+                await generate_image_variant_callback(image_path, "details")
+            except TypeError:
+                log.debug("generate_image_variant_callback  или save_files не получили нужную функцию")
+                raise
             except FileExistsError:
                 log.debug("путь %s уже занять", image_path)
                 raise
         return tile_record
 
 
-async def delete_tile(manager, uow_class=UnitOfWork, upload_root=None, **filters):
+async def delete_tile(manager, uow_class=UnitOfWork, upload_root=None, delete_files=None, **filters):
 
     async with uow_class(manager._session_factory) as uow:
         tiles = await manager.read(
             Tile, to_join=["images"], session=uow.session, **filters
         )
-        #files_deleted = 0
         del_res = await manager.delete(Tile, session=uow.session, **filters)
-
         for tile in tiles:
             images_paths = tile.get("images_paths", [])
-            # log.debug("images paths: %s", images_paths)
-            # upload_dir = upload_root or Path()
-            # for image in images_paths:
-            #     image_path = upload_dir / image
-            #     product_catalog_path = (
-            #         (upload_root or Path("static"))
-            #         / "images"
-            #         / "products"
-            #         / "catalog"
-            #         / Path(image).name
-            #     )
-            #     product_details_path = (
-            #         (upload_root or Path("static"))
-            #         / "images"
-            #         / "products"
-            #         / "details"
-            #         / Path(image).name
-            #     )
-            #     all_paths = [image_path, product_catalog_path, product_details_path]
-            #     for i in all_paths:
-            #         log.debug("for delete: %s", str(i))
-            #         if i.exists():
-            #             i.unlink(missing_ok=True)
-            #             files_deleted += 1
-            #             log.info(f"Удален файл: {i}")
+            log.debug("images paths: %s", images_paths)
+            upload_dir = upload_root or Path('static/images/products')
+            for image in images_paths:
+                #image_path = upload_dir / image
+                image_path = Path(image)
+                product_catalog_path = (
+                    upload_dir
+                    / "catalog"
+                    / Path(image).name
+                )
+                product_details_path = (
+                    upload_dir
+                    / "details"
+                    / Path(image).name
+                )
+                all_paths = [image_path, product_catalog_path, product_details_path]
+                delete_files(all_paths)
             await delete_files(images_paths, upload_root)
-
-        #log.info("Удалено файлов: %s", files_deleted)
         return del_res
 
 async def map_to_domain_for_filter(article: int, manager, session, **params):
