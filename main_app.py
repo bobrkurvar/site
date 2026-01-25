@@ -8,6 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from api.exceptions.presentation_handlers import *
 from api.presentation import presentation_router
 from adapters.repo import get_db_manager
+from core import logger
 
 
 @asynccontextmanager

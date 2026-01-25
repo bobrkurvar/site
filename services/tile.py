@@ -91,9 +91,11 @@ async def add_tile(
                 # async with fs.open(image_path, "xb") as fw:
                 #     await fw.write(img)
                 await save_flies(image_path, img)
-                if generate_image_variant_callback:
+                try:
                     await generate_image_variant_callback(image_path, "products")
                     await generate_image_variant_callback(image_path, "details")
+                except TypeError:
+                    log.debug("generate_image_variant_callback не получил нужную функцию")
             except FileExistsError:
                 log.debug("путь %s уже занять", image_path)
                 raise

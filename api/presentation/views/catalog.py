@@ -6,7 +6,7 @@ from fastapi.templating import Jinja2Templates
 
 from domain import Categories, Tile, map_to_tile_domain
 from adapters.repo import Crud, get_db_manager
-from services.images import get_image_path
+from adapters.images import get_image_path
 from services.views import (build_data_for_filters, build_main_images,
                             build_tile_filters, fetch_items)
 from core.config import ITEMS_PER_PAGE

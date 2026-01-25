@@ -71,7 +71,7 @@ async def build_data_for_filters(
             Tile, to_join=["size"], distinct="size_id", **filters
         )
         tile_colors = await manager.read(Tile, distinct="color_name", **filters)
-        log.debug("tile_sizes before collection filter: %s", tile_sizes)
+        #log.debug("tile_sizes before collection filter: %s", tile_sizes)
 
     sizes = [
         TileSize(

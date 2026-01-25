@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request
+from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 from domain import Categories, Tile
@@ -35,3 +36,11 @@ async def get_main_page(request: Request, manager: dbManagerDep):
             "categories": categories,
         },
     )
+
+# @router.get('/cookie/delete')
+# async def cookie_delete():
+#     response = RedirectResponse("/", status_code=303)
+#     response.delete_cookie("access_token", path="/")
+#     response.delete_cookie("refresh_token", path="/")
+#     return response
+

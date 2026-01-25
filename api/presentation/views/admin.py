@@ -17,7 +17,9 @@ log = logging.getLogger(__name__)
 
 @router.get("")
 async def admin_page(request: Request, manager: dbManagerDep):
+    cookies = request.cookies
     access_token = request.cookies.get("access_token")
+    log.debug("cookies: %s", cookies)
     if access_token is None:
         return RedirectResponse('/admin/login', status_code=303)
 

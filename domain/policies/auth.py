@@ -1,6 +1,4 @@
 
-from domain.user import Admin
-import logging
 
 import logging
 from datetime import datetime, timedelta, timezone
@@ -9,7 +7,7 @@ import jwt
 from api.exceptions.errors import UnauthorizedError
 import bcrypt
 
-from core import config
+from core import config, logger
 
 secret_key = config.secret_key
 algorithm = config.algorithm
@@ -31,7 +29,7 @@ def create_access_token(data: dict, expires_delta: timedelta = None) -> str:
         if expires_delta
         else datetime.now(timezone.utc) + timedelta(minutes=15)
     )
-    to_encode.update({"exp": expire})
+    to_encode.update({"exp": int(expire.timestamp())})
     return jwt.encode(to_encode, secret_key, algorithm)
 
 
@@ -42,7 +40,7 @@ def create_refresh_token(data: dict, expires_delta: timedelta = None) -> str:
         if expires_delta
         else datetime.now(timezone.utc) + timedelta(days=7)
     )
-    to_encode.update({"exp": expire})
+    to_encode.update({"exp": int(expire.timestamp())})
     return jwt.encode(to_encode, secret_key, algorithm)
 
 
@@ -52,13 +50,11 @@ def check_refresh_token(refresh_token: str, username: str):
     except jwt.ExpiredSignatureError:
         raise UnauthorizedError(refresh_token=True)
     except jwt.InvalidTokenError:
-        raise UnauthorizedError(access_token=True)
-
+        raise UnauthorizedError(refresh_token=True)
     if payload.get("type") != "refresh":
-        raise UnauthorizedError(access_token=True)
-
+        raise UnauthorizedError(refresh_token=True)
     if payload.get("sub") != username:
-        raise UnauthorizedError(access_token=True)
+        raise UnauthorizedError(refresh_token=True)
 
 
 async def create_dict_tokens_and_save(username):
@@ -67,13 +63,6 @@ async def create_dict_tokens_and_save(username):
     return access_token, refresh_token
 
 async def get_tokens(refresh_token: str | None = None, password_hash: str = None, password: str | None = None, username: str | None = None):
-    # cur = (await manager.read(Admin, username=username))
-    # if len(cur) == 0:
-    #     log.debug("USER NOT FOUND")
-    #     raise Exception
-    #cur = cur[0]
-    #ident_val = cur.get("username")
-    log.info("access token не существует")
     log.debug("password: %s", password)
     access_token = None
     if password is not None and verify(password, password_hash):
