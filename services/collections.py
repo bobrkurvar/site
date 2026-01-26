@@ -57,6 +57,6 @@ async def delete_collection(
         root = upload_root or Path("static/images")
         base_root = root / "base" / "collections"
         collection_root = root / "collections" / "catalog"
-        name = f'{collection['name']}-{collection['category_name']}'
+        name = f"{collection['name']}-{collection['category_name']}"
         paths = [base_root / name, collection_root / name]
         delete_files(paths)
