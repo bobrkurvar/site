@@ -22,12 +22,13 @@ def verify(password: str, hashed: str) -> bool:
 
 def create_access_token(data: dict, expires_delta: timedelta = None) -> str:
     to_encode = data.copy()
+    #log.debug("UTC: %s", datetime.now(timezone.utc))
     expire = (
         datetime.now(timezone.utc) + expires_delta
         if expires_delta
         else datetime.now(timezone.utc) + timedelta(minutes=15)
     )
-    to_encode.update({"exp": int(expire.timestamp())})
+    to_encode.update({"exp": expire})
     return jwt.encode(to_encode, secret_key, algorithm)
 
 
@@ -38,15 +39,15 @@ def create_refresh_token(data: dict, expires_delta: timedelta = None) -> str:
         if expires_delta
         else datetime.now(timezone.utc) + timedelta(days=7)
     )
-    to_encode.update({"exp": int(expire.timestamp())})
+    to_encode.update({"exp": expire})
     return jwt.encode(to_encode, secret_key, algorithm)
 
 
 def check_refresh_token(refresh_token: str, username: str):
     try:
         payload = jwt.decode(refresh_token, secret_key, algorithms=algorithm)
-    except jwt.ExpiredSignatureError:
-        raise UnauthorizedError(refresh_token=True)
+    # except jwt.ExpiredSignatureError:
+    #     raise UnauthorizedError(refresh_token=True)
     except jwt.InvalidTokenError:
         raise UnauthorizedError(refresh_token=True)
     if payload.get("type") != "refresh":
@@ -61,16 +62,16 @@ async def create_dict_tokens_and_save(username):
     return access_token, refresh_token
 
 async def get_tokens(refresh_token: str | None = None, password_hash: str = None, password: str | None = None, username: str | None = None):
-    log.debug("password: %s", password)
     access_token = None
     if password is not None and verify(password, password_hash):
         log.debug("password verify")
         access_token, refresh_token = await create_dict_tokens_and_save(username)
     elif refresh_token is not None:
         log.info("refresh token существует")
+        payload = jwt.decode(refresh_token, secret_key, algorithms=algorithm)
+        log.debug("PAYLOAD: %s", payload)
         check_refresh_token(refresh_token, username)
         log.info("refresh token прошёл проверку")
-        payload = jwt.decode(refresh_token, secret_key, algorithms=algorithm)
         username = payload.get("sub")
         access_token, refresh_token = await create_dict_tokens_and_save(username)
     return access_token, refresh_token

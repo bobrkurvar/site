@@ -86,10 +86,13 @@ async def admin_login(
 ):
     refresh_token = request.cookies.get("refresh_token")
     if refresh_token is not None:
-        access_token, refresh_token = await get_tokens_and_check_user(manager, refresh_token)
-        response = RedirectResponse("/admin", status_code=303)
-        response.set_cookie("access_token", access_token, httponly=True, max_age=900)
-        response.set_cookie("refresh_token", refresh_token, httponly=True, max_age=86400 * 7)
+        try:
+            access_token, refresh_token = await get_tokens_and_check_user(manager, refresh_token)
+            response = RedirectResponse("/admin", status_code=303)
+            response.set_cookie("access_token", access_token, httponly=True, max_age=900)
+            response.set_cookie("refresh_token", refresh_token, httponly=True, max_age=86400 * 7)
+        except:
+            response = templates.TemplateResponse("admin_login.html", {"request": request, "error": None})
     else:
         response = templates.TemplateResponse("admin_login.html", {"request": request, "error": None})
     return response

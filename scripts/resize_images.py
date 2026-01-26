@@ -2,7 +2,7 @@ import logging
 from pathlib import Path
 
 from core import logger
-from adapters.images import IMAGE_PRESETS, generate_image_variant  # твоя функция и пресеты
+from services.images import IMAGE_PRESETS, generate_image_variant  # твоя функция и пресеты
 
 log = logging.getLogger(__name__)
 

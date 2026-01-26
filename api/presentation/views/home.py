@@ -37,10 +37,11 @@ async def get_main_page(request: Request, manager: dbManagerDep):
         },
     )
 
-# @router.get('/cookie/delete')
-# async def cookie_delete():
-#     response = RedirectResponse("/", status_code=303)
-#     response.delete_cookie("access_token", path="/")
-#     response.delete_cookie("refresh_token", path="/")
-#     return response
+@router.get('/cookie/delete')
+async def cookie_delete(request: Request):
+    response = RedirectResponse("/", status_code=303)
+    response.delete_cookie("access_token", path="/")
+    #response.delete_cookie("refresh_token", path="/")
+    log.debug("COOKIES after delete: %s", request.cookies)
+    return response
 

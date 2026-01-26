@@ -4,7 +4,7 @@ import logging
 from core import config
 from domain.user import Admin
 from adapters.repo import get_db_manager
-from domain.policies import get_password_hash
+from core.auth import get_password_hash
 
 log = logging.getLogger(__name__)
 
