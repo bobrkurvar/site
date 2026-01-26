@@ -104,6 +104,7 @@ async def admin_login_submit(
     username: Annotated[str, Form()],
     password: Annotated[str, Form()],
 ):
+    log.debug("USERNAME: %s", username)
     access_token, refresh_token = await get_tokens_and_check_user(manager, username=username, password=password)
     if access_token and refresh_token:
         response = RedirectResponse("/admin", status_code=303)
