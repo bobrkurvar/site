@@ -1,6 +1,6 @@
 import logging
 from typing import Annotated
-from adapters.images import generate_image_variant_bg
+from adapters.images import generate_image_products_catalog_and_details_bg
 
 from fastapi import APIRouter, Depends, File, Form, UploadFile
 from fastapi.responses import RedirectResponse
@@ -82,7 +82,7 @@ async def admin_create_tile(
         bytes_images,
         feature_name,
         surface_name,
-        generate_image_variant_callback=generate_image_variant_bg,
+        generate_image_variant_callback=generate_image_products_catalog_and_details_bg,
         save_files=save_files
     )
     return RedirectResponse("/admin", status_code=303)

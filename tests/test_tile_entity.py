@@ -2,6 +2,7 @@ import logging
 from decimal import Decimal
 
 import pytest
+from pathlib import Path
 
 import core.logger
 from domain import (Box, Categories, Producer, Tile, TileColor, TileImages,
@@ -9,8 +10,8 @@ from domain import (Box, Categories, Producer, Tile, TileColor, TileImages,
 from services.tile import add_tile, delete_tile, update_tile
 
 from .fakes import (FakeCRUD, FakeStorage, FakeUoW, Table)
-from .fakes import get_fake_save_files_function_with_fs, get_fake_delete_files_function_with_fs
-from .conftest import storage
+from .fakes import get_fake_save_files_function_with_fs, get_fake_delete_files_function_with_fs, get_fake_save_bg_products_and_details_with_fs
+from .conftest import storage, noop
 
 log = logging.getLogger(__name__)
 
@@ -123,7 +124,7 @@ async def test_create_tile_success_when_all_handbooks_exists(
         surface="surface",  # подделанная файловая система
         uow_class=FakeUoW,  # поддельная транзакция
         save_files=get_fake_save_files_function_with_fs(fs),
-        generate_image_variant_callback=lambda path, _type: None
+        generate_image_variant_callback=noop
     )
 
     # 1. Tile создан
@@ -134,12 +135,12 @@ async def test_create_tile_success_when_all_handbooks_exists(
 
     # 2. Все изображения записались во фейковую ФС
     expected_paths = [
-        f"static/images/base/products/{tile_id}-0",
-        f"static/images/base/products/{tile_id}-1",
-        f"static/images/base/products/{tile_id}-2",
+        str(Path(f"static/images/base/products/{tile_id}-0")),
+        str(Path(f"static/images/base/products/{tile_id}-1")),
+        str(Path(f"static/images/base/products/{tile_id}-2")),
     ]
 
-    assert set(fs.keys()) == set(expected_paths)
+    assert set(fs) == set(expected_paths)
 
     assert fs[expected_paths[0]] == b"MAIN"
     assert fs[expected_paths[1]] == b"A"
@@ -178,12 +179,14 @@ async def test_create_tile_success_when_all_handbooks_not_exists(
         surface="surface",
         uow_class=FakeUoW,  # поддельная транзакция
         save_files=get_fake_save_files_function_with_fs(fs),
-        generate_image_variant_callback=lambda path, _type: None
+        generate_image_variant_callback=noop
     )
 
     # 1. Tile создан
     assert record is not None
     assert "id" in record
+
+    log.debug("FS: %s", fs)
 
     # 2. Проверка всех справочников
     tables = (Box, Categories, Producer, Tile, TileColor, TileImages, TileSize, TileSurface)
@@ -195,12 +198,13 @@ async def test_create_tile_success_when_all_handbooks_not_exists(
     # 3. Все изображения записались во фейковую ФС
     tile_id = record["id"]
     expected_paths = [
-        f"static/images/base/products/{tile_id}-0",
-        f"static/images/base/products/{tile_id}-1",
-        f"static/images/base/products/{tile_id}-2",
+        str(Path(f"static/images/base/products/{tile_id}-0")),
+        str(Path(f"static/images/base/products/{tile_id}-1")),
+        str(Path(f"static/images/base/products/{tile_id}-2")),
     ]
+    log.debug("EXPECTED: %s", expected_paths)
 
-    assert set(fs.keys()) == set(expected_paths)
+    assert set(fs) == set(expected_paths)
 
     assert fs[expected_paths[0]] == b"MAIN"
     assert fs[expected_paths[1]] == b"A"
@@ -236,8 +240,8 @@ async def test_update_tile_success_when_new_attributes_in_handbooks(
         color_feature="feature",
         surface="surface",
         uow_class=FakeUoW,
-        save_files=lambda upload_dir, image_path, img: None,
-        generate_image_variant_callback=lambda path, _type: None
+        save_files=noop,
+        generate_image_variant_callback=noop
     )
     article = record["id"] # фильтр для обновления по артикулу
 
@@ -306,7 +310,7 @@ async def test_delete_tile_by_article(
         surface="surface",
         uow_class=FakeUoW,
         save_files=get_fake_save_files_function_with_fs(fs),
-        generate_image_variant_callback=lambda path, _type: None
+        generate_image_variant_callback=get_fake_save_bg_products_and_details_with_fs(fs)
     )
 
     article = record["id"]
@@ -315,6 +319,7 @@ async def test_delete_tile_by_article(
         f"static/images/base/products/{article}-1",
         f"static/images/base/products/{article}-2",
     ]
+    log.debug("FS: %s", fs)
 
     records = await delete_tile(manager, uow_class=FakeUoW, id=article, delete_files=get_fake_delete_files_function_with_fs(fs))
     assert len(records) == 1

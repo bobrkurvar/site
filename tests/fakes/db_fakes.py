@@ -224,6 +224,8 @@ class FakeStorage:
             if all(table.rows[i][f] == v for f, v in filters.items()):
                 del_res.append(table.rows[i])
                 del table.rows[i]
+        if not del_res:
+            raise FakeCrudError(f"NOT EXISTS filters: {filters}")
         return del_res
 
 

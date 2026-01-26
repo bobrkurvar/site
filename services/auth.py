@@ -1,5 +1,5 @@
 from domain.user import Admin
-from domain.policies.auth import get_tokens
+from core.auth import get_tokens
 import logging
 
 log = logging.getLogger(__name__)

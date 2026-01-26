@@ -49,6 +49,16 @@ def enqueue_resize_task(input_path: Path, target: str, quality: int = 82):
     log.info("Task queued: %s", task)
 
 
+async def generate_image_products_catalog_and_details_bg(input_path):
+    await generate_image_variant_bg(input_path, "products")
+    await generate_image_variant_bg(input_path, "details")
+
+async def generate_image_collections_catalog_bg(input_path):
+    await generate_image_variant_bg(input_path, "collections")
+
+async def generate_slides_bg(input_path):
+    await generate_image_variant_bg(input_path, "slides")
+
 async def generate_image_variant_bg(input_path: Path, target: str, quality: int = 82):
     loop = asyncio.get_running_loop()
     await loop.run_in_executor(None, enqueue_resize_task, input_path, target, quality)

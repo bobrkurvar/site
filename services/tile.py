@@ -69,10 +69,7 @@ async def add_tile(
             boxes_count=boxes_count,
             session=uow.session,
         )
-        upload_dir = upload_root or "/static/images/base/products"
-        # upload_dir = upload_root or Path("static/images")
-        # upload_dir = upload_dir / "base" / "products"
-        # upload_dir.mkdir(parents=True, exist_ok=True)
+        upload_dir = upload_root or Path("static/images/base/products")
         images = [img for img in images if img]
         images.insert(0, main_image)
         for n, img in enumerate(images):
@@ -87,11 +84,10 @@ async def add_tile(
             )
 
             try:
-                # async with fs.open(image_path, "xb") as fw:
-                #     await fw.write(img)
                 await save_files(upload_dir, image_path, img)
-                await generate_image_variant_callback(image_path, "products")
-                await generate_image_variant_callback(image_path, "details")
+                #await generate_image_variant_callback(image_path, "products")
+                #await generate_image_variant_callback(image_path, "details")
+                await generate_image_variant_callback(image_path)
             except TypeError:
                 log.debug("generate_image_variant_callback  или save_files не получили нужную функцию")
                 raise
@@ -113,7 +109,6 @@ async def delete_tile(manager, uow_class=UnitOfWork, upload_root=None, delete_fi
             log.debug("images paths: %s", images_paths)
             upload_dir = upload_root or Path('static/images/products')
             for image in images_paths:
-                #image_path = upload_dir / image
                 image_path = Path(image)
                 product_catalog_path = (
                     upload_dir
@@ -127,7 +122,6 @@ async def delete_tile(manager, uow_class=UnitOfWork, upload_root=None, delete_fi
                 )
                 all_paths = [image_path, product_catalog_path, product_details_path]
                 delete_files(all_paths)
-            await delete_files(images_paths, upload_root)
         return del_res
 
 async def map_to_domain_for_filter(article: int, manager, session, **params):

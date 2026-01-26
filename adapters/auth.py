@@ -1,4 +1,3 @@
-
 import logging
 import jwt
 from fastapi import Request
@@ -8,7 +7,6 @@ from core import config
 secret_key = config.secret_key
 algorithm = config.algorithm
 log = logging.getLogger(__name__)
-
 
 
 def get_user_from_token(request: Request):

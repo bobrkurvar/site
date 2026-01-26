@@ -1,8 +1,11 @@
 from decimal import Decimal
 import pytest
-from .fakes import FakeUoW, FakePath, FakeStorage, Table, FakeCRUD, FakeFileSystem
+from .fakes import FakeUoW, FakeStorage, Table, FakeCRUD
 from services.tile import add_tile
 from domain import TileSize, TileColor, Box, Categories, Producer, TileSurface, TileImages, Tile, Collections
+
+async def noop(*args, **kwargs):
+    return None
 
 # Генератор размеров
 def generate_tile_sizes(count):
@@ -72,10 +75,10 @@ def storage():
             ),
             Table(
                 name=Collections,
-                columns=["name", "images_path"],
+                columns=["name", "category_name", "image_path"],
                 rows=[],
                 defaults={},
-                unique=["name"],
+                unique=["name", "category_name"],
             ),
             Table(
                 name=Tile,
@@ -114,12 +117,7 @@ def fake_manager(storage):
     return FakeCRUD(storage)
 
 @pytest.fixture
-def fs():
-    return FakeFileSystem()
-
-@pytest.fixture
-def manager_factory(fake_manager, fs):
-    upload_root = FakePath("static/images", fs=fs)
+def manager_factory(fake_manager):
 
     async def _manage_with_items(n: int = 0, color_fix: bool = False):
         sizes = generate_tile_sizes(n)
@@ -130,8 +128,6 @@ def manager_factory(fake_manager, fs):
             await add_tile(
                 manager=fake_manager,
                 uow_class=FakeUoW,
-                upload_root=upload_root,
-                fs=fs,
                 name=f"Tile{i+1}",
                 length=sizes[i]["length"],
                 width=sizes[i]["width"],
@@ -146,7 +142,8 @@ def manager_factory(fake_manager, fs):
                 category_name="category",
                 images=[b"A", b"B"],
                 surface="surface1",
-                bg=False
+                generate_image_variant_callback=noop,
+                save_files=noop
             )
         return fake_manager
     return _manage_with_items

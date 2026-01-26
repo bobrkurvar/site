@@ -4,7 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, File, Form, UploadFile
 from fastapi.responses import RedirectResponse
 
-from adapters.images import generate_image_variant_bg
+from adapters.images import generate_image_collections_catalog_bg
 from adapters.repo import Crud, get_db_manager
 from adapters.files import save_files, delete_files
 from services.collections import add_collection, delete_collection
@@ -24,7 +24,7 @@ async def admin_create_tile_collection(
     name = name.strip()
     category_name = category_name.strip()
     image = await image.read()
-    await add_collection(name, image, category_name, manager, generate_image_variant_callback=generate_image_variant_bg, save_files=save_files)
+    await add_collection(name, image, category_name, manager, generate_image_variant_callback=generate_image_collections_catalog_bg, save_files=save_files)
     return RedirectResponse("/admin", status_code=303)
 
 

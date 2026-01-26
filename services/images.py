@@ -2,8 +2,7 @@
 import logging
 from pathlib import Path
 
-from PIL import Image
-from domain.policies.images import resize_image
+from PIL import Image, ImageOps
 from adapters.images import save_image
 
 log = logging.getLogger(__name__)
@@ -24,7 +23,24 @@ OUTPUT_DIRS = {
     "slides": BASE_DIR / 'slides'
 }
 
+def resize_image(
+    img: Image.Image,
+    target_size: tuple[int, int],
+    mode: str,
+) -> Image.Image:
+    if mode == "fit":
+        img.thumbnail(target_size, Image.LANCZOS)
+        return img
 
+    if mode == "cover":
+        return ImageOps.fit(
+            img,
+            target_size,
+            method=Image.LANCZOS,
+            centering=(0.5, 0.5),
+        )
+
+    raise ValueError(f"Unknown resize mode: {mode}")
 
 def generate_image_variant(
     input_path: Path | str, target: str, quality: int = 82, output_dir=None
@@ -40,8 +56,7 @@ def generate_image_variant(
     if target not in IMAGE_PRESETS:
         raise ValueError(f"Unknown image preset: {target}")
 
-    if isinstance(input_path, str):
-        input_path = Path(input_path)
+    input_path = Path(input_path)
 
     preset = IMAGE_PRESETS[target]
     width, height = preset["size"]
