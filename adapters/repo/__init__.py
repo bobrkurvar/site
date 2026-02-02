@@ -4,8 +4,8 @@ from db import models
 from adapters.repo.crud import Crud
 
 
-def get_db_manager() -> Crud:
-    db_host = config.db_url
+def get_db_manager(test = False) -> Crud:
+    db_host = config.db_url if not test else config.test_db_url
     domain_with_orm = {
         domain.Tile: models.Catalog,
         domain.TileSize: models.TileSize,

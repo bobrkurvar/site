@@ -1,6 +1,6 @@
 from decimal import Decimal
 import pytest
-from .fakes import FakeUoW, FakeStorage, Table, FakeCRUD
+from .fakes import FakeUoW, FakeStorage, Table, FakeCRUD, FakeFileManager
 from services.tile import add_tile
 from domain import TileSize, TileColor, Box, Categories, Producer, TileSurface, TileImages, Tile, Collections
 
@@ -49,36 +49,28 @@ def storage():
             Table(
                 name=TileSize,
                 columns=["id", "length", "width", "height"],
-                rows=[],
                 defaults={"id": 1},
             ),
             Table(name=TileSurface, columns=["name"], rows=[{"name": "surface"}]),
             Table(
                 name=TileImages,
                 columns=["image_id", "tile_id", "image_path"],
-                rows=[],
-                foreign_keys={Tile: {"tile_id": "id"}},
                 defaults={"image_id": 1},
             ),
             Table(
                 name=TileColor,
                 columns=["color_name", "feature_name"],
-                rows=[],
             ),
             Table(name=Producer, columns=["name"], rows=[{"name": "producer"}]),
             Table(name=Categories, columns=["name"], rows=[{"name": "category"}]),
             Table(
                 name=Box,
                 columns=["id", "weight", "area"],
-                rows=[],
                 defaults={"id": 1},
             ),
             Table(
                 name=Collections,
                 columns=["name", "category_name", "image_path"],
-                rows=[],
-                defaults={},
-                unique=["name", "category_name"],
             ),
             Table(
                 name=Tile,
@@ -94,17 +86,6 @@ def storage():
                     "box_id",
                     "boxes_count",
                 ],
-                rows=[],
-                foreign_keys={
-                    TileSize: {"size_id": "id"},
-                    TileColor: {
-                        ("color_name", "feature_name"): ("color_name", "feature_name")
-                    },
-                    Categories: {"category_name": "name"},
-                    TileSurface: {"surface_name": "name"},
-                    Producer: {"producer_name": "name"},
-                    Box: {"box_id": "id"},
-                },
                 defaults={"id": 1},
             ),
         ]
@@ -123,7 +104,7 @@ def manager_factory(fake_manager):
         sizes = generate_tile_sizes(n)
         colors = generate_tile_colors(n, True) if color_fix else generate_tile_colors(n)
         boxes = generate_boxes(n)
-
+        file_manager = FakeFileManager()
         for i in range(n):
             await add_tile(
                 manager=fake_manager,
@@ -143,7 +124,7 @@ def manager_factory(fake_manager):
                 images=[b"A", b"B"],
                 surface="surface1",
                 generate_image_variant_callback=noop,
-                save_files=noop
+                file_manager=file_manager
             )
         return fake_manager
     return _manage_with_items

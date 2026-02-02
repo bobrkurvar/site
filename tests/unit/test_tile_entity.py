@@ -9,9 +9,9 @@ from domain import (Box, Categories, Producer, Tile, TileColor, TileImages,
                     TileSize, TileSurface)
 from services.tile import add_tile, delete_tile, update_tile
 
-from .fakes import (FakeCRUD, FakeStorage, FakeUoW, Table)
-from .fakes import get_fake_save_files_function_with_fs, get_fake_delete_files_function_with_fs, get_fake_save_bg_products_and_details_with_fs
-from .conftest import storage, noop
+from tests.fakes import (FakeCRUD, FakeStorage, FakeUoW, Table)
+from tests.fakes import FakeFileManager, get_fake_save_bg_products_and_details_with_fs
+from tests.conftest import storage, noop
 
 log = logging.getLogger(__name__)
 
@@ -39,8 +39,6 @@ def storage_with_filled_handbooks():
             Table(
                 name=TileImages,
                 columns=["image_id", "tile_id", "image_path"],
-                rows=[],
-                foreign_keys={Tile: {"tile_id": "id"}},
                 defaults={"image_id": 1},
             ),
             Table(
@@ -70,17 +68,6 @@ def storage_with_filled_handbooks():
                     "box_id",
                     "boxes_count",
                 ],
-                rows=[],
-                foreign_keys={
-                    TileSize: {"size_id": "id"},
-                    TileColor: {
-                        ("color_name", "feature_name"): ("color_name", "feature_name")
-                    },
-                    Categories: {"category_name": "name"},
-                    TileSurface: {"surface_name": "name"},
-                    Producer: {"producer_name": "name"},
-                    Box: {"box_id": "id"},
-                },
                 defaults={"id": 1},
             ),
         ]
@@ -105,6 +92,7 @@ async def test_create_tile_success_when_all_handbooks_exists(
 ):
     manager = manager_with_handbooks
     fs = {}
+    file_manager = FakeFileManager(fs=fs)
     # выполнение add_tile
     record = await add_tile(
         name="Tile",
@@ -123,7 +111,8 @@ async def test_create_tile_success_when_all_handbooks_exists(
         color_feature="feature",
         surface="surface",  # подделанная файловая система
         uow_class=FakeUoW,  # поддельная транзакция
-        save_files=get_fake_save_files_function_with_fs(fs),
+        #save_files=get_fake_save_files_function_with_fs(fs),
+        file_manager=file_manager,
         generate_image_variant_callback=noop
     )
 
@@ -159,7 +148,7 @@ async def test_create_tile_success_when_all_handbooks_not_exists(
 ):
     manager = manager_without_handbooks
     fs = {}
-
+    file_manager = FakeFileManager(fs=fs)
     # выполнение add_tile
     record = await add_tile(
         name="Tile",
@@ -178,7 +167,7 @@ async def test_create_tile_success_when_all_handbooks_not_exists(
         color_feature="feature",
         surface="surface",
         uow_class=FakeUoW,  # поддельная транзакция
-        save_files=get_fake_save_files_function_with_fs(fs),
+        file_manager=file_manager,
         generate_image_variant_callback=noop
     )
 
@@ -186,7 +175,6 @@ async def test_create_tile_success_when_all_handbooks_not_exists(
     assert record is not None
     assert "id" in record
 
-    log.debug("FS: %s", fs)
 
     # 2. Проверка всех справочников
     tables = (Box, Categories, Producer, Tile, TileColor, TileImages, TileSize, TileSurface)
@@ -202,7 +190,6 @@ async def test_create_tile_success_when_all_handbooks_not_exists(
         str(Path(f"static/images/base/products/{tile_id}-1")),
         str(Path(f"static/images/base/products/{tile_id}-2")),
     ]
-    log.debug("EXPECTED: %s", expected_paths)
 
     assert set(fs) == set(expected_paths)
 
@@ -222,7 +209,7 @@ async def test_update_tile_success_when_new_attributes_in_handbooks(
     manager_with_handbooks
 ):
     manager = manager_with_handbooks
-
+    file_manager = FakeFileManager()
     record = await add_tile(
         name="Tile",
         length=Decimal(300),
@@ -240,7 +227,7 @@ async def test_update_tile_success_when_new_attributes_in_handbooks(
         color_feature="feature",
         surface="surface",
         uow_class=FakeUoW,
-        save_files=noop,
+        file_manager=file_manager,
         generate_image_variant_callback=noop
     )
     article = record["id"] # фильтр для обновления по артикулу
@@ -291,7 +278,7 @@ async def test_delete_tile_by_article(
 ):
     manager = manager_with_handbooks
     fs = {}
-
+    file_manager = FakeFileManager(fs=fs)
     record = await add_tile(
         name="Tile",
         length=Decimal(300),
@@ -309,7 +296,7 @@ async def test_delete_tile_by_article(
         color_feature="feature",
         surface="surface",
         uow_class=FakeUoW,
-        save_files=get_fake_save_files_function_with_fs(fs),
+        file_manager=file_manager,
         generate_image_variant_callback=get_fake_save_bg_products_and_details_with_fs(fs)
     )
 
@@ -319,9 +306,8 @@ async def test_delete_tile_by_article(
         f"static/images/base/products/{article}-1",
         f"static/images/base/products/{article}-2",
     ]
-    log.debug("FS: %s", fs)
-
-    records = await delete_tile(manager, uow_class=FakeUoW, id=article, delete_files=get_fake_delete_files_function_with_fs(fs))
+    file_manager = FakeFileManager(fs=fs)
+    records = await delete_tile(manager, uow_class=FakeUoW, id=article, file_manager=file_manager)
     assert len(records) == 1
 
     for path in expected_paths:

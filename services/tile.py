@@ -28,14 +28,12 @@ async def add_tile(
     category_name: str,
     manager,
     images: list[bytes] | list,
+    generate_image_variant_callback,
+    file_manager,
     color_feature: str = "",
     surface: str | None = None,
     uow_class=UnitOfWork,
-    upload_root=None,
-    generate_image_variant_callback=None,
-    save_files = None
 ):
-
     async with uow_class(manager._session_factory) as uow:
 
         size = await add_items(
@@ -69,24 +67,20 @@ async def add_tile(
             boxes_count=boxes_count,
             session=uow.session,
         )
-        upload_dir = upload_root or Path("static/images/base/products")
+        file_manager.set_path("static/images/base/products")
         images = [img for img in images if img]
         images.insert(0, main_image)
         for n, img in enumerate(images):
-            name = Path(str(tile_record["id"]) + "-" + str(n)).name
-            image_path = upload_dir / name
-            log.debug("image_path: %s", image_path)
+            str_name = str(tile_record["id"]) + "-" + str(n)
+            image_path = file_manager.path(str_name)
             await manager.create(
                 TileImages,
                 tile_id=tile_record["id"],
                 image_path=str(image_path),
                 session=uow.session,
             )
-
             try:
-                await save_files(upload_dir, image_path, img)
-                #await generate_image_variant_callback(image_path, "products")
-                #await generate_image_variant_callback(image_path, "details")
+                await file_manager.save(image_path, img)
                 await generate_image_variant_callback(image_path)
             except TypeError:
                 log.debug("generate_image_variant_callback  или save_files не получили нужную функцию")
@@ -97,7 +91,12 @@ async def add_tile(
         return tile_record
 
 
-async def delete_tile(manager, uow_class=UnitOfWork, upload_root=None, delete_files=None, **filters):
+async def delete_tile(
+        manager,
+        file_manager,
+        uow_class=UnitOfWork,
+        **filters
+):
 
     async with uow_class(manager._session_factory) as uow:
         tiles = await manager.read(
@@ -106,22 +105,20 @@ async def delete_tile(manager, uow_class=UnitOfWork, upload_root=None, delete_fi
         del_res = await manager.delete(Tile, session=uow.session, **filters)
         for tile in tiles:
             images_paths = tile.get("images_paths", [])
-            log.debug("images paths: %s", images_paths)
-            upload_dir = upload_root or Path('static/images/products')
+            file_manager.set_path('static/images/products')
             for image in images_paths:
-                image_path = Path(image)
                 product_catalog_path = (
-                    upload_dir
+                    file_manager.upload_dir
                     / "catalog"
                     / Path(image).name
                 )
                 product_details_path = (
-                    upload_dir
+                    file_manager.upload_dir
                     / "details"
                     / Path(image).name
                 )
-                all_paths = [image_path, product_catalog_path, product_details_path]
-                delete_files(all_paths)
+                all_paths = [image, product_catalog_path, product_details_path]
+                file_manager.delete(all_paths)
         return del_res
 
 async def map_to_domain_for_filter(article: int, manager, session, **params):

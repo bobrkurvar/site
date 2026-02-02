@@ -1,5 +1,4 @@
 import logging
-from dataclasses import dataclass
 from typing import Any
 from copy import deepcopy
 
@@ -8,27 +7,20 @@ from domain import Box, TileImages, TileSize
 log = logging.getLogger(__name__)
 
 
-@dataclass
 class Table:
-    name: Any
-    columns: list[str]
-    rows: list[dict] | None
-    unique: list[str] | None = None
-    foreign_keys: dict | None = None
-    defaults: dict[str, Any] | None = None
+
+    def __init__(self, name, columns: list[str], rows: list[dict] | None = None, defaults: dict[str, Any] | None = None):
+        self.name = name
+        self.columns = columns
+        self.rows = rows if rows else []
+        self.defaults = defaults
 
     def __add__(self, other):
-        son_parent = self.foreign_keys.get(other.name, None) or other.foreign_keys.get(self.name, None)
-        if not son_parent or not other or not self.rows:
-            return self
-
         # создаём новую таблицу
         new_table = Table(
             name=self.name,
             columns=self.columns.copy(),
             rows=deepcopy(self.rows),
-            unique=self.unique,
-            foreign_keys=self.foreign_keys,
             defaults=self.defaults,
         )
 
@@ -38,7 +30,7 @@ class Table:
             for i in range(len(new_table.rows)):
                 to_row = {}
                 for row in other.rows or []:
-                    if row[son_parent["box_id"]] == new_table.rows[i]["box_id"] and (
+                    if row["id"] == new_table.rows[i]["box_id"] and (
                             "weight" in row or "area" in row
                     ):
                         to_row.update(
@@ -52,7 +44,7 @@ class Table:
             for i in range(len(new_table.rows)):
                 to_row = {}
                 for row in other.rows or []:
-                    if row[son_parent["size_id"]] == new_table.rows[i]["size_id"] and (
+                    if row["id"] == new_table.rows[i]["size_id"] and (
                             "length" in row or "width" in row or "height" in row
                     ):
                         to_row.update(
@@ -102,54 +94,8 @@ class FakeStorage:
     def register_tables(self, models: list[Table]):
         for model in models:
             self.tables[model.name] = model
-        # log.debug("tables: %s", self.tables)
 
-    def _check_unique(self, table: Table, new_row: dict):
-        if not table.unique:
-            return
-        for col in table.unique:
-            value = new_row.get(col)
-            if value is None:
-                continue
-            if any(existing.get(col) == value for existing in (table.rows or [])):
-                raise FakeCrudError(
-                    f"Unique constraint failed: {table.name.__name__}.{col}={value}"
-                )
-
-    def _check_row_foreign_keys(self, table: Table, new_row: dict):
-        if not table.foreign_keys:
-            return
-
-        for parent_table_name, parent_son_cols in table.foreign_keys.items():
-
-            ((col, parent_col),) = parent_son_cols.items()
-
-            # нормализуем к спискам
-            cols = col if isinstance(col, list) else [col]
-            parent_cols = parent_col if isinstance(parent_col, list) else [parent_col]
-
-            # заполняем значения нового ряда
-            values = [new_row.get(c) for c in cols]
-
-            # если нет всех значений — FK не активен
-            if any(v is None for v in values):
-                continue
-
-            parent_table = self.tables[parent_table_name]
-
-            # сравнение по всем ключам одновременно
-            exists = any(
-                all(row.get(pcol) == val for pcol, val in zip(parent_cols, values))
-                for row in (parent_table.rows or [])
-            )
-
-            if not exists:
-                raise FakeCrudError(
-                    f"ForeignKey error: {table.name.__name__}.{cols}={values} "
-                    f"does not exist in {parent_table_name.__name__}.{parent_cols}"
-                )
-
-    def add(self, model, session=None, **columns):
+    def add(self, model, **columns):
         table = self.tables[model]
         if table.rows is None:
             table.rows = []
@@ -165,9 +111,6 @@ class FakeStorage:
                 if isinstance(table.defaults[table_column], int):
                     table.defaults[table_column] += 1
 
-        self._check_unique(table, columns)
-        self._check_row_foreign_keys(table, columns)
-
         table.rows.append(columns)
         return columns
 
@@ -179,7 +122,7 @@ class FakeStorage:
         result = []
         if to_join:
             for t in to_join:
-                log.debug("FAKE JOIN %s", t)
+                #log.debug("FAKE JOIN %s", t)
                 t = self.to_join.get(t, t)
                 t = self.tables[t]
                 table = table + t
@@ -195,7 +138,7 @@ class FakeStorage:
             unique_result = []
             for row in result:
                 key = tuple(row.get(f) for f in distinct)
-                log.debug("DISTINCT: %s", key)
+                #log.debug("DISTINCT: %s", key)
                 if key not in seen:
                     seen.add(key)
                     unique_result.append(row)
@@ -210,7 +153,7 @@ class FakeStorage:
 
     def update(self, model, filters, **values):
         table = self.tables[model]
-        log.debug("UPDATE TABLE %s FILTERS: %s, VALUES: %s", model, filters, values)
+        #log.debug("UPDATE TABLE %s FILTERS: %s, VALUES: %s", model, filters, values)
         for i in range(len(table.rows)):
             if all(table.rows[i][f] == v for f, v in filters.items()):
                 for k, v in values.items():
@@ -219,7 +162,7 @@ class FakeStorage:
     def delete(self, model, **filters):
         table = self.tables[model]
         del_res = []
-        log.debug("DELETE TABLE %s FILTERS: %s", model, filters)
+        #log.debug("DELETE TABLE %s FILTERS: %s", model, filters)
         for i in range(len(table.rows)):
             if all(table.rows[i][f] == v for f, v in filters.items()):
                 del_res.append(table.rows[i])

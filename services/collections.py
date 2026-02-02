@@ -12,16 +12,15 @@ async def add_collection(
     image: bytes,
     category_name: str,
     manager,
+    generate_image_variant_callback,
+    file_manager,
     uow_class=UnitOfWork,
-    upload_root=None,
-    generate_image_variant_callback=None,
-    save_files = None,
 ):
 
     async with uow_class(manager._session_factory) as uow:
-        upload_dir = upload_root or Path("static/images/base/collections")
+        file_manager.set_path("static/images/base/collections")
         path_name = f"{name}-{category_name}"
-        image_path = upload_dir / path_name
+        image_path = file_manager.upload_dir / path_name
         collection_record = await manager.create(
             Collections,
             name=name,
@@ -30,8 +29,7 @@ async def add_collection(
             session=uow.session,
         )
         try:
-            await save_files(upload_dir, image_path, image)
-            #await generate_image_variant_callback(image_path, "collections")
+            await file_manager.save(image_path, image)
             await generate_image_variant_callback(image_path)
         except TypeError:
             log.debug("generate_image_variant_callback  или save_files не получили нужную функцию")
@@ -47,16 +45,15 @@ async def delete_collection(
     name: str,
     category_name: str,
     manager,
-    uow_class=UnitOfWork,
-    upload_root=None,
-    delete_files=None
+    file_manager,
+    uow_class=UnitOfWork
 ):
     async with uow_class(manager._session_factory) as uow:
         collection = await manager.delete(Collections, name=name, category_name=category_name, session=uow.session)
         collection = collection[0]
-        root = upload_root or Path("static/images")
-        base_root = root / "base" / "collections"
-        collection_root = root / "collections" / "catalog"
+        file_manager.set_path("static/images")
+        base_root = file_manager.upload_dir / "base" / "collections"
+        collection_root = file_manager.upload_dir / "collections" / "catalog"
         name = f"{collection['name']}-{collection['category_name']}"
         paths = [base_root / name, collection_root / name]
-        delete_files(paths)
+        file_manager.delete(paths)
