@@ -38,16 +38,9 @@ class FakeFileManager:
         name = Path(str_name).name
         return self.upload_dir / name
 
-# def get_fake_save_files_function_with_fs(fs: dict):
-#     async def fake_save_files(upload_dir, image_path, img):
-#         fs[str(image_path)] = img
-#     return fake_save_files
-#
-# def get_fake_delete_files_function_with_fs(fs: dict):
-#     def fake_delete_files(paths):
-#         for path in paths:
-#             del fs[str(path)]
-#     return fake_delete_files
+    @staticmethod
+    def file_name(str_path):
+        return Path(str_path).name
 
 def get_fake_save_bg_products_and_details_with_fs(fs: dict):
     async def fake_save_bg(image_path):

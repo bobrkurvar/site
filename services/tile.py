@@ -1,5 +1,4 @@
 import logging
-from pathlib import Path
 
 from domain.tile import *
 from services.Uow import UnitOfWork
@@ -110,12 +109,12 @@ async def delete_tile(
                 product_catalog_path = (
                     file_manager.upload_dir
                     / "catalog"
-                    / Path(image).name
+                    /  file_manager.file_name(image)
                 )
                 product_details_path = (
                     file_manager.upload_dir
                     / "details"
-                    / Path(image).name
+                    / file_manager.file_name(image)
                 )
                 all_paths = [image, product_catalog_path, product_details_path]
                 file_manager.delete(all_paths)

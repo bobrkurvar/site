@@ -1,23 +1,3 @@
-# import aiofiles
-# from pathlib import Path
-# import logging
-#
-# log = logging.getLogger(__name__)
-#
-# async def save_files(upload_dir: str, image_path, img, fs=aiofiles):
-#     upload_dir = Path(upload_dir)
-#     upload_dir.mkdir(parents=True, exist_ok=True)
-#     async with fs.open(image_path, "xb") as fw:
-#         await fw.write(img)
-#
-# def delete_files(paths: list[Path]):
-#     files_deleted = 0
-#     for path in paths:
-#         log.debug("for delete collection_path: %s", str(path))
-#         path.unlink(missing_ok=True)
-#         files_deleted += 1
-#         log.info(f"Удален файл: {path}")
-
 from pathlib import Path
 import aiofiles
 import logging
@@ -39,15 +19,19 @@ class FileManager:
             async with self.fs.open(image_path, "xb") as fw:
                 await fw.write(img)
 
-    def delete(self, paths: list[Path]):
+    @staticmethod
+    def delete(paths: list[Path]):
         deleted = 0
         for path in paths:
             if isinstance(path, str):
                 path = Path(path)
             path.unlink(missing_ok=True)
             deleted += 1
-            #log.info(f"Deleted file: {path}")
         return deleted
+
+    @staticmethod
+    def file_name(str_path):
+        return Path(str_path).name
 
     def path(self, str_name):
         name = Path(str_name).name

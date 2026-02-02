@@ -1,5 +1,4 @@
 import logging
-from pathlib import Path
 
 from domain import Collections
 from services.Uow import UnitOfWork
