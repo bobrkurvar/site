@@ -17,9 +17,7 @@ async def add_collection(
 ):
 
     async with uow_class(manager._session_factory) as uow:
-        file_manager.set_path("static/images/base/collections")
         str_name = f"{name}-{category_name}"
-        #image_path = file_manager.upload_dir / path_name
         image_path = file_manager.base_collection_path(str_name)
         collection_record = await manager.create(
             Collections,
@@ -53,9 +51,10 @@ async def delete_collection(
     async with uow_class(manager._session_factory) as uow:
         collection = await manager.delete(Collections, name=collection_name, category_name=category_name, session=uow.session)
         collection = collection[0]
-        file_manager.set_path("static/images")
-        base_root = file_manager.upload_dir / "base" / "collections"
-        collection_root = file_manager.upload_dir / "collections" / "catalog"
-        name = f"{collection['name']}-{collection['category_name']}"
-        paths = [base_root / name, collection_root / name]
-        file_manager.delete(paths)
+        # file_manager.set_path("static/images")
+        # base_root = file_manager.upload_dir / "base" / "collections"
+        # collection_root = file_manager.upload_dir / "collections" / "catalog"
+        #name = f"{collection['name']}-{collection['category_name']}"
+        # paths = [base_root / name, collection_root / name]
+        # file_manager.delete(paths)
+        file_manager.delete_collection(collection["image_path"])

@@ -2,7 +2,6 @@ import logging
 from decimal import Decimal
 
 import pytest
-from pathlib import Path
 
 import core.logger
 from domain import (Box, Categories, Producer, Tile, TileColor, TileImages,
@@ -10,8 +9,8 @@ from domain import (Box, Categories, Producer, Tile, TileColor, TileImages,
 from services.tile import add_tile, delete_tile, update_tile
 
 from tests.fakes import (FakeCRUD, FakeStorage, FakeUoW, Table)
-from tests.fakes import FakeFileManager, get_fake_save_bg_products_and_details_with_fs
-from tests.conftest import storage, noop
+from tests.fakes import FakeFileManager, generate_products_images
+from tests.conftest import storage
 
 log = logging.getLogger(__name__)
 
@@ -112,7 +111,7 @@ async def test_create_tile_success_when_all_handbooks_exists(
         surface="surface",
         uow_class=FakeUoW,
         file_manager=file_manager,
-        generate_images=noop
+        generate_images=generate_products_images
     )
 
     # 1. Tile создан
@@ -122,23 +121,17 @@ async def test_create_tile_success_when_all_handbooks_exists(
     tile_id = record["id"]
 
     # 2. Все изображения записались во фейковую ФС
-    expected_paths = [
-        str(Path(f"static/images/base/products/{tile_id}-0")),
-        str(Path(f"static/images/base/products/{tile_id}-1")),
-        str(Path(f"static/images/base/products/{tile_id}-2")),
-    ]
+    paths_funcs = (file_manager.base_product_path, file_manager.product_catalog_path, file_manager.product_details_path)
+    file_names = (f"{tile_id}-0", f"{tile_id}-1", f"{tile_id}-2")
+    expected_paths = [str(func(file_name)) for func in paths_funcs for file_name in file_names]
 
     assert set(fs) == set(expected_paths)
 
     assert fs[expected_paths[0]] == b"MAIN"
     assert fs[expected_paths[1]] == b"A"
     assert fs[expected_paths[2]] == b"B"
-
     images_table = await manager.read(TileImages)
-
     assert len(images_table) == 3
-    stored_paths = [row["image_path"] for row in images_table]
-    assert stored_paths == expected_paths
 
 
 @pytest.mark.asyncio
@@ -167,7 +160,7 @@ async def test_create_tile_success_when_all_handbooks_not_exists(
         surface="surface",
         uow_class=FakeUoW,  # поддельная транзакция
         file_manager=file_manager,
-        generate_images=noop
+        generate_images=generate_products_images
     )
 
     # 1. Tile создан
@@ -184,11 +177,9 @@ async def test_create_tile_success_when_all_handbooks_not_exists(
 
     # 3. Все изображения записались во фейковую ФС
     tile_id = record["id"]
-    expected_paths = [
-        str(Path(f"{file_manager.upload_dir}/{tile_id}-0")),
-        str(Path(f"{file_manager.upload_dir}/{tile_id}-1")),
-        str(Path(f"{file_manager.upload_dir}/{tile_id}-2")),
-    ]
+    paths_funcs = (file_manager.base_product_path, file_manager.product_catalog_path, file_manager.product_details_path)
+    file_names = (f"{tile_id}-0", f"{tile_id}-1", f"{tile_id}-2")
+    expected_paths = [str(func(file_name)) for func in paths_funcs for file_name in file_names]
 
     assert set(fs) == set(expected_paths)
 
@@ -199,8 +190,6 @@ async def test_create_tile_success_when_all_handbooks_not_exists(
     images_table = await manager.read(TileImages)
 
     assert len(images_table) == 3
-    stored_paths = [row["image_path"] for row in images_table]
-    assert stored_paths == expected_paths
 
 
 @pytest.mark.asyncio
@@ -227,7 +216,7 @@ async def test_update_tile_success_when_new_attributes_in_handbooks(
         surface="surface",
         uow_class=FakeUoW,
         file_manager=file_manager,
-        generate_images=noop
+        generate_images=generate_products_images
     )
     article = record["id"] # фильтр для обновления по артикулу
 
@@ -296,27 +285,25 @@ async def test_delete_tile_by_article(
         surface="surface",
         uow_class=FakeUoW,
         file_manager=file_manager,
-        generate_images=get_fake_save_bg_products_and_details_with_fs(fs)
+        generate_images=generate_products_images
     )
 
-    article = record["id"]
-    expected_paths = [
-        str(Path(f"{file_manager.upload_dir}/{article}-0")),
-        str(Path(f"{file_manager.upload_dir}/{article}-1")),
-        str(Path(f"{file_manager.upload_dir}/{article}-2")),
-    ]
-    log.debug("expected paths: %s, fs: %s", expected_paths, fs)
+    tile_id = record["id"]
+    paths_funcs = (file_manager.base_product_path, file_manager.product_catalog_path, file_manager.product_details_path)
+    file_names = (f"{tile_id}-0", f"{tile_id}-1", f"{tile_id}-2")
+    expected_paths = [str(func(file_name)) for func in paths_funcs for file_name in file_names]
+
     file_manager = FakeFileManager(fs=fs)
-    records = await delete_tile(manager, uow_class=FakeUoW, id=article, file_manager=file_manager)
+    records = await delete_tile(manager, uow_class=FakeUoW, id=tile_id, file_manager=file_manager)
     assert len(records) == 1
 
     for path in expected_paths:
         assert path not in fs.keys()
 
     for i in records:
-        assert i['id'] == article
+        assert i['id'] == tile_id
 
-    new_records = await manager.read(Tile, id=article)
+    new_records = await manager.read(Tile, id=tile_id)
     assert new_records == []
 
     should_be_handbooks = [

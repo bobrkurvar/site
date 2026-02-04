@@ -187,7 +187,7 @@ def generate_image_variant(image_bytes: bytes, target: str):
 
 class ImageWithTarget(BaseModel):
     input_path: str
-    targets: tuple[str]
+    targets: tuple
 
 
 @app.post("/generate-images")

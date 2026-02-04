@@ -1,14 +1,13 @@
 import logging
 
 import pytest
-from pathlib import Path
 
 import core.logger
 from services.collections import add_collection, delete_collection
 from domain.tile import Collections
 
 from tests.fakes import FakeUoW, FakeCRUD, FakeCrudError
-from tests.fakes import FakeFileManager, get_fake_save_bg_collections_with_fs
+from tests.fakes import FakeFileManager, generate_collections_images
 
 log = logging.getLogger(__name__)
 
@@ -30,7 +29,7 @@ async def test_create_collection_success(manager_without_handbooks):
         category_name="category1",
         manager=manager,
         uow_class=FakeUoW,
-        generate_images=get_fake_save_bg_collections_with_fs(fs),
+        generate_images=generate_collections_images,
         file_manager=file_manager
     )
 
@@ -38,13 +37,16 @@ async def test_create_collection_success(manager_without_handbooks):
     collection_db = await manager.read(Collections, name='collection1', category_name='category1')
     assert len(collection_db) != 0
     name = f"{collection["name"]}-{collection["category_name"]}"
-    expected_paths = [
-        str(Path(f"static/images/base/collections/{name}")),
-        str(Path(f"static/images/collections/catalog/{name}"))
-    ]
+    # expected_paths = [
+    #     str(file_manager.resolve_path(name)),
+    #     str(file_manager.resolve_path(name))
+    # ]
+    paths_funcs = (file_manager.base_collection_path, file_manager.collection_catalog_path)
+    expected_paths = [str(func(name)) for func in paths_funcs]
+    log.debug("expected_paths: %s, fs: %s", expected_paths, fs)
     assert set(fs) == set(expected_paths)
-    assert fs[str(Path(f"static/images/base/collections/{name}"))] == b"MAIN"
-    assert fs[str(Path(f"static/images/collections/catalog/{name}"))] == ""
+    assert fs[str(file_manager.base_collection_path(f"{name}"))] == b"MAIN"
+    assert fs[str(file_manager.collection_catalog_path(f"{name}"))] == b"aaa"
 
 
 
@@ -59,7 +61,7 @@ async def test_delete_collection_success(manager_without_handbooks):
         category_name="category1",
         manager=manager,
         uow_class=FakeUoW,
-        generate_images=get_fake_save_bg_collections_with_fs(fs),
+        generate_images=generate_collections_images,
         file_manager=file_manager
     )
     collection = await manager.read(Collections, name='collection1', category_name='category1')

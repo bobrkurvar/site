@@ -1,6 +1,6 @@
 from decimal import Decimal
 import pytest
-from .fakes import FakeUoW, FakeStorage, Table, FakeCRUD, FakeFileManager
+from .fakes import FakeUoW, FakeStorage, Table, FakeCRUD, FakeFileManager, noop_generate
 from services.tile import add_tile
 from domain import TileSize, TileColor, Box, Categories, Producer, TileSurface, TileImages, Tile, Collections
 
@@ -123,7 +123,7 @@ def manager_factory(fake_manager):
                 category_name="category",
                 images=[b"A", b"B"],
                 surface="surface1",
-                generate_images=noop,
+                generate_images=noop_generate,
                 file_manager=file_manager
             )
         return fake_manager

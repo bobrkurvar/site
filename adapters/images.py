@@ -23,13 +23,13 @@ async def get_image_path(my_path: str, *directories, upload_root=None):
 
 async def generate_image_products_catalog_and_details(input_path):
     input_path = str(input_path) if not isinstance(input_path, str) else input_path
-    return await http_client.generate_images(input_path=input_path, targets=("products", "details"))
+    return await http_client.generate_products_images(input_path=input_path, targets=("products", "details"))
 
 async def generate_image_collections_catalog(input_path):
     input_path = str(input_path) if not isinstance(input_path, str) else input_path
-    return await http_client.generate_images(input_path=input_path, targets=("collections",))
+    return await http_client.generate_products_images(input_path=input_path, targets=("collections",))
 
 async def generate_slides(input_path):
     input_path = str(input_path) if not isinstance(input_path, str) else input_path
-    return await http_client.generate_images(input_path=input_path, targets=("slides",))
+    return await http_client.generate_products_images(input_path=input_path, targets=("slides",))
 

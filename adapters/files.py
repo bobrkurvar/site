@@ -22,19 +22,21 @@ class FileManager:
     def resolve_path(self, file_name: str | None = "", layer: str = None):
         return self.root / self.layers.get(layer, "") / file_name
 
-    async def save(self, image_path, img, layer: str = None):
-        upload_dir = self.root / self.layers.get(layer, "") if layer else Path(image_path).parent
+    async def save(self, image_path, img):
+        upload_dir = image_path.parent
         if upload_dir:
             upload_dir.mkdir(parents=True, exist_ok=True)
             async with self.fs.open(image_path, "xb") as fw:
                 await fw.write(img)
 
-
     async def save_slide_original(self, file_name, img):
-        await self.save(file_name, img, "original_slide")
+        image_path = self.resolve_path(file_name, "original_slide")
+        await self.save(image_path, img)
 
-    async def save_by_layer(self, file_name, img, layer: str):
-        await self.save(file_name, img, layer)
+    async def save_by_layer(self, image_path, img, layer: str):
+        file_name = Path(image_path).name
+        image_path = self.resolve_path(file_name, layer)
+        await self.save(image_path, img)
 
     def delete_product(self, base_path: str | Path):
         base_path = Path(base_path)
@@ -81,10 +83,10 @@ class FileManager:
         return deleted
 
     def base_product_path(self, file_name: str):
-        return self.root / self.layers["original_product"] / file_name
+        return self.resolve_path(file_name, "original_product")
 
     def base_collection_path(self, file_name: str):
-        return self.root / self.layers["original_collection"] / file_name
+        return self.resolve_path(file_name, "original_collection")
 
     @property
     def slides_file_count(self):
