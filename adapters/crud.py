@@ -5,8 +5,11 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.orm import selectinload
 
-from adapters.repo.exceptions import (AlreadyExistsError,
-                                      CustomForeignKeyViolationError, NotFoundError)
+from domain.exceptions import (AlreadyExistsError,
+                               ForeignKeyViolationError, NotFoundError)
+import domain
+from db import models
+from core import config
 
 log = logging.getLogger(__name__)
 
@@ -74,7 +77,7 @@ class Crud:
                     if hasattr(err.orig, "diag")
                     else str(err)
                 )
-                raise CustomForeignKeyViolationError(model.__name__, detail)
+                raise ForeignKeyViolationError(model.__name__, detail)
 
             raise
 
@@ -102,7 +105,7 @@ class Crud:
                 filters,
             )
 
-            return [record.model_dump() for record in result]
+            return [record.model_dump() for record in deleted_records]
 
         if session is not None:
             return await _delete_internal(session)
@@ -186,3 +189,21 @@ class Crud:
     async def close_and_dispose(self):
         log.debug("подключение к движку %s закрывается", self._engine)
         await self._engine.dispose()
+
+def get_db_manager(test = False) -> Crud:
+    db_host = config.db_url if not test else config.test_db_url
+    domain_with_orm = {
+        domain.Tile: models.Catalog,
+        domain.TileSize: models.TileSize,
+        domain.TileColor: models.TileColor,
+        domain.TileSurface: models.TileSurface,
+        domain.Producer: models.Producer,
+        domain.Box: models.Box,
+        domain.TileImages: models.TileImages,
+        domain.Categories: models.Categories,
+        domain.Collections: models.Collections,
+        domain.Admin: models.Admins
+    }
+    manager = Crud(db_host, domain_with_orm)
+
+    return manager

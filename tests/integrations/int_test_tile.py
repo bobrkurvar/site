@@ -9,9 +9,9 @@
 #                     TileSize, TileSurface)
 # from services.tile import add_tile, delete_tile, update_tile
 #
-# from tests.fakes import get_fake_save_files_function_with_fs, get_fake_delete_files_function_with_fs, get_fake_save_bg_products_and_details_with_fs
+# from tests.fakes import FakeFileManager, get_fake_save_bg_products_and_details_with_fs
 # from tests.conftest import noop
-# from adapters.repo import get_db_manager
+# from adapters.crud import get_db_manager
 # from adapters.files import FileManager
 #
 #
@@ -39,8 +39,8 @@
 #         images=[b"A", b"B"],
 #         color_feature="feature",
 #         surface="surface",
-#         save_files=save_files,
-#         generate_image_variant_callback=noop
+#         file_manager=FakeFileManager(),
+#         generate_images=noop
 #     )
 #
 #     # 1. Tile создан

@@ -7,7 +7,7 @@ from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 from domain import Categories, Tile
-from adapters.repo import Crud, get_db_manager
+from adapters.crud import Crud, get_db_manager
 
 router = APIRouter()
 templates = Jinja2Templates("templates")

@@ -1,28 +1,10 @@
-import asyncio
 import logging
 from pathlib import Path
+from .http_client import http_client
 
-from PIL import Image
-
-from shared_queue import get_task_queue
 
 log = logging.getLogger(__name__)
 
-
-
-def save_image(
-    image: Image.Image,
-    path: Path,
-    form: str,
-    quality: int
-):
-    image.save(
-        path,
-        form,
-        quality=quality,
-        optimize=True,
-        progressive=True,
-    )
 
 
 async def get_image_path(my_path: str, *directories, upload_root=None):
@@ -34,31 +16,20 @@ async def get_image_path(my_path: str, *directories, upload_root=None):
             path /= directory
         path /= my_path_name
         str_path = str(path)
-        # log.debug("Path: %s", str_path)
         if path.exists():
-            # log.debug("MINI Path: %s", str_path)
             log.debug("Path: %s", str_path)
             return str_path
     return my_path
 
+async def generate_image_products_catalog_and_details(input_path):
+    input_path = str(input_path) if not isinstance(input_path, str) else input_path
+    return await http_client.generate_images(input_path=input_path, targets=("products", "details"))
 
-def enqueue_resize_task(input_path: Path, target: str, quality: int = 82):
-    task_queue = get_task_queue()
-    task = (str(input_path), target, quality, 0)
-    task_queue.put(task)
-    log.info("Task queued: %s", task)
+async def generate_image_collections_catalog(input_path):
+    input_path = str(input_path) if not isinstance(input_path, str) else input_path
+    return await http_client.generate_images(input_path=input_path, targets=("collections",))
 
+async def generate_slides(input_path):
+    input_path = str(input_path) if not isinstance(input_path, str) else input_path
+    return await http_client.generate_images(input_path=input_path, targets=("slides",))
 
-async def generate_image_products_catalog_and_details_bg(input_path):
-    await generate_image_variant_bg(input_path, "products")
-    await generate_image_variant_bg(input_path, "details")
-
-async def generate_image_collections_catalog_bg(input_path):
-    await generate_image_variant_bg(input_path, "collections")
-
-async def generate_slides_bg(input_path):
-    await generate_image_variant_bg(input_path, "slides")
-
-async def generate_image_variant_bg(input_path: Path, target: str, quality: int = 82):
-    loop = asyncio.get_running_loop()
-    await loop.run_in_executor(None, enqueue_resize_task, input_path, target, quality)

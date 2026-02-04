@@ -1,7 +1,7 @@
 import logging
 import jwt
 from fastapi import Request
-from api.exceptions.errors import UnauthorizedError
+from domain.exceptions import UnauthorizedError
 from core import config
 
 secret_key = config.secret_key

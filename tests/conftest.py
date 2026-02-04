@@ -123,7 +123,7 @@ def manager_factory(fake_manager):
                 category_name="category",
                 images=[b"A", b"B"],
                 surface="surface1",
-                generate_image_variant_callback=noop,
+                generate_images=noop,
                 file_manager=file_manager
             )
         return fake_manager

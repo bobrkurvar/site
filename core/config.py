@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     db_user: str
     db_password: str
     db_name: str
+    api_host: str
+    image_port: int
     test_db_name: str
     image_path: str
     secret_key: str
@@ -25,6 +27,10 @@ class Settings(BaseSettings):
     @property
     def test_db_url(self):
         return f"postgresql+asyncpg://{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.test_db_name}"
+
+    @property
+    def image_service_url(self):
+        return f"{self.api_host}:{self.image_port}"
 
     @property
     def initial_admins_list(self):

@@ -4,18 +4,19 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
-# from api.exceptions.api_handlers import *
-from api.exceptions.presentation_handlers import *
-from api.presentation import presentation_router
-from adapters.repo import get_db_manager
-from core import logger
+from api.error_handlers import *
+from api import main_router
+from adapters.crud import get_db_manager
+from adapters.http_client import http_client
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    http_client.connect()
     yield
     manager = get_db_manager()
     await manager.close_and_dispose()
+    await http_client.close()
 
 
 log = logging.getLogger(__name__)
@@ -25,51 +26,15 @@ app = FastAPI(lifespan=lifespan)
 BASE_DIR = Path(__file__).resolve().parent
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
-app.include_router(presentation_router)
+app.include_router(main_router)
 
 
 @app.get("/{full_path:path}")
 async def catch_all(full_path: str):
     return RedirectResponse("/", status_code=303)
 
+app.add_exception_handler(NotFoundError, not_found_handler)
+app.add_exception_handler(AlreadyExistsError, already_exists_handler)
+app.add_exception_handler(ForeignKeyViolationError, foreign_key_handler)
+app.add_exception_handler(Exception, global_error_handler)
 
-@app.exception_handler(NotFoundError)
-async def global_not_found_handler(request: Request, exc: NotFoundError):
-    if request.url.path.startswith("/admin"):
-        return await admin_not_found_handler(request, exc)
-    else:
-        return await presentation_global_error_handler(request, exc)
-
-
-@app.exception_handler(AlreadyExistsError)
-async def global_already_exists_handler(request: Request, exc: AlreadyExistsError):
-    if request.url.path.startswith("/admin"):
-        return await admin_already_exists_handler(request, exc)
-    else:
-        return await presentation_global_error_handler(request, exc)
-
-
-@app.exception_handler(CustomForeignKeyViolationError)
-async def global_foreign_key_handler(
-    request: Request, exc: CustomForeignKeyViolationError
-):
-    if request.url.path.startswith("/admin"):
-        return await admin_foreign_key_handler(request, exc)
-    else:
-        return await presentation_global_error_handler(request, exc)
-
-
-@app.exception_handler(DatabaseError)
-async def global_database_handler(request: Request, exc: DatabaseError):
-    if request.url.path.startswith("/admin"):
-        return await admin_database_error_handler(request, exc)
-    else:
-        return await presentation_global_error_handler(request, exc)
-
-
-@app.exception_handler(Exception)
-async def global_exception_handler(request: Request, exc: Exception):
-    if request.url.path.startswith("/admin"):
-        return await admin_global_error_handler(request, exc)
-    else:
-        return await presentation_global_error_handler(request, exc)

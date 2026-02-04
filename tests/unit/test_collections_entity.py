@@ -30,7 +30,7 @@ async def test_create_collection_success(manager_without_handbooks):
         category_name="category1",
         manager=manager,
         uow_class=FakeUoW,
-        generate_image_variant_callback=get_fake_save_bg_collections_with_fs(fs),
+        generate_images=get_fake_save_bg_collections_with_fs(fs),
         file_manager=file_manager
     )
 
@@ -59,14 +59,14 @@ async def test_delete_collection_success(manager_without_handbooks):
         category_name="category1",
         manager=manager,
         uow_class=FakeUoW,
-        generate_image_variant_callback=get_fake_save_bg_collections_with_fs(fs),
+        generate_images=get_fake_save_bg_collections_with_fs(fs),
         file_manager=file_manager
     )
     collection = await manager.read(Collections, name='collection1', category_name='category1')
     assert len(collection) != 0
     file_manager = FakeFileManager(fs=fs)
     await delete_collection(
-        name="collection1",
+        collection_name="collection1",
         category_name="category1",
         manager=manager_without_handbooks,
         uow_class=FakeUoW,
@@ -82,7 +82,7 @@ async def test_delete_collection_fail(manager_without_handbooks):
     file_manager = FakeFileManager()
     with pytest.raises(FakeCrudError):
          await delete_collection(
-            name="collection1",
+            collection_name="collection1",
             category_name="category1",
             manager=manager_without_handbooks,
             uow_class=FakeUoW,

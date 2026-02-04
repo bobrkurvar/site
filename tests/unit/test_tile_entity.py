@@ -109,11 +109,10 @@ async def test_create_tile_success_when_all_handbooks_exists(
         manager=manager,
         images=[b"A", b"B"],
         color_feature="feature",
-        surface="surface",  # подделанная файловая система
-        uow_class=FakeUoW,  # поддельная транзакция
-        #save_files=get_fake_save_files_function_with_fs(fs),
+        surface="surface",
+        uow_class=FakeUoW,
         file_manager=file_manager,
-        generate_image_variant_callback=noop
+        generate_images=noop
     )
 
     # 1. Tile создан
@@ -168,7 +167,7 @@ async def test_create_tile_success_when_all_handbooks_not_exists(
         surface="surface",
         uow_class=FakeUoW,  # поддельная транзакция
         file_manager=file_manager,
-        generate_image_variant_callback=noop
+        generate_images=noop
     )
 
     # 1. Tile создан
@@ -186,9 +185,9 @@ async def test_create_tile_success_when_all_handbooks_not_exists(
     # 3. Все изображения записались во фейковую ФС
     tile_id = record["id"]
     expected_paths = [
-        str(Path(f"static/images/base/products/{tile_id}-0")),
-        str(Path(f"static/images/base/products/{tile_id}-1")),
-        str(Path(f"static/images/base/products/{tile_id}-2")),
+        str(Path(f"{file_manager.upload_dir}/{tile_id}-0")),
+        str(Path(f"{file_manager.upload_dir}/{tile_id}-1")),
+        str(Path(f"{file_manager.upload_dir}/{tile_id}-2")),
     ]
 
     assert set(fs) == set(expected_paths)
@@ -228,7 +227,7 @@ async def test_update_tile_success_when_new_attributes_in_handbooks(
         surface="surface",
         uow_class=FakeUoW,
         file_manager=file_manager,
-        generate_image_variant_callback=noop
+        generate_images=noop
     )
     article = record["id"] # фильтр для обновления по артикулу
 
@@ -297,15 +296,16 @@ async def test_delete_tile_by_article(
         surface="surface",
         uow_class=FakeUoW,
         file_manager=file_manager,
-        generate_image_variant_callback=get_fake_save_bg_products_and_details_with_fs(fs)
+        generate_images=get_fake_save_bg_products_and_details_with_fs(fs)
     )
 
     article = record["id"]
     expected_paths = [
-        f"static/images/base/products/{article}-0",
-        f"static/images/base/products/{article}-1",
-        f"static/images/base/products/{article}-2",
+        str(Path(f"{file_manager.upload_dir}/{article}-0")),
+        str(Path(f"{file_manager.upload_dir}/{article}-1")),
+        str(Path(f"{file_manager.upload_dir}/{article}-2")),
     ]
+    log.debug("expected paths: %s, fs: %s", expected_paths, fs)
     file_manager = FakeFileManager(fs=fs)
     records = await delete_tile(manager, uow_class=FakeUoW, id=article, file_manager=file_manager)
     assert len(records) == 1

@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, Form
 from fastapi.responses import RedirectResponse
 
 from domain import TileColor
-from adapters.repo import Crud, get_db_manager
+from adapters.crud import Crud, get_db_manager
 
 router = APIRouter(prefix="/admin/tiles/colors")
 dbManagerDep = Annotated[Crud, Depends(get_db_manager)]

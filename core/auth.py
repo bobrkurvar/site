@@ -2,7 +2,7 @@ import logging
 from datetime import datetime, timedelta, timezone
 
 import jwt
-from api.exceptions.errors import UnauthorizedError
+from domain.exceptions import UnauthorizedError
 import bcrypt
 
 from core import config, logger

@@ -27,7 +27,7 @@ async def add_tile(
     category_name: str,
     manager,
     images: list[bytes] | list,
-    generate_image_variant_callback,
+    generate_images,
     file_manager,
     color_feature: str = "",
     surface: str | None = None,
@@ -52,7 +52,6 @@ async def add_tile(
         box = await add_items(
             Box, manager, uow.session, weight=box_weight, area=box_area
         )
-
         tile_record = await manager.create(
             Tile,
             name=name,
@@ -66,12 +65,12 @@ async def add_tile(
             boxes_count=boxes_count,
             session=uow.session,
         )
-        file_manager.set_path("static/images/base/products")
+        #file_manager.set_path("static/images/base/products")
         images = [img for img in images if img]
         images.insert(0, main_image)
         for n, img in enumerate(images):
             str_name = str(tile_record["id"]) + "-" + str(n)
-            image_path = file_manager.path(str_name)
+            image_path = file_manager.base_product_path(str_name)
             await manager.create(
                 TileImages,
                 tile_id=tile_record["id"],
@@ -80,7 +79,9 @@ async def add_tile(
             )
             try:
                 await file_manager.save(image_path, img)
-                await generate_image_variant_callback(image_path)
+                miniatures = await generate_images(img)
+                for layer, miniature in miniatures.items():
+                    await file_manager.save_by_layer(image_path, miniature, layer)
             except TypeError:
                 log.debug("generate_image_variant_callback  или save_files не получили нужную функцию")
                 raise
@@ -104,20 +105,21 @@ async def delete_tile(
         del_res = await manager.delete(Tile, session=uow.session, **filters)
         for tile in tiles:
             images_paths = tile.get("images_paths", [])
-            file_manager.set_path('static/images/products')
+            #file_manager.set_path('static/images/products')
             for image in images_paths:
-                product_catalog_path = (
-                    file_manager.upload_dir
-                    / "catalog"
-                    /  file_manager.file_name(image)
-                )
-                product_details_path = (
-                    file_manager.upload_dir
-                    / "details"
-                    / file_manager.file_name(image)
-                )
-                all_paths = [image, product_catalog_path, product_details_path]
-                file_manager.delete(all_paths)
+                file_manager.delete_product(image)
+                # product_catalog_path = (
+                #     file_manager.upload_dir
+                #     / "catalog"
+                #     /  file_manager.file_name(image)
+                # )
+                # product_details_path = (
+                #     file_manager.upload_dir
+                #     / "details"
+                #     / file_manager.file_name(image)
+                # )
+                # all_paths = [image, product_catalog_path, product_details_path]
+                # file_manager.delete(all_paths)
         return del_res
 
 async def map_to_domain_for_filter(article: int, manager, session, **params):

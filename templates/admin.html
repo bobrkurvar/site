@@ -158,13 +158,13 @@
         </form>
     </section>
 
-    <!-- Форма создания коллекции -->
+    <!-- Форма создания и удаления коллекции -->
     <section class="create-collection-section">
         <h3>Управление коллекцией</h3>
         <form method="POST" enctype="multipart/form-data" id="collection-form">
             <div class="form-group">
                 <label for="collection_name">Название коллекции</label>
-                <input type="text" id="collection_name" name="name" placeholder="Введите название коллекции" required>
+                <input type="text" id="collection_name" name="collection_name" placeholder="Введите название коллекции" required>
             </div>
 
             <div class="form-group">
@@ -452,10 +452,7 @@ document.getElementById('create-collection-btn').addEventListener('click', () =>
 
 document.getElementById('delete-collection-btn').addEventListener('click', () => {
     collectionForm.action = "/admin/tiles/collections/delete";
-
     imageInput.required = false;
-    categorySelect.required = false;
-    categorySelect.value = "";
 });
 
 

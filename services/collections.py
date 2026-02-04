@@ -11,15 +11,16 @@ async def add_collection(
     image: bytes,
     category_name: str,
     manager,
-    generate_image_variant_callback,
+    generate_images,
     file_manager,
     uow_class=UnitOfWork,
 ):
 
     async with uow_class(manager._session_factory) as uow:
         file_manager.set_path("static/images/base/collections")
-        path_name = f"{name}-{category_name}"
-        image_path = file_manager.upload_dir / path_name
+        str_name = f"{name}-{category_name}"
+        #image_path = file_manager.upload_dir / path_name
+        image_path = file_manager.base_collection_path(str_name)
         collection_record = await manager.create(
             Collections,
             name=name,
@@ -29,7 +30,9 @@ async def add_collection(
         )
         try:
             await file_manager.save(image_path, image)
-            await generate_image_variant_callback(image_path)
+            miniatures = await generate_images(image)
+            for layer, miniature in miniatures.items():
+                await file_manager.save_by_layer(image_path, miniature, layer)
         except TypeError:
             log.debug("generate_image_variant_callback  или save_files не получили нужную функцию")
             raise
@@ -41,14 +44,14 @@ async def add_collection(
 
 
 async def delete_collection(
-    name: str,
+    collection_name: str,
     category_name: str,
     manager,
     file_manager,
     uow_class=UnitOfWork
 ):
     async with uow_class(manager._session_factory) as uow:
-        collection = await manager.delete(Collections, name=name, category_name=category_name, session=uow.session)
+        collection = await manager.delete(Collections, name=collection_name, category_name=category_name, session=uow.session)
         collection = collection[0]
         file_manager.set_path("static/images")
         base_root = file_manager.upload_dir / "base" / "collections"

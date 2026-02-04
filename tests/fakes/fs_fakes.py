@@ -13,24 +13,27 @@ OUTPUT_DIRS = {
 }
 
 class FakeFileManager:
-    def __init__(self, upload_dir: str | None = None, fs = None):
-        self.upload_dir = Path(upload_dir) if upload_dir else None
-        self.fs = fs
+    # def __init__(self, upload_dir: str | None = None, fs = None):
+    #     self.upload_dir = Path(upload_dir) if upload_dir else None
+    #     self.fs = fs
+    def __init__(self, fs = None):
+        self.upload_dir = Path("test/images")
+        self._fs = fs
 
     def set_path(self, upload_dir: str):
         if self.upload_dir is None:
             self.upload_dir = Path(upload_dir)
 
     async def save(self, image_path, img):
-        if self.fs is not None:
-            self.fs[str(image_path)] = img
+        if self._fs is not None:
+            self._fs[str(image_path)] = img
 
     def delete(self, paths):
         fake_deleted = 0
         for path in paths:
             if isinstance(path, str):
                 path = Path(path)
-            del self.fs[str(path)]
+            del self._fs[str(path)]
             fake_deleted += 1
         return fake_deleted
 

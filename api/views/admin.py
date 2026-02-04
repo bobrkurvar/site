@@ -6,7 +6,7 @@ from fastapi.templating import Jinja2Templates
 from starlette.responses import RedirectResponse
 
 from domain import *
-from adapters.repo import Crud, get_db_manager
+from adapters.crud import Crud, get_db_manager
 from services.auth import get_tokens_and_check_user
 
 router = APIRouter(tags=["admin"], prefix="/admin")
@@ -104,7 +104,6 @@ async def admin_login_submit(
     username: Annotated[str, Form()],
     password: Annotated[str, Form()],
 ):
-    log.debug("USERNAME: %s", username)
     access_token, refresh_token = await get_tokens_and_check_user(manager, username=username, password=password)
     if access_token and refresh_token:
         response = RedirectResponse("/admin", status_code=303)
