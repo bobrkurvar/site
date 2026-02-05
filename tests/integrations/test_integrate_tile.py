@@ -1,74 +1,57 @@
-# import logging
-# from decimal import Decimal
-#
-# import pytest
-# from pathlib import Path
-#
-# import core.logger
-# from domain import (Box, Categories, Producer, Tile, TileColor, TileImages,
-#                     TileSize, TileSurface)
-# from services.tile import add_tile, delete_tile, update_tile
-#
-# from tests.fakes import FakeFileManager, get_fake_save_bg_products_and_details_with_fs
-# from tests.conftest import noop
-# from adapters.crud import get_db_manager
-# from adapters.files import FileManager
-#
-#
-# log = logging.getLogger(__name__)
-#
-#
-#
-# @pytest.mark.asyncio
-# async def test_create_tile_success_when_all_handbooks_exists():
-#     manager = get_db_manager(test=True)
-#     # выполнение add_tile
-#     record = await add_tile(
-#         name="Tile",
-#         length=Decimal(300),
-#         width=Decimal(200),
-#         height=Decimal(10),
-#         color_name="color",
-#         producer_name="producer",
-#         box_weight=Decimal(30),
-#         box_area=Decimal(1),
-#         boxes_count=3,
-#         main_image=b"MAIN",
-#         category_name="category",
-#         manager=manager,
-#         images=[b"A", b"B"],
-#         color_feature="feature",
-#         surface="surface",
-#         file_manager=FakeFileManager(),
-#         generate_images=noop
-#     )
-#
-#     # 1. Tile создан
-#     assert record is not None
-#     assert "id" in record
-#
-#     tile_id = record["id"]
-#
-#     # 2. Все изображения записались во фейковую ФС
-#     expected_paths = [
-#         str(Path(f"static/images/base/products/{tile_id}-0")),
-#         str(Path(f"static/images/base/products/{tile_id}-1")),
-#         str(Path(f"static/images/base/products/{tile_id}-2")),
-#     ]
-#
-#     assert set(fs) == set(expected_paths)
-#
-#     assert fs[expected_paths[0]] == b"MAIN"
-#     assert fs[expected_paths[1]] == b"A"
-#     assert fs[expected_paths[2]] == b"B"
-#
-#     images_table = await manager.read(TileImages)
-#
-#     assert len(images_table) == 3
-#     stored_paths = [row["image_path"] for row in images_table]
-#     assert stored_paths == expected_paths
-#
-#
+import logging
+from decimal import Decimal
+
+import pytest
+
+import core.logger
+from domain import (Box, Categories, Producer, Tile, TileColor, TileImages,
+                    TileSize, TileSurface)
+from services.tile import add_tile, delete_tile, update_tile
+
+from tests.fakes import FakeFileManager, generate_products_images
+from adapters.crud import get_db_manager
+from adapters.files import FileManager
+
+log = logging.getLogger(__name__)
+
+@pytest.mark.asyncio
+@pytest.mark.integration
+async def test_integrate_create_tile_success_when_all_handbooks_exists():
+    manager = get_db_manager(test=True)
+    file_manager = FileManager(root="tests/images")
+    # выполнение add_tile
+    record = await add_tile(
+        name="Tile",
+        length=Decimal(300),
+        width=Decimal(200),
+        height=Decimal(10),
+        color_name="color",
+        producer_name="producer",
+        box_weight=Decimal(30),
+        box_area=Decimal(1),
+        boxes_count=3,
+        main_image=b"MAIN",
+        category_name="category",
+        manager=manager,
+        images=[b"A", b"B"],
+        color_feature="feature",
+        surface="surface",
+        file_manager=file_manager,
+        generate_images=generate_products_images
+    )
+
+    # 1. Tile создан
+    assert record is not None
+    assert "id" in record
+    tile_id = record["id"]
+
+    images = await manager.read(TileImages, tile_id=tile_id)
+    assert len(images) == 3
+    names = {f"{tile_id}-{i}" for i in range(3)}
+    log.debug("names: %s", names)
+    assert file_manager.product_files_count(names) == 9
+
+
 # @pytest.mark.asyncio
 # async def test_create_tile_success_when_all_handbooks_not_exists(
 #     manager_without_handbooks
@@ -129,7 +112,7 @@
 #     assert len(images_table) == 3
 #     stored_paths = [row["image_path"] for row in images_table]
 #     assert stored_paths == expected_paths
-#
+
 #
 # @pytest.mark.asyncio
 # async def test_update_tile_success_when_new_attributes_in_handbooks(

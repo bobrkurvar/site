@@ -6,8 +6,8 @@ log = logging.getLogger(__name__)
 
 
 class FileManager:
-    def __init__(self, upload_dir: str = "static/images", layers: dict | None = None, fs=aiofiles):
-        self.root = Path(upload_dir)
+    def __init__(self, root: str = "static/images", layers: dict | None = None, fs=aiofiles):
+        self.root = Path(root)
         self.fs = fs
         self.layers = layers if layers else {
             "original_product": "base/products",
@@ -88,8 +88,27 @@ class FileManager:
     def base_collection_path(self, file_name: str):
         return self.resolve_path(file_name, "original_collection")
 
+    def _iter_files(self, layer: str, names = None):
+        path = self.resolve_path(layer=layer)
+        if not path.exists():
+            return []
+        return [f for f in path.iterdir() if f.is_file() and f.name in names] if names else [f for f in path.iterdir() if f.is_file()]
+
+    def count_by_layer(self, layer: str, names: str | None = None) -> int:
+        return len(self._iter_files(layer, names))
+
+
     @property
-    def slides_file_count(self):
-        slide_path = self.root / self.layers["original_slide"]
-        upload_dir = Path(slide_path)
-        return len([f for f in upload_dir.iterdir() if f.is_file()])
+    def slides_files_count(self) -> int:
+        return self.count_by_layer("original_slide") + self.count_by_layer("slides")
+
+    def collection_files_count(self, names) -> int:
+        return self.count_by_layer(names=names, layer="original_collection") + self.count_by_layer(names=names, layer="collections")
+
+    def product_files_count(self, names) -> int:
+        return (
+                self.count_by_layer(names=names, layer="original_product")
+                + self.count_by_layer(names=names, layer="products")
+                + self.count_by_layer(names=names, layer="details")
+        )
+

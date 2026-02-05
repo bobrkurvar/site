@@ -29,8 +29,12 @@ async def foreign_key_handler(
 
 
 
-async def global_error_handler(request: Request, exc: Exception):
+async def admin_global_error_handler(request: Request, exc: Exception):
     log.error("Глобальная ошибка: %s", exc)
     return RedirectResponse("/admin?err=500", status_code=303)
+
+async def global_error_handler(request: Request, exc: Exception):
+    log.error("Глобальная ошибка: %s", exc)
+    return RedirectResponse("/", status_code=303)
 
 

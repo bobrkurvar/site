@@ -4,7 +4,7 @@ from functools import wraps
 from aiohttp import ClientResponseError, ClientSession
 from aiohttp.client_exceptions import ClientConnectorError
 
-from core import config
+from core import conf
 
 log = logging.getLogger(__name__)
 
@@ -56,5 +56,5 @@ class MyExternalApiForBot:
             self._session = None
 
 
-url = config.image_service_url
+url = conf.image_service_url
 http_client = MyExternalApiForBot(f"http://{url}/")

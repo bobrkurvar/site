@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-from core import config
+from core import conf
 from domain.user import Admin
 from adapters.repo import get_db_manager
 from core.auth import get_password_hash
@@ -10,7 +10,7 @@ log = logging.getLogger(__name__)
 
 
 async def add_admins():
-    initial_admins = config.initial_admins_list
+    initial_admins = conf.initial_admins_list
     log.debug("ADMINS: %s", initial_admins)
     manager = get_db_manager()
     for admin in initial_admins:

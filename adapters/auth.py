@@ -2,10 +2,10 @@ import logging
 import jwt
 from fastapi import Request
 from domain.exceptions import UnauthorizedError
-from core import config
+from core import conf
 
-secret_key = config.secret_key
-algorithm = config.algorithm
+secret_key = conf.secret_key
+algorithm = conf.algorithm
 log = logging.getLogger(__name__)
 
 

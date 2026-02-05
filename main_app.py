@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 
 from api.error_handlers import *
@@ -36,5 +36,11 @@ async def catch_all(full_path: str):
 app.add_exception_handler(NotFoundError, not_found_handler)
 app.add_exception_handler(AlreadyExistsError, already_exists_handler)
 app.add_exception_handler(ForeignKeyViolationError, foreign_key_handler)
-app.add_exception_handler(Exception, global_error_handler)
+@app.exception_handler(Exception)
+async def global_exc_handler(request: Request, exc):
+    if request.url.path.startswith("/admin"):
+        await admin_global_error_handler(request, exc)
+    else:
+        await global_error_handler(request, exc)
+
 

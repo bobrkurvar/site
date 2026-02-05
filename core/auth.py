@@ -5,10 +5,10 @@ import jwt
 from domain.exceptions import UnauthorizedError
 import bcrypt
 
-from core import config, logger
+from core import conf, logger
 
-secret_key = config.secret_key
-algorithm = config.algorithm
+secret_key = conf.secret_key
+algorithm = conf.algorithm
 log = logging.getLogger(__name__)
 
 

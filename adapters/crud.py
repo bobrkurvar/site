@@ -9,7 +9,7 @@ from domain.exceptions import (AlreadyExistsError,
                                ForeignKeyViolationError, NotFoundError)
 import domain
 from db import models
-from core import config
+from core import conf
 
 log = logging.getLogger(__name__)
 
@@ -189,9 +189,11 @@ class Crud:
     async def close_and_dispose(self):
         log.debug("подключение к движку %s закрывается", self._engine)
         await self._engine.dispose()
+        self.__class__._engine = None
+        self.__class__._session_factory = None
 
 def get_db_manager(test = False) -> Crud:
-    db_host = config.db_url if not test else config.test_db_url
+    db_host = conf.db_url if not test else conf.test_db_url
     domain_with_orm = {
         domain.Tile: models.Catalog,
         domain.TileSize: models.TileSize,

@@ -1,7 +1,7 @@
 import logging
 
 from domain.tile import *
-from services.Uow import UnitOfWork
+from services.UoW import UnitOfWork
 
 log = logging.getLogger(__name__)
 

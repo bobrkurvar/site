@@ -4,7 +4,7 @@ from sqlalchemy import ForeignKey, ForeignKeyConstraint, UniqueConstraint
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.types import DECIMAL
-from core import config
+from core import conf
 
 
 class Base(AsyncAttrs, DeclarativeBase):
@@ -101,7 +101,7 @@ class TileImages(Base):
     __tablename__ = "tile_images"
     image_id: Mapped[int] = mapped_column(primary_key=True)
     tile_id: Mapped[int] = mapped_column(ForeignKey("catalog.id", ondelete="CASCADE"))
-    image_path: Mapped[str] = mapped_column(default=config.image_path)
+    image_path: Mapped[str] = mapped_column(default=conf.image_path)
     tile: Mapped["Catalog"] = relationship("Catalog", back_populates="images")
 
     def model_dump(self):
@@ -118,7 +118,7 @@ class Collections(Base):
     category_name: Mapped[str] = mapped_column(
         ForeignKey("categories.name"), primary_key=True
     )
-    image_path: Mapped[str] = mapped_column(unique=True, default=config.image_path)
+    image_path: Mapped[str] = mapped_column(unique=True, default=conf.image_path)
 
     category: Mapped["Categories"] = relationship(
         "Categories", back_populates="collections"
