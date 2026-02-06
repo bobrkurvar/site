@@ -6,7 +6,7 @@ from fastapi.responses import RedirectResponse
 
 from adapters.images import generate_image_collections_catalog
 from adapters.crud import Crud, get_db_manager
-from adapters.files import FileManager
+from adapters.images import CollectionImagesManager
 from services.collections import add_collection, delete_collection
 
 router = APIRouter(prefix="/admin/tiles/collections")
@@ -24,7 +24,7 @@ async def admin_create_tile_collection(
     collection_name = collection_name.strip()
     category_name = category_name.strip()
     image = await image.read()
-    await add_collection(collection_name, image, category_name, manager, generate_images=generate_image_collections_catalog, file_manager=FileManager())
+    await add_collection(collection_name, image, category_name, manager, generate_images=generate_image_collections_catalog, file_manager=CollectionImagesManager())
     return RedirectResponse("/admin", status_code=303)
 
 
@@ -34,5 +34,5 @@ async def admin_delete_tile_collections(
 ):
     collection_name = collection_name.strip()
     category_name = category_name.strip()
-    await delete_collection(collection_name=collection_name, manager=manager, category_name=category_name, file_manager=FileManager())
+    await delete_collection(collection_name=collection_name, manager=manager, category_name=category_name, file_manager=CollectionImagesManager())
     return RedirectResponse("/admin", status_code=303)

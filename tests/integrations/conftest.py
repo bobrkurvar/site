@@ -1,14 +1,16 @@
 from alembic import command
 from alembic.config import Config
 from adapters.crud import get_db_manager
-from adapters.files import FileManager
 from core import conf
 import logging
 import pytest
 from sqlalchemy import text
+from pathlib import Path
+import shutil
 
 
 log = logging.getLogger(__name__)
+
 
 @pytest.fixture(autouse=True)
 async def clean_db_after_test(request):
@@ -36,13 +38,11 @@ async def clean_db_after_test(request):
 
 
 @pytest.fixture(autouse=True)
-async def clean_fs_after_test(request):
-    engine = get_db_manager(test=True)._engine
-    if request.node.get_closest_marker("integration") is None:
-        return
-
+def clean_fs_after_test(request):
     yield
-
+    images_path = Path("tests/images")
+    if images_path.exists() and images_path.is_dir():
+        shutil.rmtree(images_path)
 
 
 @pytest.fixture(scope="session", autouse=True)

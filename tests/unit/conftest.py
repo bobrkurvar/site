@@ -1,6 +1,6 @@
 from decimal import Decimal
 import pytest
-from .fakes import FakeUoW, FakeStorage, Table, FakeCRUD, FakeFileManager, noop_generate
+from tests.fakes import FakeUoW, FakeStorage, Table, FakeCRUD, FakeProductImagesManager, noop_generate
 from services.tile import add_tile
 from domain import TileSize, TileColor, Box, Categories, Producer, TileSurface, TileImages, Tile, Collections
 
@@ -104,7 +104,7 @@ def manager_factory(fake_manager):
         sizes = generate_tile_sizes(n)
         colors = generate_tile_colors(n, True) if color_fix else generate_tile_colors(n)
         boxes = generate_boxes(n)
-        file_manager = FakeFileManager()
+        file_manager = FakeProductImagesManager()
         for i in range(n):
             await add_tile(
                 manager=fake_manager,
@@ -128,3 +128,5 @@ def manager_factory(fake_manager):
             )
         return fake_manager
     return _manage_with_items
+
+

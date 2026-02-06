@@ -1,39 +1,8 @@
-import logging
-from .http_client import http_client
 from pathlib import Path
-from adapters.files import FileManager
-import aiofiles
+from .fs_fakes import FakeFileManager
 
-log = logging.getLogger(__name__)
-
-
-# def get_image_path(my_path: str, *directories):
-#     if directories:
-#         root = Path("static/images")
-#         my_path_name = Path(my_path).name
-#         for directory in directories:
-#             root /= directory
-#         root /= my_path_name
-#         str_path = str(root)
-#         if root.exists():
-#             log.debug("Path: %s", str_path)
-#             return str_path
-#     return my_path
-
-async def generate_image_products_catalog_and_details(input_path):
-    input_path = str(input_path) if not isinstance(input_path, str) else input_path
-    return await http_client.generate_products_images(input_path=input_path, targets=("products", "details"))
-
-async def generate_image_collections_catalog(input_path):
-    input_path = str(input_path) if not isinstance(input_path, str) else input_path
-    return await http_client.generate_products_images(input_path=input_path, targets=("collections",))
-
-async def generate_slides(input_path):
-    input_path = str(input_path) if not isinstance(input_path, str) else input_path
-    return await http_client.generate_products_images(input_path=input_path, targets=("slides",))
-
-class ProductImagesManager(FileManager):
-    def __init__(self, root: str = "static/images", layers: dict | None = None, fs = aiofiles):
+class FakeProductImagesManager(FakeFileManager):
+    def __init__(self, root: str = "tests/images", layers: dict | None = None, fs = None):
         super().__init__(root, layers, fs)
 
     async def delete_product(self, base_path: str | Path):
@@ -54,8 +23,8 @@ class ProductImagesManager(FileManager):
         path_details = self.resolve_path(name, "details")
         return self.get_directory(path_details, base_path)
 
-class CollectionImagesManager(FileManager):
-    def __init__(self, root: str = "static/images", layers: dict | None = None, fs = aiofiles):
+class FakeCollectionImagesManager(FakeFileManager):
+    def __init__(self, root: str = "tests/images", layers: dict | None = None, fs = None):
         super().__init__(root, layers, fs)
 
     async def delete_collection(self, base_path: str | Path):
@@ -71,8 +40,8 @@ class CollectionImagesManager(FileManager):
         return self.get_directory(path_collections, base_path)
 
 
-class SlideImagesManager(FileManager):
-    def __init__(self, root: str = "static/images", layers: dict | None = None, fs = aiofiles):
+class FakeSlideImagesManager(FakeFileManager):
+    def __init__(self, root: str = "tests/images", layers: dict | None = None, fs = None):
         super().__init__(root, layers, fs)
 
     async def save_slide_original(self, file_name, img):
@@ -104,4 +73,3 @@ class SlideImagesManager(FileManager):
     def slides_files_count(self) -> int:
         path = self.resolve_path(layer="original_slide")
         return sum(1 for f in path.iterdir() if f.is_file())
-

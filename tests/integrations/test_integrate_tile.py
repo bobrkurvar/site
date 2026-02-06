@@ -8,9 +8,10 @@ from domain import (Box, Categories, Producer, Tile, TileColor, TileImages,
                     TileSize, TileSurface)
 from services.tile import add_tile, delete_tile, update_tile
 
-from tests.fakes import FakeFileManager, generate_products_images
+from tests.fakes import generate_products_images
 from adapters.crud import get_db_manager
-from adapters.files import FileManager
+from adapters.images import ProductImagesManager
+from .helpers import product_files_count
 
 log = logging.getLogger(__name__)
 
@@ -18,7 +19,7 @@ log = logging.getLogger(__name__)
 @pytest.mark.integration
 async def test_integrate_create_tile_success_when_all_handbooks_exists():
     manager = get_db_manager(test=True)
-    file_manager = FileManager(root="tests/images")
+    file_manager = ProductImagesManager(root="tests/images")
     # выполнение add_tile
     record = await add_tile(
         name="Tile",
@@ -49,7 +50,7 @@ async def test_integrate_create_tile_success_when_all_handbooks_exists():
     assert len(images) == 3
     names = {f"{tile_id}-{i}" for i in range(3)}
     log.debug("names: %s", names)
-    assert file_manager.product_files_count(names) == 9
+    assert product_files_count(file_manager) == 9
 
 
 # @pytest.mark.asyncio

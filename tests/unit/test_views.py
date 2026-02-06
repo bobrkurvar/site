@@ -1,11 +1,11 @@
 import logging
 
 import pytest
-from tests.conftest import manager_factory
+from tests.unit.conftest import manager_factory
 
 from domain import Categories
 from services.views import build_main_images, fetch_items, extract_quoted_word, build_tile_filters, build_data_for_filters
-from core.config import COLLECTIONS_PER_PAGE, ITEMS_PER_PAGE
+from core.config import ITEMS_PER_PAGE
 
 
 log = logging.getLogger(__name__)

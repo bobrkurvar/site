@@ -3,14 +3,14 @@ from decimal import Decimal
 
 import pytest
 
-import core.logger
 from domain import (Box, Categories, Producer, Tile, TileColor, TileImages,
                     TileSize, TileSurface)
 from services.tile import add_tile, delete_tile, update_tile
 
 from tests.fakes import (FakeCRUD, FakeStorage, FakeUoW, Table)
-from tests.fakes import FakeFileManager, generate_products_images
-from tests.conftest import storage
+from tests.fakes import FakeProductImagesManager, generate_products_images
+from tests.unit.conftest import storage
+from .helpers import product_catalog_path, product_details_path
 
 log = logging.getLogger(__name__)
 
@@ -91,7 +91,7 @@ async def test_create_tile_success_when_all_handbooks_exists(
 ):
     manager = manager_with_handbooks
     fs = {}
-    file_manager = FakeFileManager(fs=fs)
+    file_manager = FakeProductImagesManager(fs=fs)
     # выполнение add_tile
     record = await add_tile(
         name="Tile",
@@ -121,7 +121,7 @@ async def test_create_tile_success_when_all_handbooks_exists(
     tile_id = record["id"]
 
     # 2. Все изображения записались во фейковую ФС
-    paths_funcs = (file_manager.base_product_path, file_manager.product_catalog_path, file_manager.product_details_path)
+    paths_funcs = (file_manager.base_product_path, product_catalog_path(file_manager), product_details_path(file_manager))
     file_names = (f"{tile_id}-0", f"{tile_id}-1", f"{tile_id}-2")
     expected_paths = [str(func(file_name)) for func in paths_funcs for file_name in file_names]
 
@@ -140,7 +140,7 @@ async def test_create_tile_success_when_all_handbooks_not_exists(
 ):
     manager = manager_without_handbooks
     fs = {}
-    file_manager = FakeFileManager(fs=fs)
+    file_manager = FakeProductImagesManager(fs=fs)
     # выполнение add_tile
     record = await add_tile(
         name="Tile",
@@ -177,7 +177,7 @@ async def test_create_tile_success_when_all_handbooks_not_exists(
 
     # 3. Все изображения записались во фейковую ФС
     tile_id = record["id"]
-    paths_funcs = (file_manager.base_product_path, file_manager.product_catalog_path, file_manager.product_details_path)
+    paths_funcs = (file_manager.base_product_path, product_catalog_path(file_manager), product_details_path(file_manager))
     file_names = (f"{tile_id}-0", f"{tile_id}-1", f"{tile_id}-2")
     expected_paths = [str(func(file_name)) for func in paths_funcs for file_name in file_names]
 
@@ -197,7 +197,7 @@ async def test_update_tile_success_when_new_attributes_in_handbooks(
     manager_with_handbooks
 ):
     manager = manager_with_handbooks
-    file_manager = FakeFileManager()
+    file_manager = FakeProductImagesManager()
     record = await add_tile(
         name="Tile",
         length=Decimal(300),
@@ -266,7 +266,7 @@ async def test_delete_tile_by_article(
 ):
     manager = manager_with_handbooks
     fs = {}
-    file_manager = FakeFileManager(fs=fs)
+    file_manager = FakeProductImagesManager(fs=fs)
     record = await add_tile(
         name="Tile",
         length=Decimal(300),
@@ -289,11 +289,10 @@ async def test_delete_tile_by_article(
     )
 
     tile_id = record["id"]
-    paths_funcs = (file_manager.base_product_path, file_manager.product_catalog_path, file_manager.product_details_path)
+    paths_funcs = (file_manager.base_product_path, product_catalog_path(file_manager), product_details_path(file_manager))
     file_names = (f"{tile_id}-0", f"{tile_id}-1", f"{tile_id}-2")
     expected_paths = [str(func(file_name)) for func in paths_funcs for file_name in file_names]
-
-    file_manager = FakeFileManager(fs=fs)
+    log.debug("FS: %s", fs)
     records = await delete_tile(manager, uow_class=FakeUoW, id=tile_id, file_manager=file_manager)
     assert len(records) == 1
 

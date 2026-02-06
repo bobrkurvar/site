@@ -7,7 +7,7 @@ from fastapi.responses import RedirectResponse
 
 from domain import *
 from adapters.crud import Crud, get_db_manager
-from adapters.files import FileManager
+from adapters.images import ProductImagesManager
 from services.tile import add_tile, delete_tile, update_tile
 
 router = APIRouter(prefix="/admin/tiles")
@@ -26,7 +26,7 @@ async def delete_tile_by_id_or_all(
     if tile_id is not None:
         params["id"] = tile_id
     log.debug("params: %s", params)
-    await delete_tile(manager, **params)
+    await delete_tile(manager, ProductImagesManager(), **params)
     return RedirectResponse("/admin", status_code=303)
 
 
@@ -81,7 +81,7 @@ async def admin_create_tile(
         manager,
         bytes_images,
         generate_images=generate_image_products_catalog_and_details,
-        file_manager=FileManager(),
+        file_manager=ProductImagesManager(),
         color_feature=feature_name,
         surface=surface_name
     )

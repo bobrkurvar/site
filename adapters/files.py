@@ -1,15 +1,16 @@
 from pathlib import Path
 import aiofiles
 import logging
+import asyncio
 
 log = logging.getLogger(__name__)
 
 
 class FileManager:
     def __init__(self, root: str = "static/images", layers: dict | None = None, fs=aiofiles):
-        self.root = Path(root)
-        self.fs = fs
-        self.layers = layers if layers else {
+        self._root = Path(root)
+        self._fs = fs
+        self._layers = layers if layers else {
             "original_product": "base/products",
             "original_collection": "base/collections",
             "original_slide": "base/slides",
@@ -20,57 +21,34 @@ class FileManager:
         }
 
     def resolve_path(self, file_name: str | None = "", layer: str = None):
-        return self.root / self.layers.get(layer, "") / file_name
+        if layer not in self._layers:
+            raise ValueError(f"Unknown layer: {layer}")
+        return self._root / self._layers.get(layer, "") / file_name
+
 
     async def save(self, image_path, img):
         upload_dir = image_path.parent
         if upload_dir:
             upload_dir.mkdir(parents=True, exist_ok=True)
-            async with self.fs.open(image_path, "xb") as fw:
+            async with self._fs.open(image_path, "xb") as fw:
                 await fw.write(img)
 
-    async def save_slide_original(self, file_name, img):
-        image_path = self.resolve_path(file_name, "original_slide")
-        await self.save(image_path, img)
 
     async def save_by_layer(self, image_path, img, layer: str):
         file_name = Path(image_path).name
         image_path = self.resolve_path(file_name, layer)
         await self.save(image_path, img)
 
-    def delete_product(self, base_path: str | Path):
-        base_path = Path(base_path)
+
+    async def delete_by_layers(self, base_path: str | Path, layers: list[str]):
+        base_path = Path(base_path) if isinstance(base_path, str) else base_path
         file_name = base_path.name
+        paths = [self.resolve_path(file_name, layer) for layer in layers]
+        paths.append(base_path)
+        return await self.delete_async(paths)
 
-        paths = [
-            base_path,  # оригинал
-            self.resolve_path(file_name, "products"),  # каталог
-            self.resolve_path(file_name, "details"),  # детальная картинка
-        ]
-        return self._delete(paths)
-
-    def delete_collection(self, base_path: str | Path):
-        base_path = Path(base_path)
-        file_name = base_path.name
-
-        paths = [
-            base_path,
-            self.resolve_path(file_name, "collections"),
-        ]
-        return self._delete(paths)
-
-    def delete_all_slides(self):
-        upload_dirs = [
-            self.resolve_path(layer="original_slide"),
-            self.resolve_path(layer="slides"),
-        ]
-        deleted = 0
-        for upload_dir in upload_dirs:
-            for f in upload_dir.iterdir():
-                if f.is_file() and f.exists():
-                    f.unlink()
-                    deleted += 1
-        return deleted
+    async def delete_async(self, paths):
+        return await asyncio.to_thread(self._delete, paths)
 
     @staticmethod
     def _delete(paths: list[Path]):
@@ -82,33 +60,9 @@ class FileManager:
             deleted += 1
         return deleted
 
-    def base_product_path(self, file_name: str):
-        return self.resolve_path(file_name, "original_product")
 
-    def base_collection_path(self, file_name: str):
-        return self.resolve_path(file_name, "original_collection")
-
-    def _iter_files(self, layer: str, names = None):
-        path = self.resolve_path(layer=layer)
-        if not path.exists():
-            return []
-        return [f for f in path.iterdir() if f.is_file() and f.name in names] if names else [f for f in path.iterdir() if f.is_file()]
-
-    def count_by_layer(self, layer: str, names: str | None = None) -> int:
-        return len(self._iter_files(layer, names))
-
-
-    @property
-    def slides_files_count(self) -> int:
-        return self.count_by_layer("original_slide") + self.count_by_layer("slides")
-
-    def collection_files_count(self, names) -> int:
-        return self.count_by_layer(names=names, layer="original_collection") + self.count_by_layer(names=names, layer="collections")
-
-    def product_files_count(self, names) -> int:
-        return (
-                self.count_by_layer(names=names, layer="original_product")
-                + self.count_by_layer(names=names, layer="products")
-                + self.count_by_layer(names=names, layer="details")
-        )
-
+    @staticmethod
+    def get_directory(main_path: Path, other_path: str | Path):
+        if main_path.exists():
+            return str(main_path)
+        return str(other_path)

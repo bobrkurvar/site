@@ -105,21 +105,8 @@ async def delete_tile(
         del_res = await manager.delete(Tile, session=uow.session, **filters)
         for tile in tiles:
             images_paths = tile.get("images_paths", [])
-            #file_manager.set_path('static/images/products')
             for image in images_paths:
-                file_manager.delete_product(image)
-                # product_catalog_path = (
-                #     file_manager.upload_dir
-                #     / "catalog"
-                #     /  file_manager.file_name(image)
-                # )
-                # product_details_path = (
-                #     file_manager.upload_dir
-                #     / "details"
-                #     / file_manager.file_name(image)
-                # )
-                # all_paths = [image, product_catalog_path, product_details_path]
-                # file_manager.delete(all_paths)
+                await file_manager.delete_product(image)
         return del_res
 
 async def map_to_domain_for_filter(article: int, manager, session, **params):

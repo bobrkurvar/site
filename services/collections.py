@@ -57,4 +57,4 @@ async def delete_collection(
         #name = f"{collection['name']}-{collection['category_name']}"
         # paths = [base_root / name, collection_root / name]
         # file_manager.delete(paths)
-        file_manager.delete_collection(collection["image_path"])
+        await file_manager.delete_collection(collection["image_path"])
