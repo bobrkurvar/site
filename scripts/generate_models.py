@@ -1,9 +1,10 @@
 import asyncio
-from sqlalchemy.ext.asyncio import create_async_engine
 import logging
-from core import logger, conf
-from db.models import Base
 
+from sqlalchemy.ext.asyncio import create_async_engine
+
+from core import conf, logger
+from db.models import Base
 
 
 async def create_tables():

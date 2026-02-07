@@ -5,8 +5,8 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Form
 from fastapi.responses import RedirectResponse
 
-from domain import TileSize
 from adapters.crud import Crud, get_db_manager
+from domain import TileSize
 
 router = APIRouter(prefix="/admin/tiles/sizes")
 dbManagerDep = Annotated[Crud, Depends(get_db_manager)]

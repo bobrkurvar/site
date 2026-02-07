@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class RepositoryError(Exception):
     """Базовое исключение репозитория"""
 
@@ -43,8 +44,10 @@ class AuthErrors(Enum):
     access = "access token error"
     unexpected = "unexpected error"
 
+
 class UnauthorizedError(Exception):
     """Ошибка внешнего ключа"""
+
     """
     Исключение, которое будет возбуждено вследствие
     попытке доступа к защищённому ресурсу без аутентификации

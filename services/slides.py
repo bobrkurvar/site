@@ -1,7 +1,9 @@
 import logging
+
 from core import logger
 
 log = logging.getLogger(__name__)
+
 
 async def add_slides(images: list[bytes], generate_images, file_manager):
     extra_num = file_manager.slides_file_count
@@ -13,11 +15,14 @@ async def add_slides(images: list[bytes], generate_images, file_manager):
             for layer, miniature in miniatures.items():
                 await file_manager.save_by_layer(file_name, miniature, layer)
         except TypeError:
-            log.debug("generate_image_variant_callback  или save_files не получили нужную функцию")
+            log.debug(
+                "generate_image_variant_callback  или save_files не получили нужную функцию"
+            )
             raise
         except FileExistsError:
             log.debug("путь уже занять")
             pass
+
 
 async def delete_slides(file_manager):
     # upload_dirs = [BASE_DIR / "slides", BASE_DIR / "base" / "slides"]

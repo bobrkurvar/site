@@ -1,11 +1,11 @@
 import logging
-from services.slides import add_slides, delete_slides
 from typing import Annotated
 
 from fastapi import APIRouter, File, UploadFile
 from fastapi.responses import RedirectResponse
-from adapters.images import generate_slides, SlideImagesManager
 
+from adapters.images import SlideImagesManager, generate_slides
+from services.slides import add_slides, delete_slides
 
 router = APIRouter(prefix="/admin/slides")
 log = logging.getLogger(__name__)
@@ -14,7 +14,9 @@ log = logging.getLogger(__name__)
 @router.post("/insert")
 async def insert_slide_image(images: Annotated[list[UploadFile], File()]):
     images_bytes = [await image.read() for image in images]
-    await add_slides(images_bytes, generate_images=generate_slides, file_manager=SlideImagesManager())
+    await add_slides(
+        images_bytes, generate_images=generate_slides, file_manager=SlideImagesManager()
+    )
     return RedirectResponse("/admin", status_code=303)
 
 

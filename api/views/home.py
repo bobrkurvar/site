@@ -5,10 +5,9 @@ from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 
-from domain import Categories, Tile
 from adapters.crud import Crud, get_db_manager
 from adapters.images import SlideImagesManager
-
+from domain import Categories, Tile
 
 router = APIRouter()
 templates = Jinja2Templates("templates")
@@ -19,7 +18,7 @@ log = logging.getLogger(__name__)
 
 @router.get("/")
 async def get_main_page(request: Request, manager: dbManagerDep):
-    #slides_dir = Path('static/images/base/slides')
+    # slides_dir = Path('static/images/base/slides')
     slide_manager = SlideImagesManager()
     # slide_images = [
     #     await get_image_path(f"/static/images/base/slides/{img.name}", "slides")
@@ -39,11 +38,11 @@ async def get_main_page(request: Request, manager: dbManagerDep):
         },
     )
 
-@router.get('/cookie/delete')
+
+@router.get("/cookie/delete")
 async def cookie_delete(request: Request):
     response = RedirectResponse("/", status_code=303)
     response.delete_cookie("access_token", path="/")
-    #response.delete_cookie("refresh_token", path="/")
+    # response.delete_cookie("refresh_token", path="/")
     log.debug("COOKIES after delete: %s", request.cookies)
     return response
-

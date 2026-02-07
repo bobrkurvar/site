@@ -5,11 +5,11 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.orm import selectinload
 
-from domain.exceptions import (AlreadyExistsError,
-                               ForeignKeyViolationError, NotFoundError)
 import domain
-from db import models
 from core import conf
+from db import models
+from domain.exceptions import (AlreadyExistsError, ForeignKeyViolationError,
+                               NotFoundError)
 
 log = logging.getLogger(__name__)
 
@@ -192,7 +192,8 @@ class Crud:
         self.__class__._engine = None
         self.__class__._session_factory = None
 
-def get_db_manager(test = False) -> Crud:
+
+def get_db_manager(test=False) -> Crud:
     db_host = conf.db_url if not test else conf.test_db_url
     domain_with_orm = {
         domain.Tile: models.Catalog,
@@ -204,7 +205,7 @@ def get_db_manager(test = False) -> Crud:
         domain.TileImages: models.TileImages,
         domain.Categories: models.Categories,
         domain.Collections: models.Collections,
-        domain.Admin: models.Admins
+        domain.Admin: models.Admins,
     }
     manager = Crud(db_host, domain_with_orm)
 

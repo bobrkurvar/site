@@ -1,17 +1,17 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
-import logging
-#from pathlib import Path
-from PIL import Image, ImageOps
-from core import logger
 import asyncio
+import logging
 from concurrent.futures import ProcessPoolExecutor
 from io import BytesIO
 
+from fastapi import FastAPI
+# from pathlib import Path
+from PIL import Image, ImageOps
+from pydantic import BaseModel
+
+from core import logger
 
 app = FastAPI()
 log = logging.getLogger(__name__)
-
 
 
 NUM_WORKERS = 4  # процессов для CPU
@@ -23,7 +23,7 @@ IMAGE_PRESETS = {
     "products": {"size": (640, 400), "mode": "cover"},  # каталог товаров
     "collections": {"size": (960, 480), "mode": "cover"},  # карточки коллекций
     "details": {"size": (2400, None), "mode": "fit"},  # детальная картинка
-    "slides": {"size": (1100, 825), "mode": "cover"}
+    "slides": {"size": (1100, 825), "mode": "cover"},
 }
 
 
@@ -47,7 +47,6 @@ def resize_image(
     raise ValueError(f"Unknown resize mode: {mode}")
 
 
-
 def image_to_bytes(
     img: Image.Image,
     format: str = "JPEG",
@@ -62,6 +61,7 @@ def image_to_bytes(
         progressive=True,
     )
     return buf.getvalue()
+
 
 def generate_image_variant(image_bytes: bytes, target: str):
     """
@@ -99,6 +99,7 @@ def generate_image_variant(image_bytes: bytes, target: str):
         bytes_img = image_to_bytes(resized)
 
         return bytes_img
+
 
 class ImageWithTarget(BaseModel):
     input_path: str

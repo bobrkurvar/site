@@ -4,6 +4,7 @@ from sqlalchemy import ForeignKey, ForeignKeyConstraint, UniqueConstraint
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.types import DECIMAL
+
 from core import conf
 
 
@@ -202,6 +203,7 @@ class Box(Base):
 
     def model_dump(self):
         return {"id": self.id, "weight": self.weight, "area": self.area}
+
 
 class Admins(Base):
     __tablename__ = "admins"

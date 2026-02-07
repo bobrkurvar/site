@@ -36,9 +36,7 @@ class MyExternalApiForBot:
         self._session = None
 
     async def generate_images(self, **data):
-        async with self._session.post(
-            self._url + "generate-images", json=data
-        ) as resp:
+        async with self._session.post(self._url + "generate-images", json=data) as resp:
             try:
                 resp.raise_for_status()
                 return await resp.json()

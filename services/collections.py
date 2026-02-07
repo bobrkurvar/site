@@ -32,7 +32,9 @@ async def add_collection(
             for layer, miniature in miniatures.items():
                 await file_manager.save_by_layer(image_path, miniature, layer)
         except TypeError:
-            log.debug("generate_image_variant_callback  или save_files не получили нужную функцию")
+            log.debug(
+                "generate_image_variant_callback  или save_files не получили нужную функцию"
+            )
             raise
         except FileExistsError:
             log.debug("путь %s уже занять", image_path)
@@ -46,15 +48,20 @@ async def delete_collection(
     category_name: str,
     manager,
     file_manager,
-    uow_class=UnitOfWork
+    uow_class=UnitOfWork,
 ):
     async with uow_class(manager._session_factory) as uow:
-        collection = await manager.delete(Collections, name=collection_name, category_name=category_name, session=uow.session)
+        collection = await manager.delete(
+            Collections,
+            name=collection_name,
+            category_name=category_name,
+            session=uow.session,
+        )
         collection = collection[0]
         # file_manager.set_path("static/images")
         # base_root = file_manager.upload_dir / "base" / "collections"
         # collection_root = file_manager.upload_dir / "collections" / "catalog"
-        #name = f"{collection['name']}-{collection['category_name']}"
+        # name = f"{collection['name']}-{collection['category_name']}"
         # paths = [base_root / name, collection_root / name]
         # file_manager.delete(paths)
         await file_manager.delete_collection(collection["image_path"])

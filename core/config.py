@@ -1,9 +1,11 @@
-from pathlib import Path
-from pydantic_settings import BaseSettings, SettingsConfigDict
 import json
+from pathlib import Path
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 COLLECTIONS_PER_PAGE = 20
 ITEMS_PER_PAGE = 20
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
@@ -38,6 +40,7 @@ class Settings(BaseSettings):
             return json.loads(self.initial_admins)
         except Exception:
             return []
+
 
 def load_config(path: Path | None = None) -> Settings:
     conf = Settings(_env_file=path) if path else Settings()

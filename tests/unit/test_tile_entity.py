@@ -3,92 +3,22 @@ from decimal import Decimal
 
 import pytest
 
-from domain import (Box, Categories, Producer, Tile, TileColor, TileImages,
-                    TileSize, TileSurface)
+from domain import Tile, TileImages
 from services.tile import add_tile, delete_tile, update_tile
+from tests.fakes import (FakeProductImagesManager,
+                         FakeUoW, generate_products_images)
+from .conftest import manager_with_handbooks, manager_without_handbooks
+from tests.conftest import domain_handbooks_models
 
-from tests.fakes import (FakeCRUD, FakeStorage, FakeUoW, Table)
-from tests.fakes import FakeProductImagesManager, generate_products_images
-from tests.unit.conftest import storage
 from .helpers import product_catalog_path, product_details_path
 
 log = logging.getLogger(__name__)
 
 
-@pytest.fixture
-def storage_with_filled_handbooks():
-    storage = FakeStorage()
-
-    storage.register_tables(
-        [
-            Table(
-                name=TileSize,
-                columns=["id", "length", "width", "height"],
-                rows=[
-                    {
-                        "id": 1,
-                        "length": Decimal(300),
-                        "width": Decimal(200),
-                        "height": Decimal(10),
-                    }
-                ],
-                defaults={"id": 2},
-            ),
-            Table(name=TileSurface, columns=["name"], rows=[{"name": "surface"}]),
-            Table(
-                name=TileImages,
-                columns=["image_id", "tile_id", "image_path"],
-                defaults={"image_id": 1},
-            ),
-            Table(
-                name=TileColor,
-                columns=["color_name", "feature_name"],
-                rows=[{"color_name": "color", "feature_name": "feature"}],
-            ),
-            Table(name=Producer, columns=["name"], rows=[{"name": "producer"}]),
-            Table(name=Categories, columns=["name"], rows=[{"name": "category"}]),
-            Table(
-                name=Box,
-                columns=["id", "weight", "area"],
-                rows=[{"id": 1, "weight": Decimal(30), "area": Decimal(1)}],
-                defaults={"id": 2},
-            ),
-            Table(
-                name=Tile,
-                columns=[
-                    "id",
-                    "name",
-                    "size_id",
-                    "color_name",
-                    "feature_name",
-                    "category_name",
-                    "surface_name",
-                    "producer_name",
-                    "box_id",
-                    "boxes_count",
-                ],
-                defaults={"id": 1},
-            ),
-        ]
-    )
-
-    return storage
-
-
-@pytest.fixture
-def manager_with_handbooks(storage_with_filled_handbooks):
-    return FakeCRUD(storage_with_filled_handbooks)
-
-
-@pytest.fixture
-def manager_without_handbooks(storage):
-    return FakeCRUD(storage)
 
 
 @pytest.mark.asyncio
-async def test_create_tile_success_when_all_handbooks_exists(
-    manager_with_handbooks
-):
+async def test_create_tile_success_when_all_handbooks_exists(manager_with_handbooks, domain_handbooks_models):
     manager = manager_with_handbooks
     fs = {}
     file_manager = FakeProductImagesManager(fs=fs)
@@ -111,7 +41,7 @@ async def test_create_tile_success_when_all_handbooks_exists(
         surface="surface",
         uow_class=FakeUoW,
         file_manager=file_manager,
-        generate_images=generate_products_images
+        generate_images=generate_products_images,
     )
 
     # 1. Tile создан
@@ -119,11 +49,21 @@ async def test_create_tile_success_when_all_handbooks_exists(
     assert "id" in record
 
     tile_id = record["id"]
+    # проверка всех справочников
+    for model in domain_handbooks_models:
+        handbook = await manager.read(model)
+        assert len(handbook) == 1, f"model: {model}"
 
     # 2. Все изображения записались во фейковую ФС
-    paths_funcs = (file_manager.base_product_path, product_catalog_path(file_manager), product_details_path(file_manager))
+    paths_funcs = (
+        file_manager.base_product_path,
+        product_catalog_path(file_manager),
+        product_details_path(file_manager),
+    )
     file_names = (f"{tile_id}-0", f"{tile_id}-1", f"{tile_id}-2")
-    expected_paths = [str(func(file_name)) for func in paths_funcs for file_name in file_names]
+    expected_paths = [
+        str(func(file_name)) for func in paths_funcs for file_name in file_names
+    ]
 
     assert set(fs) == set(expected_paths)
 
@@ -136,7 +76,7 @@ async def test_create_tile_success_when_all_handbooks_exists(
 
 @pytest.mark.asyncio
 async def test_create_tile_success_when_all_handbooks_not_exists(
-    manager_without_handbooks
+    manager_without_handbooks, domain_handbooks_models
 ):
     manager = manager_without_handbooks
     fs = {}
@@ -160,26 +100,29 @@ async def test_create_tile_success_when_all_handbooks_not_exists(
         surface="surface",
         uow_class=FakeUoW,  # поддельная транзакция
         file_manager=file_manager,
-        generate_images=generate_products_images
+        generate_images=generate_products_images,
     )
 
     # 1. Tile создан
     assert record is not None
     assert "id" in record
 
-
-    # 2. Проверка всех справочников
-    tables = (Box, Categories, Producer, Tile, TileColor, TileImages, TileSize, TileSurface)
-
-    for table_name in tables:
-        rows = await manager.read(table_name)
-        assert rows, f"{table_name.__name__} should have at least one row"
+    # проверка всех справочников
+    for model in domain_handbooks_models:
+        handbook = await manager.read(model)
+        assert len(handbook) == 1, f"model: {model}"
 
     # 3. Все изображения записались во фейковую ФС
     tile_id = record["id"]
-    paths_funcs = (file_manager.base_product_path, product_catalog_path(file_manager), product_details_path(file_manager))
+    paths_funcs = (
+        file_manager.base_product_path,
+        product_catalog_path(file_manager),
+        product_details_path(file_manager),
+    )
     file_names = (f"{tile_id}-0", f"{tile_id}-1", f"{tile_id}-2")
-    expected_paths = [str(func(file_name)) for func in paths_funcs for file_name in file_names]
+    expected_paths = [
+        str(func(file_name)) for func in paths_funcs for file_name in file_names
+    ]
 
     assert set(fs) == set(expected_paths)
 
@@ -194,7 +137,7 @@ async def test_create_tile_success_when_all_handbooks_not_exists(
 
 @pytest.mark.asyncio
 async def test_update_tile_success_when_new_attributes_in_handbooks(
-    manager_with_handbooks
+    manager_with_handbooks, domain_handbooks_models
 ):
     manager = manager_with_handbooks
     file_manager = FakeProductImagesManager()
@@ -216,9 +159,9 @@ async def test_update_tile_success_when_new_attributes_in_handbooks(
         surface="surface",
         uow_class=FakeUoW,
         file_manager=file_manager,
-        generate_images=generate_products_images
+        generate_images=generate_products_images,
     )
-    article = record["id"] # фильтр для обновления по артикулу
+    article = record["id"]  # фильтр для обновления по артикулу
 
     # новые данные
     new_filters = dict(
@@ -250,20 +193,13 @@ async def test_update_tile_success_when_new_attributes_in_handbooks(
         assert new_record[0][f] == v
 
     # 2. Проверка всех справочников, поля в справочниках не должны изменятся, а должны появится новые
-    should_new_handbooks = [
-        table
-        for table in manager.storage.tables
-        if table is not Tile and table is not TileImages
-    ]
-    for table_name in should_new_handbooks:
+    for table_name in domain_handbooks_models:
         rows = await manager.read(table_name)
         assert len(rows) == 2, f"{table_name.__name__} should have at least one row"
 
 
 @pytest.mark.asyncio
-async def test_delete_tile_by_article(
-    manager_with_handbooks
-):
+async def test_delete_tile_by_article(manager_with_handbooks, domain_handbooks_models):
     manager = manager_with_handbooks
     fs = {}
     file_manager = FakeProductImagesManager(fs=fs)
@@ -285,33 +221,34 @@ async def test_delete_tile_by_article(
         surface="surface",
         uow_class=FakeUoW,
         file_manager=file_manager,
-        generate_images=generate_products_images
+        generate_images=generate_products_images,
     )
 
     tile_id = record["id"]
-    paths_funcs = (file_manager.base_product_path, product_catalog_path(file_manager), product_details_path(file_manager))
+    paths_funcs = (
+        file_manager.base_product_path,
+        product_catalog_path(file_manager),
+        product_details_path(file_manager),
+    )
     file_names = (f"{tile_id}-0", f"{tile_id}-1", f"{tile_id}-2")
-    expected_paths = [str(func(file_name)) for func in paths_funcs for file_name in file_names]
+    expected_paths = [
+        str(func(file_name)) for func in paths_funcs for file_name in file_names
+    ]
     log.debug("FS: %s", fs)
-    records = await delete_tile(manager, uow_class=FakeUoW, id=tile_id, file_manager=file_manager)
+    records = await delete_tile(
+        manager, uow_class=FakeUoW, id=tile_id, file_manager=file_manager
+    )
     assert len(records) == 1
 
     for path in expected_paths:
         assert path not in fs.keys()
 
     for i in records:
-        assert i['id'] == tile_id
+        assert i["id"] == tile_id
 
     new_records = await manager.read(Tile, id=tile_id)
     assert new_records == []
 
-    should_be_handbooks = [
-        table
-        for table in manager.storage.tables
-        if table is not Tile and table is not TileImages
-    ]
-    for table_name in should_be_handbooks:
+    for table_name in domain_handbooks_models:
         rows = await manager.read(table_name)
         assert len(rows) == 1
-
-

@@ -1,24 +1,31 @@
-from pathlib import Path
-import logging
-from core import logger
 import asyncio
+import logging
+from pathlib import Path
+
+from core import logger
 
 log = logging.getLogger(__name__)
 
 
 class FakeFileManager:
-    def __init__(self, upload_dir: str = "test/images", layers: dict | None = None, fs=None):
+    def __init__(
+        self, upload_dir: str = "test/images", layers: dict | None = None, fs=None
+    ):
         self._root = Path(upload_dir)
         self._fs = fs if fs is not None else {}
-        self._layers = layers if layers else {
-            "original_product": "base/products",
-            "original_collection": "base/collections",
-            "original_slide": "base/slides",
-            "products": "products/catalog",
-            "details": "products/details",
-            "collections": "collections/catalog",
-            "slides": "slides"
-        }
+        self._layers = (
+            layers
+            if layers
+            else {
+                "original_product": "base/products",
+                "original_collection": "base/collections",
+                "original_slide": "base/slides",
+                "products": "products/catalog",
+                "details": "products/details",
+                "collections": "collections/catalog",
+                "slides": "slides",
+            }
+        )
 
     def resolve_path(self, file_name: str | None = "", layer: str = None):
         if layer not in self._layers:
@@ -63,8 +70,10 @@ class FakeFileManager:
 async def generate_products_images(*args, **kwargs) -> dict:
     return {"products": b"aaa", "details": b"bbb"}
 
+
 async def generate_collections_images(*args, **kwargs) -> dict:
     return {"collections": b"aaa"}
+
 
 async def noop_generate(*args, **kwargs) -> dict:
     return {}

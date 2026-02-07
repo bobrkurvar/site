@@ -1,8 +1,10 @@
 from pathlib import Path
+
 from .fs_fakes import FakeFileManager
 
+
 class FakeProductImagesManager(FakeFileManager):
-    def __init__(self, root: str = "tests/images", layers: dict | None = None, fs = None):
+    def __init__(self, root: str = "tests/images", layers: dict | None = None, fs=None):
         super().__init__(root, layers, fs)
 
     async def delete_product(self, base_path: str | Path):
@@ -23,8 +25,9 @@ class FakeProductImagesManager(FakeFileManager):
         path_details = self.resolve_path(name, "details")
         return self.get_directory(path_details, base_path)
 
+
 class FakeCollectionImagesManager(FakeFileManager):
-    def __init__(self, root: str = "tests/images", layers: dict | None = None, fs = None):
+    def __init__(self, root: str = "tests/images", layers: dict | None = None, fs=None):
         super().__init__(root, layers, fs)
 
     async def delete_collection(self, base_path: str | Path):
@@ -41,7 +44,7 @@ class FakeCollectionImagesManager(FakeFileManager):
 
 
 class FakeSlideImagesManager(FakeFileManager):
-    def __init__(self, root: str = "tests/images", layers: dict | None = None, fs = None):
+    def __init__(self, root: str = "tests/images", layers: dict | None = None, fs=None):
         super().__init__(root, layers, fs)
 
     async def save_slide_original(self, file_name, img):
@@ -67,7 +70,11 @@ class FakeSlideImagesManager(FakeFileManager):
     @property
     def get_all_slides_paths(self):
         path = self.resolve_path(layer="original_slide")
-        return [self.get_slides_image_path(file) for file in path.iterdir() if file.is_file()]
+        return [
+            self.get_slides_image_path(file)
+            for file in path.iterdir()
+            if file.is_file()
+        ]
 
     @property
     def slides_files_count(self) -> int:

@@ -1,10 +1,10 @@
 import asyncio
 import logging
 
+from adapters.crud import get_db_manager
 from core import conf
-from domain.user import Admin
-from adapters.repo import get_db_manager
 from core.auth import get_password_hash
+from domain.user import Admin
 
 log = logging.getLogger(__name__)
 

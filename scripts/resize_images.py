@@ -1,9 +1,10 @@
 import logging
 from pathlib import Path
 
+from PIL import Image, ImageOps
+
 from core import logger
 from image_worker import IMAGE_PRESETS  # твоя функция и пресеты
-from PIL import Image, ImageOps
 
 log = logging.getLogger(__name__)
 
@@ -12,7 +13,7 @@ BASE_PATH = Path("static/images/base")
 PROCESS_MAP = {
     "products": ["products", "details"],  # исходные товары
     "collections": ["collections"],  # исходные коллекции
-    "slides": ["slides"]
+    "slides": ["slides"],
 }
 
 BASE_DIR = Path("static/images")
@@ -20,8 +21,9 @@ OUTPUT_DIRS = {
     "products": BASE_DIR / "products" / "catalog",
     "collections": BASE_DIR / "collections" / "catalog",
     "details": BASE_DIR / "products" / "details",
-    "slides": BASE_DIR / 'slides'
+    "slides": BASE_DIR / "slides",
 }
+
 
 def resize_image(
     img: Image.Image,
@@ -42,12 +44,8 @@ def resize_image(
 
     raise ValueError(f"Unknown resize mode: {mode}")
 
-def save_image(
-    image: Image.Image,
-    path: Path,
-    form: str,
-    quality: int
-):
+
+def save_image(image: Image.Image, path: Path, form: str, quality: int):
     image.save(
         path,
         form,

@@ -20,8 +20,8 @@ async def build_tile_filters(
         filters["color_name"] = color
     if size:
         length, width, height = (Decimal(i) for i in size.split("×"))
-        tile_size_id = (
-            await manager.read(TileSize, length=length, width=width, height=height)
+        tile_size_id = await manager.read(
+            TileSize, length=length, width=width, height=height
         )
         if len(tile_size_id) != 0:
             tile_size_id = tile_size_id[0]
@@ -71,7 +71,7 @@ async def build_data_for_filters(
             Tile, to_join=["size"], distinct="size_id", **filters
         )
         tile_colors = await manager.read(Tile, distinct="color_name", **filters)
-        #log.debug("tile_sizes before collection filter: %s", tile_sizes)
+        # log.debug("tile_sizes before collection filter: %s", tile_sizes)
 
     sizes = [
         TileSize(
@@ -97,7 +97,7 @@ def build_main_images(tiles):
         images_part = img.split("-")
         images_part[-1] = "0"
         main_images[tile["id"]] = "-".join(images_part)
-        #main_images[tile["id"]] = img[:-2] + "-0"
+        # main_images[tile["id"]] = img[:-2] + "-0"
     return main_images
 
 
@@ -124,9 +124,7 @@ async def fetch_items(manager, limit, offset, **filters):
 async def fetch_collections_items(manager, collection, limit, offset, **filters):
     log.debug("offset: %s, limit: %s", offset, limit)
     log.debug("filters: %s", filters)
-    items = await manager.read(
-        Tile, to_join=["images", "size", "box"], **filters
-    )
+    items = await manager.read(Tile, to_join=["images", "size", "box"], **filters)
     collection = Collections.get_collection_from_slug(collection).lower()
     items = [item for item in items if extract_quoted_word(item["name"]) == collection]
     total_count = len(items)

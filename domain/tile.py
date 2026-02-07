@@ -1,4 +1,5 @@
 from decimal import Decimal
+
 from slugify import slugify
 
 
@@ -121,7 +122,7 @@ class Collections:
         self.name = name
         self.image_path = image_path
         self.slug = slugify(name)
-        self.category_name=category_name
+        self.category_name = category_name
         self.__class__._slug_to_name[self.slug] = name
 
     def __str__(self):

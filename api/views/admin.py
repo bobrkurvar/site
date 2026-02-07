@@ -1,12 +1,13 @@
 import logging
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Request, Form
+from fastapi import APIRouter, Depends, Form, Request
 from fastapi.templating import Jinja2Templates
 from starlette.responses import RedirectResponse
 
-from domain import *
 from adapters.crud import Crud, get_db_manager
+from domain import *
+from domain.exceptions import UnauthorizedError, NotFoundError
 from services.auth import get_tokens_and_check_user
 
 router = APIRouter(tags=["admin"], prefix="/admin")
@@ -21,7 +22,7 @@ async def admin_page(request: Request, manager: dbManagerDep):
     access_token = request.cookies.get("access_token")
     log.debug("cookies: %s", cookies)
     if access_token is None:
-        return RedirectResponse('/admin/login', status_code=303)
+        return RedirectResponse("/admin/login", status_code=303)
 
     tiles = await manager.read(Tile, to_join=["images", "size", "box"])
     tile_sizes = await manager.read(TileSize)
@@ -75,38 +76,55 @@ async def admin_page(request: Request, manager: dbManagerDep):
             "boxes_unique_area": boxes_unique_area,
             "categories": categories,
             "boxes_unique_count": boxes_unique_count,
-            "access_token": access_token
+            "access_token": access_token,
         },
     )
 
+
 @router.get("/login")
-async def admin_login(
-    request: Request,
-    manager: dbManagerDep
-):
+async def admin_login(request: Request, manager: dbManagerDep):
     refresh_token = request.cookies.get("refresh_token")
     if refresh_token is not None:
         try:
-            access_token, refresh_token = await get_tokens_and_check_user(manager, refresh_token)
+            access_token, refresh_token = await get_tokens_and_check_user(
+                manager, refresh_token
+            )
             response = RedirectResponse("/admin", status_code=303)
-            response.set_cookie("access_token", access_token, httponly=True, max_age=900)
-            response.set_cookie("refresh_token", refresh_token, httponly=True, max_age=86400 * 7)
-        except:
-            response = templates.TemplateResponse("admin_login.html", {"request": request, "error": None})
+            response.set_cookie(
+                "access_token", access_token, httponly=True, max_age=900
+            )
+            response.set_cookie(
+                "refresh_token", refresh_token, httponly=True, max_age=86400 * 7
+            )
+        except UnauthorizedError:
+            response = templates.TemplateResponse(
+                "admin_login.html", {"request": request}
+            )
     else:
-        response = templates.TemplateResponse("admin_login.html", {"request": request, "error": None})
+        response = templates.TemplateResponse(
+            "admin_login.html", {"request": request}
+        )
     return response
 
 
-@router.post('/login/submit')
+@router.post("/login/submit")
 async def admin_login_submit(
     manager: dbManagerDep,
     username: Annotated[str, Form()],
     password: Annotated[str, Form()],
 ):
-    access_token, refresh_token = await get_tokens_and_check_user(manager, username=username, password=password)
-    if access_token and refresh_token:
-        response = RedirectResponse("/admin", status_code=303)
-        response.set_cookie("access_token", access_token, httponly=True, max_age=900)
-        response.set_cookie("refresh_token", refresh_token, httponly=True, max_age=86400 * 7)
-        return response
+    try:
+        access_token, refresh_token = await get_tokens_and_check_user(
+            manager, username=username, password=password
+        )
+        if access_token and refresh_token:
+            response = RedirectResponse("/admin", status_code=303)
+            response.set_cookie("access_token", access_token, httponly=True, max_age=900)
+            response.set_cookie(
+                "refresh_token", refresh_token, httponly=True, max_age=86400 * 7
+            )
+            return response
+    except UnauthorizedError:
+        return RedirectResponse("/admin/login?err=401", status_code=303)
+    except NotFoundError:
+        return RedirectResponse("/admin/login?err=409", status_code=303)

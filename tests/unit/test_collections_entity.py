@@ -3,15 +3,14 @@ import logging
 import pytest
 
 import core.logger
-from services.collections import add_collection, delete_collection
 from domain.tile import Collections
+from services.collections import add_collection, delete_collection
+from tests.fakes import (FakeCollectionImagesManager, FakeCRUD, FakeCrudError,
+                         FakeUoW, generate_collections_images)
 
-from tests.fakes import FakeUoW, FakeCRUD, FakeCrudError
-from tests.fakes import FakeCollectionImagesManager, generate_collections_images
 from .helpers import collection_catalog_path
 
 log = logging.getLogger(__name__)
-
 
 
 @pytest.fixture
@@ -31,11 +30,13 @@ async def test_create_collection_success(manager_without_handbooks):
         manager=manager,
         uow_class=FakeUoW,
         generate_images=generate_collections_images,
-        file_manager=file_manager
+        file_manager=file_manager,
     )
     collection_path_with_manager = collection_catalog_path(file_manager)
     assert collection is not None
-    collection_db = await manager.read(Collections, name='collection1', category_name='category1')
+    collection_db = await manager.read(
+        Collections, name="collection1", category_name="category1"
+    )
     assert len(collection_db) != 0
     name = f"{collection["name"]}-{collection["category_name"]}"
     paths_funcs = (file_manager.base_collection_path, collection_path_with_manager)
@@ -44,7 +45,6 @@ async def test_create_collection_success(manager_without_handbooks):
     assert set(fs) == set(expected_paths)
     assert fs[str(file_manager.base_collection_path(f"{name}"))] == b"MAIN"
     assert fs[str(collection_path_with_manager(f"{name}"))] == b"aaa"
-
 
 
 @pytest.mark.asyncio
@@ -59,9 +59,11 @@ async def test_delete_collection_success(manager_without_handbooks):
         manager=manager,
         uow_class=FakeUoW,
         generate_images=generate_collections_images,
-        file_manager=file_manager
+        file_manager=file_manager,
     )
-    collection = await manager.read(Collections, name='collection1', category_name='category1')
+    collection = await manager.read(
+        Collections, name="collection1", category_name="category1"
+    )
     assert len(collection) != 0
     file_manager = FakeCollectionImagesManager(fs=fs)
     await delete_collection(
@@ -69,22 +71,24 @@ async def test_delete_collection_success(manager_without_handbooks):
         category_name="category1",
         manager=manager_without_handbooks,
         uow_class=FakeUoW,
-        file_manager=file_manager
+        file_manager=file_manager,
     )
 
-    collection = await manager.read(Collections, name='collection1', category_name='category1')
+    collection = await manager.read(
+        Collections, name="collection1", category_name="category1"
+    )
     assert len(collection) == 0
     assert not fs
+
 
 @pytest.mark.asyncio
 async def test_delete_collection_fail(manager_without_handbooks):
     file_manager = FakeCollectionImagesManager()
     with pytest.raises(FakeCrudError):
-         await delete_collection(
+        await delete_collection(
             collection_name="collection1",
             category_name="category1",
             manager=manager_without_handbooks,
             uow_class=FakeUoW,
-            file_manager=file_manager
+            file_manager=file_manager,
         )
-

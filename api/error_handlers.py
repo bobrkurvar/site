@@ -2,10 +2,9 @@ import logging
 
 from fastapi import Request
 from fastapi.responses import RedirectResponse
-from core import logger
 
-from domain.exceptions import (AlreadyExistsError,
-                               ForeignKeyViolationError,
+from core import logger
+from domain.exceptions import (AlreadyExistsError, ForeignKeyViolationError,
                                NotFoundError)
 
 log = logging.getLogger(__name__)
@@ -21,20 +20,16 @@ async def already_exists_handler(request: Request, exc: AlreadyExistsError):
     return RedirectResponse("/admin?err=409", status_code=303)
 
 
-async def foreign_key_handler(
-    request: Request, exc: ForeignKeyViolationError
-):
+async def foreign_key_handler(request: Request, exc: ForeignKeyViolationError):
     log.error("Ошибка создания внешнего ключа: %s", exc)
     return RedirectResponse("/admin?err=409", status_code=303)
-
 
 
 async def admin_global_error_handler(request: Request, exc: Exception):
     log.error("Глобальная ошибка: %s", exc)
     return RedirectResponse("/admin?err=500", status_code=303)
 
+
 async def global_error_handler(request: Request, exc: Exception):
     log.error("Глобальная ошибка: %s", exc)
     return RedirectResponse("/", status_code=303)
-
-

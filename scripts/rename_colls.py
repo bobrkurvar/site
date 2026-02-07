@@ -1,10 +1,10 @@
 import asyncio
 import logging
+from pathlib import Path
 
 import core.logger
-from domain.tile import Collections
 from adapters.repo import get_db_manager
-from pathlib import Path
+from domain.tile import Collections
 
 log = logging.getLogger(__name__)
 
@@ -13,13 +13,19 @@ async def new_images_paths_for_collections():
     manager = get_db_manager()
     collections = await manager.read(Collections)
     for collection in collections:
-        old_path = Path(collection['image_path'])
+        old_path = Path(collection["image_path"])
         path_parts = list(Path(old_path).parts)
         if path_parts[4].isdigit():
             path_parts[4] = f"{collection['name']}-{collection['category_name']}"
             new_path = Path(*path_parts)
-            old_paths = [old_path, Path("static/images/collections/catalog") / old_path.name]
-            new_paths = [new_path, Path("static/images/collections/catalog") / new_path.name]
+            old_paths = [
+                old_path,
+                Path("static/images/collections/catalog") / old_path.name,
+            ]
+            new_paths = [
+                new_path,
+                Path("static/images/collections/catalog") / new_path.name,
+            ]
             for old, new in zip(old_paths, new_paths):
                 try:
                     old.rename(new)
@@ -29,7 +35,10 @@ async def new_images_paths_for_collections():
                     print(f"Папкане {old} найдена.")
                 await manager.update(
                     Collections,
-                    {"name": collection["name"], "category_name": collection["category_name"]},
+                    {
+                        "name": collection["name"],
+                        "category_name": collection["category_name"],
+                    },
                     image_path=str(new_path),
                 )
 

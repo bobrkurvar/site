@@ -1,11 +1,17 @@
 from decimal import Decimal
+
 import pytest
-from tests.fakes import FakeUoW, FakeStorage, Table, FakeCRUD, FakeProductImagesManager, noop_generate
+
+from domain import (Box, Categories, Collections, Producer, Tile, TileColor,
+                    TileImages, TileSize, TileSurface)
 from services.tile import add_tile
-from domain import TileSize, TileColor, Box, Categories, Producer, TileSurface, TileImages, Tile, Collections
+from tests.fakes import (FakeCRUD, FakeProductImagesManager, FakeStorage,
+                         FakeUoW, Table, noop_generate)
+
 
 async def noop(*args, **kwargs):
     return None
+
 
 # Генератор размеров
 def generate_tile_sizes(count):
@@ -13,6 +19,7 @@ def generate_tile_sizes(count):
         {"length": Decimal(i), "width": Decimal(i), "height": Decimal(i)}
         for i in range(1, count + 1)
     ]
+
 
 # Генератор цветов
 def generate_tile_colors(count, fix=False):
@@ -31,9 +38,9 @@ def generate_tile_colors(count, fix=False):
 # Генератор боксов
 def generate_boxes(count):
     return [
-        {"weight": Decimal(i * 10), "area": Decimal(i)}
-        for i in range(1, count + 1)
+        {"weight": Decimal(i * 10), "area": Decimal(i)} for i in range(1, count + 1)
     ]
+
 
 # Генератор категорий
 def generate_categories(count):
@@ -93,9 +100,11 @@ def storage():
 
     return storage
 
+
 @pytest.fixture
 def fake_manager(storage):
     return FakeCRUD(storage)
+
 
 @pytest.fixture
 def manager_factory(fake_manager):
@@ -118,15 +127,84 @@ def manager_factory(fake_manager):
                 producer_name="producer1",
                 box_weight=boxes[i]["weight"],
                 box_area=boxes[i]["area"],
-                boxes_count=i+1,
+                boxes_count=i + 1,
                 main_image=b"MAIN",
                 category_name="category",
                 images=[b"A", b"B"],
                 surface="surface1",
                 generate_images=noop_generate,
-                file_manager=file_manager
+                file_manager=file_manager,
             )
         return fake_manager
+
     return _manage_with_items
 
 
+@pytest.fixture
+def storage_with_filled_handbooks():
+    storage = FakeStorage()
+
+    storage.register_tables(
+        [
+            Table(
+                name=TileSize,
+                columns=["id", "length", "width", "height"],
+                rows=[
+                    {
+                        "id": 1,
+                        "length": Decimal(300),
+                        "width": Decimal(200),
+                        "height": Decimal(10),
+                    }
+                ],
+                defaults={"id": 2},
+            ),
+            Table(name=TileSurface, columns=["name"], rows=[{"name": "surface"}]),
+            Table(
+                name=TileImages,
+                columns=["image_id", "tile_id", "image_path"],
+                defaults={"image_id": 1},
+            ),
+            Table(
+                name=TileColor,
+                columns=["color_name", "feature_name"],
+                rows=[{"color_name": "color", "feature_name": "feature"}],
+            ),
+            Table(name=Producer, columns=["name"], rows=[{"name": "producer"}]),
+            Table(name=Categories, columns=["name"], rows=[{"name": "category"}]),
+            Table(
+                name=Box,
+                columns=["id", "weight", "area"],
+                rows=[{"id": 1, "weight": Decimal(30), "area": Decimal(1)}],
+                defaults={"id": 2},
+            ),
+            Table(
+                name=Tile,
+                columns=[
+                    "id",
+                    "name",
+                    "size_id",
+                    "color_name",
+                    "feature_name",
+                    "category_name",
+                    "surface_name",
+                    "producer_name",
+                    "box_id",
+                    "boxes_count",
+                ],
+                defaults={"id": 1},
+            ),
+        ]
+    )
+
+    return storage
+
+
+@pytest.fixture
+def manager_with_handbooks(storage_with_filled_handbooks):
+    return FakeCRUD(storage_with_filled_handbooks)
+
+
+@pytest.fixture
+def manager_without_handbooks(storage):
+    return FakeCRUD(storage)

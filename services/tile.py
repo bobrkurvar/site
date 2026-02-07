@@ -65,7 +65,7 @@ async def add_tile(
             boxes_count=boxes_count,
             session=uow.session,
         )
-        #file_manager.set_path("static/images/base/products")
+        # file_manager.set_path("static/images/base/products")
         images = [img for img in images if img]
         images.insert(0, main_image)
         for n, img in enumerate(images):
@@ -83,7 +83,9 @@ async def add_tile(
                 for layer, miniature in miniatures.items():
                     await file_manager.save_by_layer(image_path, miniature, layer)
             except TypeError:
-                log.debug("generate_image_variant_callback  или save_files не получили нужную функцию")
+                log.debug(
+                    "generate_image_variant_callback  или save_files не получили нужную функцию"
+                )
                 raise
             except FileExistsError:
                 log.debug("путь %s уже занять", image_path)
@@ -91,12 +93,7 @@ async def add_tile(
         return tile_record
 
 
-async def delete_tile(
-        manager,
-        file_manager,
-        uow_class=UnitOfWork,
-        **filters
-):
+async def delete_tile(manager, file_manager, uow_class=UnitOfWork, **filters):
 
     async with uow_class(manager._session_factory) as uow:
         tiles = await manager.read(
@@ -108,6 +105,7 @@ async def delete_tile(
             for image in images_paths:
                 await file_manager.delete_product(image)
         return del_res
+
 
 async def map_to_domain_for_filter(article: int, manager, session, **params):
     for_tile = {}

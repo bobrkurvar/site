@@ -1,6 +1,6 @@
 import logging
-from typing import Any
 from copy import deepcopy
+from typing import Any
 
 from domain import Box, TileImages, TileSize
 
@@ -9,7 +9,13 @@ log = logging.getLogger(__name__)
 
 class Table:
 
-    def __init__(self, name, columns: list[str], rows: list[dict] | None = None, defaults: dict[str, Any] | None = None):
+    def __init__(
+        self,
+        name,
+        columns: list[str],
+        rows: list[dict] | None = None,
+        defaults: dict[str, Any] | None = None,
+    ):
         self.name = name
         self.columns = columns
         self.rows = rows if rows else []
@@ -31,7 +37,7 @@ class Table:
                 to_row = {}
                 for row in other.rows or []:
                     if row["id"] == new_table.rows[i]["box_id"] and (
-                            "weight" in row or "area" in row
+                        "weight" in row or "area" in row
                     ):
                         to_row.update(
                             {"box_area": row["area"], "box_weight": row["weight"]}
@@ -45,7 +51,7 @@ class Table:
                 to_row = {}
                 for row in other.rows or []:
                     if row["id"] == new_table.rows[i]["size_id"] and (
-                            "length" in row or "width" in row or "height" in row
+                        "length" in row or "width" in row or "height" in row
                     ):
                         to_row.update(
                             {
@@ -63,13 +69,13 @@ class Table:
                 images = [
                     row["image_path"]
                     for row in (other.rows or [])
-                    if row["tile_id"] == new_table.rows[i]["id"]
-                       and "image_path" in row
+                    if row["tile_id"] == new_table.rows[i]["id"] and "image_path" in row
                 ]
 
                 if images:
                     new_table.rows[i]["images_paths"] = images
         return new_table
+
 
 class FakeCrudError(Exception):
 
@@ -114,7 +120,9 @@ class FakeStorage:
         table.rows.append(columns)
         return columns
 
-    def read(self, model, to_join=None, distinct = None, limit=None, offset=None, **filters):
+    def read(
+        self, model, to_join=None, distinct=None, limit=None, offset=None, **filters
+    ):
         table = self.tables[model]
         if not table.rows:
             return []
@@ -122,7 +130,7 @@ class FakeStorage:
         result = []
         if to_join:
             for t in to_join:
-                #log.debug("FAKE JOIN %s", t)
+                # log.debug("FAKE JOIN %s", t)
                 t = self.to_join.get(t, t)
                 t = self.tables[t]
                 table = table + t
@@ -138,7 +146,7 @@ class FakeStorage:
             unique_result = []
             for row in result:
                 key = tuple(row.get(f) for f in distinct)
-                #log.debug("DISTINCT: %s", key)
+                # log.debug("DISTINCT: %s", key)
                 if key not in seen:
                     seen.add(key)
                     unique_result.append(row)
@@ -153,7 +161,7 @@ class FakeStorage:
 
     def update(self, model, filters, **values):
         table = self.tables[model]
-        #log.debug("UPDATE TABLE %s FILTERS: %s, VALUES: %s", model, filters, values)
+        # log.debug("UPDATE TABLE %s FILTERS: %s, VALUES: %s", model, filters, values)
         for i in range(len(table.rows)):
             if all(table.rows[i][f] == v for f, v in filters.items()):
                 for k, v in values.items():
@@ -162,7 +170,7 @@ class FakeStorage:
     def delete(self, model, **filters):
         table = self.tables[model]
         del_res = []
-        #log.debug("DELETE TABLE %s FILTERS: %s", model, filters)
+        # log.debug("DELETE TABLE %s FILTERS: %s", model, filters)
         for i in range(len(table.rows)):
             if all(table.rows[i][f] == v for f, v in filters.items()):
                 del_res.append(table.rows[i])
@@ -178,14 +186,30 @@ class FakeCRUD:
     def __init__(self, storage: FakeStorage):
         self.storage = storage
 
-    async def create(self, model, session = None, **columns):
+    async def create(self, model, session=None, **columns):
         return self.storage.add(model, **columns)
 
-    async def read(self, model, session = None, to_join = None, distinct = None, limit = None, offset=None, **filters):
-        return self.storage.read(model, to_join=to_join, distinct=distinct, limit=limit, offset=offset, **filters)
+    async def read(
+        self,
+        model,
+        session=None,
+        to_join=None,
+        distinct=None,
+        limit=None,
+        offset=None,
+        **filters,
+    ):
+        return self.storage.read(
+            model,
+            to_join=to_join,
+            distinct=distinct,
+            limit=limit,
+            offset=offset,
+            **filters,
+        )
 
     async def update(self, model, filters: dict, session=None, **values):
-        return self.storage.update(model, filters,  **values)
+        return self.storage.update(model, filters, **values)
 
     async def delete(self, model, session=None, **filters):
         return self.storage.delete(model, **filters)

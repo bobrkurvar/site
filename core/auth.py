@@ -1,11 +1,11 @@
 import logging
 from datetime import datetime, timedelta, timezone
 
-import jwt
-from domain.exceptions import UnauthorizedError
 import bcrypt
+import jwt
 
 from core import conf, logger
+from domain.exceptions import UnauthorizedError
 
 secret_key = conf.secret_key
 algorithm = conf.algorithm
@@ -17,12 +17,14 @@ def get_password_hash(password: str) -> str:
     hashed = bcrypt.hashpw(password.encode(), salt)
     return hashed.decode()
 
+
 def verify(password: str, hashed: str) -> bool:
     return bcrypt.checkpw(password.encode(), hashed.encode())
 
+
 def create_access_token(data: dict, expires_delta: timedelta = None) -> str:
     to_encode = data.copy()
-    #log.debug("UTC: %s", datetime.now(timezone.utc))
+    # log.debug("UTC: %s", datetime.now(timezone.utc))
     expire = (
         datetime.now(timezone.utc) + expires_delta
         if expires_delta
@@ -57,11 +59,17 @@ def check_refresh_token(refresh_token: str, username: str):
 
 
 async def create_dict_tokens_and_save(username):
-    access_token = create_access_token({"sub":username, "type": "access"})
+    access_token = create_access_token({"sub": username, "type": "access"})
     refresh_token = create_refresh_token({"sub": username, "type": "refresh"})
     return access_token, refresh_token
 
-async def get_tokens(refresh_token: str | None = None, password_hash: str = None, password: str | None = None, username: str | None = None):
+
+async def get_tokens(
+    refresh_token: str | None = None,
+    password_hash: str = None,
+    password: str | None = None,
+    username: str | None = None,
+):
     access_token = None
     if password is not None and verify(password, password_hash):
         log.debug("password verify")
@@ -74,4 +82,6 @@ async def get_tokens(refresh_token: str | None = None, password_hash: str = None
         log.info("refresh token прошёл проверку")
         username = payload.get("sub")
         access_token, refresh_token = await create_dict_tokens_and_save(username)
+    if access_token is None:
+        raise UnauthorizedError(validate=True)
     return access_token, refresh_token

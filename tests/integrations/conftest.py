@@ -1,27 +1,32 @@
+import logging
+import shutil
+from pathlib import Path
+
+import pytest
 from alembic import command
 from alembic.config import Config
+from sqlalchemy import text
+
 from adapters.crud import get_db_manager
 from core import conf
-import logging
-import pytest
-from sqlalchemy import text
-from pathlib import Path
-import shutil
-
 
 log = logging.getLogger(__name__)
 
 
+
 @pytest.fixture(autouse=True)
 async def clean_db_after_test(request):
-    engine = get_db_manager(test=True)._engine
     if request.node.get_closest_marker("integration") is None:
+        yield
         return
 
     yield
-
+    manager = get_db_manager(test=True)
+    engine = manager._engine
     async with engine.begin() as conn:
-        await conn.execute(text("""
+        await conn.execute(
+            text(
+                """
             TRUNCATE
                 tile_images,
                 categories,
@@ -34,7 +39,10 @@ async def clean_db_after_test(request):
                 tile_surface
                 
             RESTART IDENTITY CASCADE;
-        """))
+        """
+            )
+        )
+    await manager.close_and_dispose()
 
 
 @pytest.fixture(autouse=True)

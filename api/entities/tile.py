@@ -1,13 +1,13 @@
 import logging
 from typing import Annotated
-from adapters.images import generate_image_products_catalog_and_details
 
 from fastapi import APIRouter, Depends, File, Form, UploadFile
 from fastapi.responses import RedirectResponse
 
-from domain import *
 from adapters.crud import Crud, get_db_manager
-from adapters.images import ProductImagesManager
+from adapters.images import (ProductImagesManager,
+                             generate_image_products_catalog_and_details)
+from domain import *
 from services.tile import add_tile, delete_tile, update_tile
 
 router = APIRouter(prefix="/admin/tiles")
@@ -83,7 +83,7 @@ async def admin_create_tile(
         generate_images=generate_image_products_catalog_and_details,
         file_manager=ProductImagesManager(),
         color_feature=feature_name,
-        surface=surface_name
+        surface=surface_name,
     )
     return RedirectResponse("/admin", status_code=303)
 

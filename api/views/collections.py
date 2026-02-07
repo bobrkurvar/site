@@ -4,20 +4,17 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Request
 from fastapi.templating import Jinja2Templates
 
-from domain import Categories, Collections, Tile, map_to_tile_domain
 from adapters.crud import Crud, get_db_manager
 from adapters.images import CollectionImagesManager, ProductImagesManager
+from core.config import COLLECTIONS_PER_PAGE
+from domain import Categories, Collections, Tile, map_to_tile_domain
 from services.views import (build_data_for_filters, build_main_images,
                             build_tile_filters, fetch_collections_items)
-
-from core.config import COLLECTIONS_PER_PAGE
 
 router = APIRouter(tags=["presentation"], prefix="/catalog")
 dbManagerDep = Annotated[Crud, Depends(get_db_manager)]
 templates = Jinja2Templates("templates")
 log = logging.getLogger(__name__)
-
-
 
 
 @router.get("/{category}/collections")
@@ -45,7 +42,6 @@ async def get_collections_page(
     total_pages = max((total_count + limit - 1) // limit, 1)
     categories = await manager.read(Tile, distinct="category_name")
     categories = [Categories(name=category["category_name"]) for category in categories]
-
 
     return templates.TemplateResponse(
         "catalog.html",
@@ -88,7 +84,9 @@ async def get_catalog_tiles_page(
     #     main_images[k] = await get_image_path(main_images[k], "products", "catalog")
     product_manager = ProductImagesManager()
     for k in main_images:
-        main_images[k] = await product_manager.get_product_catalog_image_path(main_images[k])
+        main_images[k] = product_manager.get_product_catalog_image_path(
+            main_images[k]
+        )
     tiles = [map_to_tile_domain(tile) for tile in tiles]
 
     total_pages = max((total_count + limit - 1) // limit, 1)

@@ -1,8 +1,10 @@
 import logging
+
 import jwt
 from fastapi import Request
-from domain.exceptions import UnauthorizedError
+
 from core import conf
+from domain.exceptions import UnauthorizedError
 
 secret_key = conf.secret_key
 algorithm = conf.algorithm
@@ -25,4 +27,3 @@ def get_user_from_token(request: Request):
     except jwt.InvalidTokenError:
         raise UnauthorizedError(access_token=True)
     return username
-

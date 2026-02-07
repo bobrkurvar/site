@@ -4,8 +4,8 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Form
 from fastapi.responses import RedirectResponse
 
-from domain import TileSurface
 from adapters.crud import Crud, get_db_manager
+from domain import TileSurface
 
 router = APIRouter(prefix="/admin/tiles/surfaces")
 dbManagerDep = Annotated[Crud, Depends(get_db_manager)]

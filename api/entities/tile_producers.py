@@ -4,8 +4,8 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Form
 from fastapi.responses import RedirectResponse
 
-from domain import Producer
 from adapters.crud import Crud, get_db_manager
+from domain import Producer
 
 router = APIRouter(prefix="/admin/tiles/producers")
 dbManagerDep = Annotated[Crud, Depends(get_db_manager)]

@@ -1,17 +1,25 @@
-from domain.user import Admin
-from core.auth import get_tokens
 import logging
+
+from core.auth import get_tokens
+from domain.user import Admin
+from domain.exceptions import UnauthorizedError, NotFoundError
 
 log = logging.getLogger(__name__)
 
-async def get_tokens_and_check_user(manager, refresh_token: str | None = None, password: str | None = None, username: str | None = None):
+
+async def get_tokens_and_check_user(
+    manager,
+    refresh_token: str | None = None,
+    password: str | None = None,
+    username: str | None = None,
+):
     password_hash = None
     if refresh_token is None:
         log.debug("refresh token: %s", refresh_token)
-        cur = (await manager.read(Admin, username=username))
+        cur = await manager.read(Admin, username=username)
         if len(cur) == 0:
             log.debug("USER NOT FOUND")
-            raise Exception
+            raise NotFoundError(Admin, username, "username")
         cur = cur[0]
         username = cur.get("username")
         password_hash = cur.get("password")
