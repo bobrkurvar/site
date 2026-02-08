@@ -78,10 +78,15 @@ async def add_tile(
                 session=uow.session,
             )
             try:
-                await file_manager.save(image_path, img)
-                miniatures = await generate_images(img)
-                for layer, miniature in miniatures.items():
-                    await file_manager.save_by_layer(image_path, miniature, layer)
+                # await file_manager.save(image_path, img)
+                # miniatures = await generate_images(img)
+                # for layer, miniature in miniatures.items():
+                #     await file_manager.save_by_layer(image_path, miniature, layer)
+                async with file_manager.session() as files:
+                    await files.save(image_path, img)
+                    miniatures = await generate_images(img)
+                    for layer, miniature in miniatures.items():
+                        await files.save_by_layer(image_path, miniature, layer)
             except TypeError:
                 log.debug(
                     "generate_image_variant_callback  или save_files не получили нужную функцию"

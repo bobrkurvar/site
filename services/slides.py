@@ -10,10 +10,15 @@ async def add_slides(images: list[bytes], generate_images, file_manager):
     for i, image in enumerate(images):
         file_name = str(extra_num + i)
         try:
-            await file_manager.save_slide_original(file_name, image)
-            miniatures = await generate_images(image)
-            for layer, miniature in miniatures.items():
-                await file_manager.save_by_layer(file_name, miniature, layer)
+            # await file_manager.save_slide_original(file_name, image)
+            # miniatures = await generate_images(image)
+            # for layer, miniature in miniatures.items():
+            #     await file_manager.save_by_layer(file_name, miniature, layer)
+            async with file_manager.session() as files:
+                await files.save_slide_original(file_name, image)
+                miniatures = await generate_images(image)
+                for layer, miniature in miniatures.items():
+                    await files.save_by_layer(file_name, miniature, layer)
         except TypeError:
             log.debug(
                 "generate_image_variant_callback  или save_files не получили нужную функцию"
