@@ -1,7 +1,8 @@
 import logging
 
-from domain import Collections
+from domain import Collections, Slug
 from services.UoW import UnitOfWork
+from slugify import slugify
 
 log = logging.getLogger(__name__)
 
@@ -26,6 +27,7 @@ async def add_collection(
             image_path=str(image_path),
             session=uow.session,
         )
+        await manager.create(Slug, name=name, slug=slugify(name))
         try:
             async with file_manager.session() as files:
                 await files.save(image_path, image)
@@ -58,5 +60,6 @@ async def delete_collection(
             category_name=category_name,
             session=uow.session,
         )
+        await manager.delete(Slug, name=collection_name)
         collection = collection[0]
         await file_manager.delete_collection(collection["image_path"])

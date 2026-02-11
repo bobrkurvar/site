@@ -232,3 +232,12 @@ class Admins(Base):
 
     def model_dump(self):
         return {"username": self.username, "password": self.password}
+
+
+class Slug(Base):
+    __tablename__ = "slugs"
+    name: Mapped[str] = mapped_column(primary_key=True)
+    slug: Mapped[str] = mapped_column(primary_key=True)
+
+    def model_dump(self):
+        return {"name": self.name, "slug": self.slug}

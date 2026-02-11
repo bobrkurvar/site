@@ -1,7 +1,8 @@
 import logging
 
-from domain.tile import *
+from domain import *
 from services.UoW import UnitOfWork
+from slugify import slugify
 
 log = logging.getLogger(__name__)
 
@@ -49,6 +50,7 @@ async def add_tile(
         )
         await add_items(Producer, manager, uow.session, name=producer_name)
         await add_items(Categories, manager, uow.session, name=category_name)
+        await add_items(Slug, manager, uow.session, name=name, slug=slugify(name))
         box = await add_items(
             Box, manager, uow.session, weight=box_weight, area=box_area
         )

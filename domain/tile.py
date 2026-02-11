@@ -59,19 +59,19 @@ class Box:
 
 class Categories:
 
-    _slug_to_name = {}
+    #_slug_to_name = {}
 
     def __init__(self, name: str):
         self.name = name
         self.slug = slugify(name)
-        self.__class__._slug_to_name[self.slug] = name
+        #self.__class__._slug_to_name[self.slug] = name
 
     def __str__(self):
         return self.name
 
-    @classmethod
-    def get_category_from_slug(cls, slug: str):
-        return cls._slug_to_name[slug]
+    # @classmethod
+    # def get_category_from_slug(cls, slug: str):
+    #     return cls._slug_to_name[slug]
 
 
 class Tile:
@@ -116,21 +116,21 @@ class TileImages:
 
 
 class Collections:
-    _slug_to_name = {}
+    #_slug_to_name = {}
 
     def __init__(self, name: str, image_path: str, category_name: str):
         self.name = name
         self.image_path = image_path
-        self.slug = slugify(name)
+        #self.slug = slugify(name)
         self.category_name = category_name
-        self.__class__._slug_to_name[self.slug] = name
+        #self.__class__._slug_to_name[self.slug] = name
 
     def __str__(self):
         return self.name
 
-    @classmethod
-    def get_collection_from_slug(cls, slug: str):
-        return cls._slug_to_name[slug]
+    # @classmethod
+    # def get_collection_from_slug(cls, slug: str):
+    #     return cls._slug_to_name[slug]
 
 
 def map_to_tile_domain(tile_dict: dict) -> Tile:

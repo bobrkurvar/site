@@ -197,15 +197,6 @@ log = logging.getLogger(__name__)
 
 
 class Crud:
-    # _engine = None
-    # _session_factory = None
-    #
-    # def __init__(self, url, domain_with_orm: dict | None = None):
-    #     if self.__class__._engine is None:
-    #         self.__class__._engine = create_async_engine(url)
-    #     if self.__class__._session_factory is None:
-    #         self.__class__._session_factory = async_sessionmaker(self._engine)
-    #     self._mapper = domain_with_orm if domain_with_orm else {}
 
     def __init__(self, url, domain_with_orm: dict | None = None):
         self.url = url
@@ -404,6 +395,7 @@ def get_db_manager(test=False) -> Crud:
         domain.Categories: models.Categories,
         domain.Collections: models.Collections,
         domain.Admin: models.Admins,
+        domain.Slug: models.Slug
     }
     global db_manager
     if db_manager is None:

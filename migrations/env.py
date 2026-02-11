@@ -28,7 +28,7 @@ if config.config_file_name is not None:
 target_metadata = Base.metadata
 db_url = config.get_main_option("sqlalchemy.url")
 if not db_url:
-    db_url = conf.test_db_url
+    db_url = conf.db_url
     config.set_main_option("sqlalchemy.url", db_url)
 
 # other values from the config, defined by the needs of env.py,

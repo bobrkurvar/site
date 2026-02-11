@@ -7,7 +7,7 @@ from fastapi.templating import Jinja2Templates
 from adapters.crud import Crud, get_db_manager
 from adapters.images import CollectionImagesManager, ProductImagesManager
 from core.config import COLLECTIONS_PER_PAGE
-from domain import Categories, Collections, Tile, map_to_tile_domain
+from domain import Categories, Collections, Tile, map_to_tile_domain, Slug
 from services.views import (build_data_for_filters, build_main_images,
                             build_tile_filters, fetch_collections_items)
 
@@ -26,15 +26,13 @@ async def get_collections_page(
 ):
     limit = COLLECTIONS_PER_PAGE
     offset = (page - 1) * limit
-
-    category_name = Categories.get_category_from_slug(category)
+    category_name = (await manager.read(Slug, slug=category))[0]["name"]
+    #category_name = Categories.get_category_from_slug(category)
 
     collections = await manager.read(
         Collections, category_name=category_name, offset=offset, limit=limit
     )
     collections = [Collections(**collection) for collection in collections]
-    # for coll in collections:
-    #     coll.image_path = await get_image_path(coll.image_path, 'collections', 'catalog')
     collection_manager = CollectionImagesManager()
     for coll in collections:
         coll.image_path = collection_manager.get_collections_image_path(coll.image_path)
@@ -80,18 +78,16 @@ async def get_catalog_tiles_page(
         manager, collection=collection, category=category
     )
     main_images = build_main_images(tiles)
-    # for k in main_images:
-    #     main_images[k] = await get_image_path(main_images[k], "products", "catalog")
     product_manager = ProductImagesManager()
     for k in main_images:
         main_images[k] = product_manager.get_product_catalog_image_path(
             main_images[k]
         )
-    tiles = [map_to_tile_domain(tile) for tile in tiles]
+    #tiles = [map_to_tile_domain(tile) for tile in tiles]
 
     total_pages = max((total_count + limit - 1) // limit, 1)
     categories = await manager.read(Tile, distinct="category_name")
-    categories = [Categories(name=category["category_name"]) for category in categories]
+    #categories = [Categories(name=category["category_name"]) for category in categories]
 
     path = f"/catalog/{category}/collections/{collection}"
 
