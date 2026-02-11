@@ -20,3 +20,5 @@ def product_details_path(manager: FakeFileManager):
         return manager.resolve_path(file_name, "details")
 
     return wrapper
+
+

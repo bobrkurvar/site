@@ -3,9 +3,9 @@ import logging
 import pytest
 
 import core.logger
-from domain.tile import Collections
+from domain import Collections, NotFoundError
 from services.collections import add_collection, delete_collection
-from tests.fakes import (FakeCollectionImagesManager, FakeCRUD, FakeCrudError,
+from tests.fakes import (FakeCollectionImagesManager, FakeCRUD,
                          FakeUoW, generate_collections_images)
 
 from .helpers import collection_catalog_path
@@ -84,7 +84,7 @@ async def test_delete_collection_success(manager_without_handbooks):
 @pytest.mark.asyncio
 async def test_delete_collection_fail(manager_without_handbooks):
     file_manager = FakeCollectionImagesManager()
-    with pytest.raises(FakeCrudError):
+    with pytest.raises(NotFoundError):
         await delete_collection(
             collection_name="collection1",
             category_name="category1",

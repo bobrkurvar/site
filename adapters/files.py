@@ -94,7 +94,7 @@ class FileSession:
         self._saved_files.append(image_path)
 
     async def save_by_layer(self, image_path: Path, img: bytes, layer: str):
-        await self.save_by_layer(image_path, img, layer)
+        await self._fm.save_by_layer(image_path, img, layer)
         self._saved_files.append(image_path)
 
     async def rollback(self):

@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
 from adapters.crud import get_db_manager
@@ -13,8 +13,9 @@ from api.error_handlers import *
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     http_client.connect()
-    yield
     manager = get_db_manager()
+    manager.connect()
+    yield
     await manager.close_and_dispose()
     await http_client.close()
 

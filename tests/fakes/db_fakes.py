@@ -2,9 +2,51 @@ import logging
 from copy import deepcopy
 from typing import Any
 
-from domain import Box, TileImages, TileSize
+from domain import Box, TileImages, TileSize, NotFoundError
 
 log = logging.getLogger(__name__)
+
+
+def join_tile_with_box(new_table, other_table):
+    new_table.columns += ["box_weight", "box_area"]
+
+    for row in new_table.rows:
+        to_row = {}
+        for other_row in other_table.rows or []:
+            if other_row["id"] == row["box_id"]:
+                to_row.update(
+                    {"box_area": other_row["area"], "box_weight": other_row["weight"]}
+                )
+        row.update(to_row)
+
+def join_tile_with_size(new_table, other_table):
+    new_table.columns += ["size_length", "size_width", "size_height"]
+
+    for row in new_table.rows:
+        to_row = {}
+        for other_row in other_table.rows or []:
+            if other_row["id"] == row["size_id"]:
+                to_row.update(
+                    {
+                        "size_length": other_row["length"],
+                        "size_width": other_row["width"],
+                        "size_height": other_row["height"],
+                    }
+                )
+        row.update(to_row)
+
+def join_tile_with_images(new_table, other_table):
+    new_table.columns += ["images_paths"]
+
+    for row in new_table.rows:
+        images = [
+            other_row["image_path"]
+            for other_row in (other_table.rows or [])
+            if other_row["tile_id"] == row["id"]
+        ]
+
+        if images:
+            row["images_paths"] = images
 
 
 class Table:
@@ -22,69 +64,20 @@ class Table:
         self.defaults = defaults
 
     def __add__(self, other):
-        # создаём новую таблицу
         new_table = Table(
             name=self.name,
             columns=self.columns.copy(),
             rows=deepcopy(self.rows),
             defaults=self.defaults,
         )
-
         if other.name is Box:
-            new_table.columns += ["box_weight", "box_area"]
-
-            for i in range(len(new_table.rows)):
-                to_row = {}
-                for row in other.rows or []:
-                    if row["id"] == new_table.rows[i]["box_id"] and (
-                        "weight" in row or "area" in row
-                    ):
-                        to_row.update(
-                            {"box_area": row["area"], "box_weight": row["weight"]}
-                        )
-                new_table.rows[i].update(to_row)
-
+            join_tile_with_box(new_table, other)
         elif other.name is TileSize:
-            new_table.columns += ["size_length", "size_width", "size_height"]
-
-            for i in range(len(new_table.rows)):
-                to_row = {}
-                for row in other.rows or []:
-                    if row["id"] == new_table.rows[i]["size_id"] and (
-                        "length" in row or "width" in row or "height" in row
-                    ):
-                        to_row.update(
-                            {
-                                "size_length": row["length"],
-                                "size_width": row["width"],
-                                "size_height": row["height"],
-                            }
-                        )
-                new_table.rows[i].update(to_row)
-
+            join_tile_with_size(new_table, other)
         elif other.name is TileImages:
-            new_table.columns += ["images_paths"]
+            join_tile_with_images(new_table, other)
 
-            for i in range(len(new_table.rows)):
-                images = [
-                    row["image_path"]
-                    for row in (other.rows or [])
-                    if row["tile_id"] == new_table.rows[i]["id"] and "image_path" in row
-                ]
-
-                if images:
-                    new_table.rows[i]["images_paths"] = images
         return new_table
-
-
-class FakeCrudError(Exception):
-
-    def __init__(self, err: str):
-        super().__init__()
-        self.err = err
-
-    def __str__(self):
-        return self.err
 
 
 class FakeStorage:
@@ -101,22 +94,23 @@ class FakeStorage:
         for model in models:
             self.tables[model.name] = model
 
+    @staticmethod
+    def _add_default(table_column, table, columns):
+        columns.update(
+            {
+                table_column: (
+                    table.defaults[table_column] if table.defaults else None
+                )
+            }
+        )
+        if isinstance(table.defaults[table_column], int):
+            table.defaults[table_column] += 1
+
     def add(self, model, **columns):
         table = self.tables[model]
-        if table.rows is None:
-            table.rows = []
         for table_column in table.columns:
             if table_column not in columns:
-                columns.update(
-                    {
-                        table_column: (
-                            table.defaults[table_column] if table.defaults else None
-                        )
-                    }
-                )
-                if isinstance(table.defaults[table_column], int):
-                    table.defaults[table_column] += 1
-
+                self._add_default(table_column, table, columns)
         table.rows.append(columns)
         return columns
 
@@ -130,7 +124,6 @@ class FakeStorage:
         result = []
         if to_join:
             for t in to_join:
-                # log.debug("FAKE JOIN %s", t)
                 t = self.to_join.get(t, t)
                 t = self.tables[t]
                 table = table + t
@@ -141,12 +134,11 @@ class FakeStorage:
 
         if distinct:
             if isinstance(distinct, str):
-                distinct = [distinct]
+                distinct = (distinct, )
             seen = set()
             unique_result = []
             for row in result:
                 key = tuple(row.get(f) for f in distinct)
-                # log.debug("DISTINCT: %s", key)
                 if key not in seen:
                     seen.add(key)
                     unique_result.append(row)
@@ -161,7 +153,6 @@ class FakeStorage:
 
     def update(self, model, filters, **values):
         table = self.tables[model]
-        # log.debug("UPDATE TABLE %s FILTERS: %s, VALUES: %s", model, filters, values)
         for i in range(len(table.rows)):
             if all(table.rows[i][f] == v for f, v in filters.items()):
                 for k, v in values.items():
@@ -170,13 +161,12 @@ class FakeStorage:
     def delete(self, model, **filters):
         table = self.tables[model]
         del_res = []
-        # log.debug("DELETE TABLE %s FILTERS: %s", model, filters)
         for i in range(len(table.rows)):
             if all(table.rows[i][f] == v for f, v in filters.items()):
                 del_res.append(table.rows[i])
                 del table.rows[i]
         if not del_res:
-            raise FakeCrudError(f"NOT EXISTS filters: {filters}")
+            raise NotFoundError(model, **filters)
         return del_res
 
 

@@ -14,14 +14,11 @@ log = logging.getLogger(__name__)
 
 
 
-@pytest.fixture(autouse=True)
-async def clean_db_after_test(request):
-    if request.node.get_closest_marker("integration") is None:
-        yield
-        return
-
-    yield
+@pytest.fixture
+async def manager(request):
     manager = get_db_manager(test=True)
+    manager.connect()
+    yield manager
     engine = manager._engine
     async with engine.begin() as conn:
         await conn.execute(

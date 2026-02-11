@@ -10,6 +10,7 @@ from domain import Tile, TileImages
 from services.tile import add_tile, delete_tile, update_tile
 from tests.fakes import generate_products_images
 from tests.conftest import domain_handbooks_models
+from .conftest import manager
 
 from .helpers import product_files_count, fill_handbooks
 
@@ -18,7 +19,7 @@ log = logging.getLogger(__name__)
 
 @pytest.mark.asyncio
 @pytest.mark.integration
-async def test_integrate_create_tile_success_when_handbooks_not_exists(domain_handbooks_models):
+async def test_integrate_create_tile_success_when_handbooks_not_exists(domain_handbooks_models, manager):
     manager = get_db_manager(test=True)
     file_manager = ProductImagesManager(root="tests/images")
     # выполнение add_tile
@@ -62,8 +63,7 @@ async def test_integrate_create_tile_success_when_handbooks_not_exists(domain_ha
 
 @pytest.mark.asyncio
 @pytest.mark.integration
-async def test_create_tile_success_when_all_handbooks_exists(domain_handbooks_models):
-    manager = get_db_manager(test=True)
+async def test_create_tile_success_when_all_handbooks_exists(domain_handbooks_models, manager):
     file_manager = ProductImagesManager(root="tests/images")
 
     # заполняю справочники данными, которые будут использоваться при создании
@@ -125,8 +125,7 @@ async def test_create_tile_success_when_all_handbooks_exists(domain_handbooks_mo
 
 @pytest.mark.asyncio
 @pytest.mark.integration
-async def test_update_tile_success_when_new_attributes_in_handbooks(domain_handbooks_models):
-    manager = get_db_manager(test=True)
+async def test_update_tile_success_when_new_attributes_in_handbooks(domain_handbooks_models, manager):
     file_manager = ProductImagesManager(root="tests/images")
 
     # выполнение add_tile

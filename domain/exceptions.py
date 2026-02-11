@@ -10,12 +10,11 @@ class RepositoryError(Exception):
 class NotFoundError(RepositoryError):
     """Не найдена запись в базе"""
 
-    def __init__(self, entity_name, ident: str | None = None, ident_val=None):
+    def __init__(self, entity_name, **filters):
         self.entity_name = entity_name
-        self.ident = ident
-        self.ident_val = ident_val
-        if ident and ident_val:
-            super().__init__(f"{entity_name} with {ident} = {ident_val} not found")
+        self.filters = filters
+        if filters:
+            super().__init__(f"{entity_name} with {filters}")
         else:
             super().__init__(f"{entity_name} not found")
 

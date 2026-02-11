@@ -27,13 +27,16 @@ class FakeFileManager:
             }
         )
 
+    def session(self):
+        return FakeFileSession(self)
+
     def resolve_path(self, file_name: str | None = "", layer: str = None):
         if layer not in self._layers:
             raise ValueError(f"Unknown layer: {layer}")
         return self._root / self._layers.get(layer, "") / file_name
 
     async def save(self, image_path, img):
-        log.debug("IN SAVE IMAGE_PATH: %s", image_path)
+        #log.debug("IN SAVE IMAGE_PATH: %s", image_path)
         self._fs[str(image_path)] = img
 
     async def save_by_layer(self, image_path, img, layer: str):
@@ -65,6 +68,38 @@ class FakeFileManager:
         if main_path.exists():
             return str(main_path)
         return str(other_path)
+
+class FakeFileSession:
+    def __init__(self, file_manager: FakeFileManager):
+        self._fm = file_manager
+        self._saved_files: list[Path] = []
+
+    async def __aenter__(self):
+        return self  # ← возвращаем proxy, а не fm
+
+    async def __aexit__(self, exc_type, exc, tb):
+        if exc:
+            await self.rollback()
+        else:
+            self._saved_files.clear()
+
+    # --- перехватываем нужные методы ---
+
+    async def save(self, image_path: Path, img: bytes):
+        await self._fm.save(image_path, img)
+        self._saved_files.append(image_path)
+
+    async def save_by_layer(self, image_path: Path, img: bytes, layer: str):
+        await self._fm.save_by_layer(image_path, img, layer)
+        self._saved_files.append(image_path)
+
+    async def rollback(self):
+        await self._fm.delete_async(self._saved_files)
+
+    # --- проксируем всё остальное ---
+    def __getattr__(self, name):
+        return getattr(self._fm, name)
+
 
 
 async def generate_products_images(*args, **kwargs) -> dict:

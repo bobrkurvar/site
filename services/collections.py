@@ -27,10 +27,6 @@ async def add_collection(
             session=uow.session,
         )
         try:
-            # await file_manager.save(image_path, image)
-            # miniatures = await generate_images(image)
-            # for layer, miniature in miniatures.items():
-            #     await file_manager.save_by_layer(image_path, miniature, layer)
             async with file_manager.session() as files:
                 await files.save(image_path, image)
                 miniatures = await generate_images(image)

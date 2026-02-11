@@ -58,7 +58,7 @@ def storage():
                 columns=["id", "length", "width", "height"],
                 defaults={"id": 1},
             ),
-            Table(name=TileSurface, columns=["name"], rows=[{"name": "surface"}]),
+            Table(name=TileSurface, columns=["name"]),
             Table(
                 name=TileImages,
                 columns=["image_id", "tile_id", "image_path"],
@@ -68,8 +68,8 @@ def storage():
                 name=TileColor,
                 columns=["color_name", "feature_name"],
             ),
-            Table(name=Producer, columns=["name"], rows=[{"name": "producer"}]),
-            Table(name=Categories, columns=["name"], rows=[{"name": "category"}]),
+            Table(name=Producer, columns=["name"]),
+            Table(name=Categories, columns=["name"]),
             Table(
                 name=Box,
                 columns=["id", "weight", "area"],
@@ -141,61 +141,16 @@ def manager_factory(fake_manager):
 
 
 @pytest.fixture
-def storage_with_filled_handbooks():
-    storage = FakeStorage()
-
-    storage.register_tables(
-        [
-            Table(
-                name=TileSize,
-                columns=["id", "length", "width", "height"],
-                rows=[
-                    {
-                        "id": 1,
-                        "length": Decimal(300),
-                        "width": Decimal(200),
-                        "height": Decimal(10),
-                    }
-                ],
-                defaults={"id": 2},
-            ),
-            Table(name=TileSurface, columns=["name"], rows=[{"name": "surface"}]),
-            Table(
-                name=TileImages,
-                columns=["image_id", "tile_id", "image_path"],
-                defaults={"image_id": 1},
-            ),
-            Table(
-                name=TileColor,
-                columns=["color_name", "feature_name"],
-                rows=[{"color_name": "color", "feature_name": "feature"}],
-            ),
-            Table(name=Producer, columns=["name"], rows=[{"name": "producer"}]),
-            Table(name=Categories, columns=["name"], rows=[{"name": "category"}]),
-            Table(
-                name=Box,
-                columns=["id", "weight", "area"],
-                rows=[{"id": 1, "weight": Decimal(30), "area": Decimal(1)}],
-                defaults={"id": 2},
-            ),
-            Table(
-                name=Tile,
-                columns=[
-                    "id",
-                    "name",
-                    "size_id",
-                    "color_name",
-                    "feature_name",
-                    "category_name",
-                    "surface_name",
-                    "producer_name",
-                    "box_id",
-                    "boxes_count",
-                ],
-                defaults={"id": 1},
-            ),
-        ]
+def storage_with_filled_handbooks(storage):
+    storage.add(
+        TileSize,
+        length=Decimal(300),
+        width=Decimal(200),
+        height=Decimal(10)
     )
+    storage.add(TileColor, color_name="color", feature_name="feature")
+    storage.add(Producer, name="producer")
+    storage.add(Box, weight=Decimal(30), area=Decimal(1))
 
     return storage
 

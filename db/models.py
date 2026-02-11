@@ -1,6 +1,6 @@
 from decimal import Decimal
 
-from sqlalchemy import ForeignKey, ForeignKeyConstraint, UniqueConstraint
+from sqlalchemy import ForeignKey, ForeignKeyConstraint, UniqueConstraint, inspect
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.types import DECIMAL
@@ -47,10 +47,53 @@ class Catalog(Base):
         ),
     )
 
+    # def model_dump(self):
+    #     data = {
+    #         "id": self.id,
+    #         "name": self.name,
+    #         "box_id": self.box_id,
+    #         "color_name": self.color_name,
+    #         "feature_name": self.feature_name,
+    #         "surface_name": self.surface_name,
+    #         "producer_name": self.producer_name,
+    #         "boxes_count": self.boxes_count,
+    #         "category_name": self.category_name,
+    #         "size_id": self.size_id,
+    #     }
+    #
+    #     try:
+    #         if self.images:
+    #             data["images_paths"] = [str(p.image_path) for p in self.images]
+    #     except Exception:
+    #         pass
+    #
+    #     try:
+    #         if self.size:
+    #             data["size_length"] = self.size.length
+    #             data["size_height"] = self.size.height
+    #             data["size_width"] = self.size.width
+    #     except Exception:
+    #         pass
+    #
+    #     try:
+    #         if self.box:
+    #             data["box_weight"] = self.box.weight
+    #             data["box_area"] = self.box.area
+    #     except Exception:
+    #         pass
+    #
+    #     return data
     def model_dump(self):
-        data = {
+        insp = inspect(self)
+        return {
             "id": self.id,
             "name": self.name,
+            "box_weight": None if "box" in insp.unloaded else self.box.weight,
+            "box_area": None if "box" in insp.unloaded else self.box.area,
+            "size_length": None if "size" in insp.unloaded else self.size.length,
+            "size_width": None if "size" in insp.unloaded else self.size.width,
+            "size_height": None if "size" in insp.unloaded else self.size.height,
+            "images_paths": [] if "images" in insp.unloaded else [img.image_path for img in self.images],
             "box_id": self.box_id,
             "color_name": self.color_name,
             "feature_name": self.feature_name,
@@ -60,29 +103,6 @@ class Catalog(Base):
             "category_name": self.category_name,
             "size_id": self.size_id,
         }
-
-        try:
-            if self.images:
-                data["images_paths"] = [str(p.image_path) for p in self.images]
-        except Exception:
-            pass
-
-        try:
-            if self.size:
-                data["size_length"] = self.size.length
-                data["size_height"] = self.size.height
-                data["size_width"] = self.size.width
-        except Exception:
-            pass
-
-        try:
-            if self.box:
-                data["box_weight"] = self.box.weight
-                data["box_area"] = self.box.area
-        except Exception:
-            pass
-
-        return data
 
 
 class Categories(Base):
