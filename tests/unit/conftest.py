@@ -3,7 +3,7 @@ from decimal import Decimal
 import pytest
 
 from domain import (Box, Categories, Collections, Producer, Tile, TileColor,
-                    TileImages, TileSize, TileSurface)
+                    TileImages, TileSize, TileSurface, Slug, CollectionCategory)
 from services.tile import add_tile
 from tests.fakes import (FakeCRUD, FakeProductImagesManager, FakeStorage,
                          FakeUoW, Table, noop_generate)
@@ -77,7 +77,7 @@ def storage():
             ),
             Table(
                 name=Collections,
-                columns=["name", "category_name", "image_path"],
+                columns=["name", "image_path"],
             ),
             Table(
                 name=Tile,
@@ -95,6 +95,11 @@ def storage():
                 ],
                 defaults={"id": 1},
             ),
+            Table(name=Slug,columns=["name", "slug"]),
+            Table(
+                name=CollectionCategory,
+                columns=["collection_name", "category_name"]
+            )
         ]
     )
 

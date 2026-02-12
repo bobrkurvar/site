@@ -74,8 +74,8 @@ class Categories(Base):
     name: Mapped[str] = mapped_column(primary_key=True)
     tiles: Mapped[list["Catalog"]] = relationship("Catalog", back_populates="category")
 
-    collections: Mapped[list["Collections"]] = relationship(
-        "Collections", back_populates="category"
+    collections: Mapped[list["CollectionCategory"]] = relationship(
+        "CollectionCategory", back_populates="category"
     )
 
     def model_dump(self):
@@ -97,41 +97,37 @@ class TileImages(Base):
         }
 
 
-# class Collections(Base):
-#     __tablename__ = "collections"
-#     name: Mapped[str] = mapped_column(primary_key=True)
-#     image_path: Mapped[str] = mapped_column(unique=True)
-#     categories: Mapped[list["CollectionCategory"]] = relationship("CollectionCategory", back_populates="collection")
-#
-#     def model_dump(self):
-#         return {
-#             "name": self.name,
-#             "image_path": self.image_path
-#         }
-
 class Collections(Base):
     __tablename__ = "collections"
-    # collection_name: Mapped[str] = mapped_column(
-    #     ForeignKey("collections.name"), primary_key=True)
-    name: Mapped[str] = mapped_column(
+    name: Mapped[str] = mapped_column(primary_key=True)
+    image_path: Mapped[str] = mapped_column(unique=True)
+    categories: Mapped[list["CollectionCategory"]] = relationship("CollectionCategory", back_populates="collection")
+
+    def model_dump(self):
+        return {
+            "name": self.name,
+            "image_path": self.image_path
+        }
+
+class CollectionCategory(Base):
+    __tablename__ = "collection_category"
+    collection_name: Mapped[str] = mapped_column(
         ForeignKey("collections.name"), primary_key=True)
     category_name: Mapped[str] = mapped_column(
         ForeignKey("categories.name"), primary_key=True
     )
-    image_path: Mapped[str] = mapped_column(unique=True)
 
     category: Mapped["Categories"] = relationship(
         "Categories", back_populates="collections"
     )
-
-    #collection: Mapped["Collections"] = relationship("Collection", back_populates="categories")
+    collection: Mapped["Collections"] = relationship("Collections", back_populates="categories")
 
     def model_dump(self):
+        insp = inspect(self)
         return {
-            #"collection_name": self.collection_name,
-            "name": self.name,
+            "collection_name": self.collection_name,
             "category_name": self.category_name,
-            "image_path": self.image_path
+            "image_path": None if "collection" in insp.unloaded else self.collection.image_path,
         }
 
 

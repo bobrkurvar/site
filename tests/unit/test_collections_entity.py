@@ -38,7 +38,7 @@ async def test_create_collection_success(manager_without_handbooks):
         Collections, name="collection1", category_name="category1"
     )
     assert len(collection_db) != 0
-    name = f"{collection["name"]}-{collection["category_name"]}"
+    name = f"{collection["name"]}"
     paths_funcs = (file_manager.base_collection_path, collection_path_with_manager)
     expected_paths = [str(func(name)) for func in paths_funcs]
     log.debug("expected_paths: %s, fs: %s", expected_paths, fs)

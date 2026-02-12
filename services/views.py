@@ -1,7 +1,7 @@
 import logging
 from decimal import Decimal
 
-from domain import Tile, TileColor, TileSize, Slug
+from domain import Tile, TileColor, TileSize, Slug, Categories
 
 log = logging.getLogger(__name__)
 
@@ -95,7 +95,7 @@ def build_main_images(tiles):
     main_images = {}
     for tile in tiles:
         img = tile["images_paths"][0]
-        log.debug("image: %s", img)
+        #log.debug("image: %s", img)
         images_part = img.split("-")
         images_part[-1] = "0"
         main_images[tile["id"]] = "-".join(images_part)
@@ -131,9 +131,14 @@ async def fetch_collections_items(manager, collection, limit, offset, **filters)
     collection = (await manager.read(Slug, slug=collection))[0]["name"].lower()
     items = [item for item in items if extract_quoted_word(item["name"]) == collection]
     total_count = len(items)
-    log.debug("collection total count: %s", total_count)
+    #log.debug("collection total count: %s", total_count)
 
     items = items[offset : offset + limit]
-    log.debug("collection count: %s", items)
+    #log.debug("collection count: %s", items)
 
     return items, total_count
+
+
+async def get_categories_for_items(manager):
+    categories = {cat["name"] for cat in await manager.read(Categories, order_by="name")}
+    return await manager.read(Slug, name=categories)

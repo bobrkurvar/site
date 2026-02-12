@@ -54,10 +54,10 @@
             {% if active_tab != "collections" %}
                 <div class="tile-grid">
                     {% for tile in tiles %}
-                    <a href="/catalog/{{ tile.present_tile_url }}/products/{{ tile.article }}" class="tile-card-link">
+                    <a href="{{ path_to_catalog or request.path }}/{{ tile.article }}" class="tile-card-link">
                         <div class="tile-card">
                             <div class="tile-image-container">
-                                {% if main_images[tile.article] %}
+                                {% if main_images[tile.id] %}
                                 <img src="/{{ main_images[tile.article] }}" alt="{{ tile.name }}" class="tile-image" loading="lazy">
                                 {% else %}
                                 <div class="no-image">Нет изображения</div>

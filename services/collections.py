@@ -18,8 +18,7 @@ async def add_collection(
 ):
 
     async with uow_class(manager._session_factory) as uow:
-        str_name = f"{name}-{category_name}"
-        image_path = file_manager.base_collection_path(str_name)
+        image_path = file_manager.base_collection_path(name)
         collection_record = await manager.create(
             Collections,
             name=name,

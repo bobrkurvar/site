@@ -33,7 +33,9 @@ async def manager(request):
                 catalog,
                 tile_colors,
                 collections,
-                tile_surface
+                tile_surface,
+                slugs,
+                collection_category
                 
             RESTART IDENTITY CASCADE;
         """
@@ -64,7 +66,7 @@ def migrate_test_db(request):
     ):
         return
     alembic_cfg = Config("alembic.ini")
-    alembic_cfg.set_main_option("sqlalchemy.url", conf.db_url)
+    alembic_cfg.set_main_option("sqlalchemy.url", conf.test_db_url)
     command.upgrade(alembic_cfg, "head")
 
     yield

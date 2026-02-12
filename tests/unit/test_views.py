@@ -3,11 +3,12 @@ import logging
 import pytest
 
 from core.config import ITEMS_PER_PAGE
-from domain import Categories
+from domain import Categories, Slug
 from services.views import (build_data_for_filters, build_main_images,
                             build_tile_filters, extract_quoted_word,
                             fetch_items)
 from tests.unit.conftest import manager_factory
+from slugify import slugify
 
 log = logging.getLogger(__name__)
 
@@ -25,33 +26,37 @@ async def test_extract_quoted_word_collection_name():
 @pytest.mark.asyncio
 async def test_build_tile_filters_with_exists_size(manager_factory):
     manager = await manager_factory(1)
-    category = Categories("Tile")  # что бы зарегистрировать slug и его обратное слово
+    category = "Tile"
+    category_slug = slugify(category)
+    await manager.create(Slug, name=category, slug=category_slug)
     filters = await build_tile_filters(
-        manager, name="tile1", size="1×1×1", color="color1", category=category.slug
+        manager, name="tile1", size="1×1×1", color="color1", category=category_slug
     )
     assert filters == {
         "name": "tile1",
         "size_id": 1,
         "color_name": "color1",
-        "category_name": category.name,
+        "category_name": category,
     }
 
 
 @pytest.mark.asyncio
 async def test_build_tile_filters_with_not_exists_size(manager_factory):
     manager = await manager_factory()
-    category = Categories("Tile")  # что бы зарегистрировать slug и его обратное слово
+    category = "Tile"
+    category_slug = slugify(category)
+    await manager.create(Slug, name=category, slug=category_slug)
     filters = await build_tile_filters(
         manager,
         name="tile1",
         size="300×200×110",
         color="color1",
-        category=category.slug,
+        category=category_slug,
     )
     assert filters == {
         "name": "tile1",
         "color_name": "color1",
-        "category_name": category.name,
+        "category_name": category,
     }  # id размера не найдётся в базе и size_id не будет в фильтрах
 
 
@@ -60,8 +65,10 @@ async def test_build_data_for_filters_catalog_with_categories_when_exists_handbo
     manager_factory,
 ):
     manager = await manager_factory()
-    category = Categories("tile")
-    sizes, colors = await build_data_for_filters(manager, category=category.slug)
+    category = "Tile"
+    category_slug = slugify(category)
+    await manager.create(Slug, name=category, slug=category_slug)
+    sizes, colors = await build_data_for_filters(manager, category=category_slug)
     assert sizes == [] and colors == []
 
 
@@ -71,8 +78,10 @@ async def test_build_data_for_filters_catalog_with_categories_when_exists_handbo
 ):
     n = 5
     manager = await manager_factory(n)
-    category = Categories("category")
-    sizes, colors = await build_data_for_filters(manager, category=category.slug)
+    category = "category" # так как фабрика создаёт категорию с таким именем
+    category_slug = slugify(category)
+    await manager.create(Slug, name=category, slug=category_slug)
+    sizes, colors = await build_data_for_filters(manager, category=category_slug)
     assert len(sizes) == n and len(colors) == n
 
 
@@ -82,8 +91,10 @@ async def test_build_data_for_filters_catalog_with_categories_when_exists_handbo
 ):
     n = 5
     manager = await manager_factory(n, True)
-    category = Categories("category")
-    sizes, colors = await build_data_for_filters(manager, category=category.slug)
+    category = "category" # так как фабрика создаёт категорию с таким именем
+    category_slug = slugify(category)
+    await manager.create(Slug, name=category, slug=category_slug)
+    sizes, colors = await build_data_for_filters(manager, category=category_slug)
     assert len(sizes) == n and len(colors) == 1
 
 

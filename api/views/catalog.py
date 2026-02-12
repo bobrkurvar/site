@@ -7,9 +7,9 @@ from fastapi.templating import Jinja2Templates
 from adapters.crud import Crud, get_db_manager
 from adapters.images import ProductImagesManager
 from core.config import ITEMS_PER_PAGE
-from domain import Categories, Tile, map_to_tile_domain, Slug
+from domain import Tile, map_to_tile_domain, Slug
 from services.views import (build_data_for_filters, build_main_images,
-                            build_tile_filters, fetch_items)
+                            build_tile_filters, fetch_items, get_categories_for_items)
 
 router = APIRouter(tags=["presentation"], prefix="/catalog")
 dbManagerDep = Annotated[Crud, Depends(get_db_manager)]
@@ -26,7 +26,6 @@ async def get_tile_page(
     tile = await manager.read(
         Tile,
         to_join=["images", "size", "box"],
-        #category_name=Categories.get_category_from_slug(category),
         category_name=category_name,
         id=tile_id,
     )
@@ -38,9 +37,8 @@ async def get_tile_page(
             for i in tile["images_paths"]
         ]
     log.debug("detail images: %s", images)
-    tile = map_to_tile_domain(tile)
-    categories = await manager.read(Tile, distinct="category_name")
-    #categories = [Categories(name=category["category_name"]) for category in categories]
+    tile = map_to_tile_domain(**tile)
+    categories = await get_categories_for_items(manager)
     return templates.TemplateResponse(
         "tile_detail.html",
         {
@@ -73,11 +71,10 @@ async def get_catalog_tiles_page(
     for k in main_images:
         main_images[k] = product_manager.get_product_catalog_image_path(main_images[k])
 
-    #tiles = [map_to_tile_domain(tile) for tile in tiles]
+    tiles = [map_to_tile_domain(**tile) for tile in tiles]
+    log.debug("main_images: %s", main_images)
     total_pages = max((total_count + limit - 1) // limit, 1)
-    categories = await manager.read(Tile, distinct="category_name")
-    #categories = [Categories(name=category["category_name"]) for category in categories]
-    path = f"/catalog/{category_name}/products"
+    categories = await get_categories_for_items(manager)
 
     return templates.TemplateResponse(
         "catalog.html",
@@ -92,7 +89,6 @@ async def get_catalog_tiles_page(
             "main_images": main_images,
             "categories": categories,
             "category": category_name,
-            "path": path,
             "active_tab": "products",
         },
     )

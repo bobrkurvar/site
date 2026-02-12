@@ -191,7 +191,7 @@ from domain.exceptions import (AlreadyExistsError, ForeignKeyViolationError,
 #         await self._engine.dispose()
 #         self.__class__._engine = None
 #         self.__class__._session_factory = None
-
+from collections.abc import Collection
 
 log = logging.getLogger(__name__)
 
@@ -354,7 +354,10 @@ class Crud:
                 query = query.options(*options)
 
             for field, value in filters.items():
-                query = query.where(getattr(model, field) == value)
+                if isinstance(value, Collection) and not isinstance(value, str):
+                    query = query.where(getattr(model, field).in_(value))
+                else:
+                    query = query.where(getattr(model, field) == value)
 
             if distinct:
                 query = query.distinct(getattr(model, distinct))
@@ -395,7 +398,8 @@ def get_db_manager(test=False) -> Crud:
         domain.Categories: models.Categories,
         domain.Collections: models.Collections,
         domain.Admin: models.Admins,
-        domain.Slug: models.Slug
+        domain.Slug: models.Slug,
+        domain.CollectionCategory: models.CollectionCategory,
     }
     global db_manager
     if db_manager is None:

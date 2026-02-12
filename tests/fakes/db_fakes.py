@@ -2,7 +2,7 @@ import logging
 from copy import deepcopy
 from typing import Any
 
-from domain import Box, TileImages, TileSize, NotFoundError
+from domain import Box, TileImages, TileSize, NotFoundError, Collections
 
 log = logging.getLogger(__name__)
 
@@ -48,6 +48,13 @@ def join_tile_with_images(new_table, other_table):
         if images:
             row["images_paths"] = images
 
+def join_category_collection_with_collection(new_table, other_table):
+    new_table.columns += ["image_path"]
+    for row in new_table.rows:
+        to_row = {}
+        for other_row in other_table:
+            to_row.update(image_path=other_row["length"])
+        row.update(to_row)
 
 class Table:
 
@@ -76,6 +83,8 @@ class Table:
             join_tile_with_size(new_table, other)
         elif other.name is TileImages:
             join_tile_with_images(new_table, other)
+        elif other.name is Collections:
+            join_category_collection_with_collection(new_table, other)
 
         return new_table
 
@@ -88,6 +97,7 @@ class FakeStorage:
             "size": TileSize,
             "box": Box,
             "images": TileImages,
+            "collection": Collections
         }
 
     def register_tables(self, models: list[Table]):
