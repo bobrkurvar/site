@@ -26,6 +26,7 @@ log = logging.getLogger(__name__)
 
 
 async def generate_image_products_catalog_and_details(img: bytes):
+    img = base64.b64encode(img).decode("utf-8")
     response = await http_client.generate_images(
         data=img, targets=("products", "details")
     )
@@ -33,6 +34,7 @@ async def generate_image_products_catalog_and_details(img: bytes):
 
 
 async def generate_image_collections_catalog(img: bytes):
+    img = base64.b64encode(img).decode("utf-8")
     response =  await http_client.generate_images(
         data=img, targets=("collections",)
     )
@@ -40,6 +42,7 @@ async def generate_image_collections_catalog(img: bytes):
 
 
 async def generate_slides(img: bytes):
+    img = base64.b64encode(img).decode("utf-8")
     response = await http_client.generate_images(
         data=img, targets=("slides",)
     )
