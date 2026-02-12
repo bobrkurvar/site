@@ -102,7 +102,7 @@ def generate_image_variant(image_bytes: bytes, target: str):
 
 
 class ImageWithTarget(BaseModel):
-    input_path: str
+    data: bytes
     targets: tuple
 
 
@@ -114,7 +114,7 @@ async def generate_image(image_data: ImageWithTarget):
         image = await loop.run_in_executor(
             executor,
             generate_image_variant,
-            image_data.input_path,
+            image_data.data,
             target,
         )
         images[target] = image

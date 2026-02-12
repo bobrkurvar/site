@@ -40,7 +40,8 @@ class MyExternalApiForBot:
             try:
                 resp.raise_for_status()
                 return await resp.json()
-            except ClientResponseError:
+            except ClientResponseError as exc:
+                log.exception(exc)
                 return None
 
     def connect(self):
