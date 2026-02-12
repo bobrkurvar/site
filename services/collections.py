@@ -1,6 +1,6 @@
 import logging
 
-from domain import Collections, Slug
+from domain import Collections, Slug, CollectionCategory
 from services.UoW import UnitOfWork
 from slugify import slugify
 
@@ -22,10 +22,10 @@ async def add_collection(
         collection_record = await manager.create(
             Collections,
             name=name,
-            category_name=category_name,
             image_path=str(image_path),
             session=uow.session,
         )
+        await manager.create(CollectionCategory, collection_name=name, category_name=category_name, session=uow.session)
         await manager.create(Slug, name=name, slug=slugify(name))
         try:
             async with file_manager.session() as files:
