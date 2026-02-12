@@ -18,11 +18,11 @@ log = logging.getLogger(__name__)
 
 @router.get("")
 async def admin_page(request: Request, manager: dbManagerDep):
-    cookies = request.cookies
-    access_token = request.cookies.get("access_token")
-    log.debug("cookies: %s", cookies)
-    if access_token is None:
-        return RedirectResponse("/admin/login", status_code=303)
+    #cookies = request.cookies
+    #access_token = request.cookies.get("access_token")
+    #log.debug("cookies: %s", cookies)
+    #if access_token is None:
+    #    return RedirectResponse("/admin/login", status_code=303)
 
     tiles = await manager.read(Tile, to_join=["images", "size", "box"])
     tile_sizes = await manager.read(TileSize)
