@@ -76,7 +76,7 @@ async def admin_page(request: Request, manager: dbManagerDep):
             "boxes_unique_area": boxes_unique_area,
             "categories": categories,
             "boxes_unique_count": boxes_unique_count,
-            "access_token": access_token,
+            #"access_token": access_token,
         },
     )
 
