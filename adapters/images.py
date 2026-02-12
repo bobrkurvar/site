@@ -24,24 +24,21 @@ log = logging.getLogger(__name__)
 #     return my_path
 
 
-async def generate_image_products_catalog_and_details(input_path):
-    input_path = str(input_path) if not isinstance(input_path, str) else input_path
+async def generate_image_products_catalog_and_details(img: bytes):
     return await http_client.generate_images(
-        input_path=input_path, targets=("products", "details")
+        data=img, targets=("products", "details")
     )
 
 
-async def generate_image_collections_catalog(input_path):
-    input_path = str(input_path) if not isinstance(input_path, str) else input_path
+async def generate_image_collections_catalog(img: bytes):
     return await http_client.generate_images(
-        input_path=input_path, targets=("collections",)
+        data=img, targets=("collections",)
     )
 
 
-async def generate_slides(input_path):
-    input_path = str(input_path) if not isinstance(input_path, str) else input_path
+async def generate_slides(img: bytes):
     return await http_client.generate_images(
-        input_path=input_path, targets=("slides",)
+        data=img, targets=("slides",)
     )
 
 
