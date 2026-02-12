@@ -30,7 +30,9 @@ async def generate_image_products_catalog_and_details(img: bytes):
     response = await http_client.generate_images(
         data=img, targets=("products", "details")
     )
-    return base64.b64decode(response["products"])
+    response["products"] =  base64.b64decode(response["products"])
+    response["details"] = base64.b64decode(response["products"])
+    return response
 
 
 async def generate_image_collections_catalog(img: bytes):
@@ -38,7 +40,8 @@ async def generate_image_collections_catalog(img: bytes):
     response =  await http_client.generate_images(
         data=img, targets=("collections",)
     )
-    return base64.b64decode(response["products"])
+    response["collections"] = base64.b64decode(response["collections"])
+    return response
 
 
 async def generate_slides(img: bytes):
@@ -46,7 +49,8 @@ async def generate_slides(img: bytes):
     response = await http_client.generate_images(
         data=img, targets=("slides",)
     )
-    return base64.b64decode(response["products"])
+    response["slides"] = base64.b64decode(response["slides"])
+    return response
 
 
 class ProductImagesManager(FileManager):
