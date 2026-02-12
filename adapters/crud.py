@@ -296,7 +296,7 @@ class Crud:
                 filters,
             )
 
-            return [record.model_dump() for record in result]
+            return [record.model_dump() for record in deleted_records]
 
         if session is not None:
             return await _delete_internal(session)

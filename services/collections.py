@@ -58,6 +58,6 @@ async def delete_collection(
             name=collection_name,
             session=uow.session,
         )
-        await manager.delete(Slug, name=collection_name)
+        await manager.delete(Slug, name=collection_name, session=uow.session)
         collection = collection[0]
         await file_manager.delete_collection(collection["image_path"])
