@@ -48,7 +48,6 @@ async def add_collection(
 
 async def delete_collection(
     collection_name: str,
-    category_name: str,
     manager,
     file_manager,
     uow_class=UnitOfWork,
@@ -57,7 +56,6 @@ async def delete_collection(
         collection = await manager.delete(
             Collections,
             name=collection_name,
-            category_name=category_name,
             session=uow.session,
         )
         await manager.delete(Slug, name=collection_name)
