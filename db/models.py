@@ -75,7 +75,10 @@ class Categories(Base):
     tiles: Mapped[list["Catalog"]] = relationship("Catalog", back_populates="category")
 
     collections: Mapped[list["CollectionCategory"]] = relationship(
-        "CollectionCategory", back_populates="category"
+        "CollectionCategory",
+        back_populates="category",
+        cascade="all, delete-orphan",
+        passive_deletes=True
     )
 
     def model_dump(self):
@@ -101,7 +104,12 @@ class Collections(Base):
     __tablename__ = "collections"
     name: Mapped[str] = mapped_column(primary_key=True)
     image_path: Mapped[str] = mapped_column(unique=True)
-    categories: Mapped[list["CollectionCategory"]] = relationship("CollectionCategory", back_populates="collection")
+    categories: Mapped[list["CollectionCategory"]] = relationship(
+        "CollectionCategory",
+        back_populates="collection",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
 
     def model_dump(self):
         return {
@@ -112,9 +120,9 @@ class Collections(Base):
 class CollectionCategory(Base):
     __tablename__ = "collection_category"
     collection_name: Mapped[str] = mapped_column(
-        ForeignKey("collections.name"), primary_key=True)
+        ForeignKey("collections.name", ondelete="CASCADE"), primary_key=True)
     category_name: Mapped[str] = mapped_column(
-        ForeignKey("categories.name"), primary_key=True
+        ForeignKey("categories.name", ondelete="CASCADE"), primary_key=True
     )
 
     category: Mapped["Categories"] = relationship(
