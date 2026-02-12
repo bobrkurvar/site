@@ -47,42 +47,6 @@ class Catalog(Base):
         ),
     )
 
-    # def model_dump(self):
-    #     data = {
-    #         "id": self.id,
-    #         "name": self.name,
-    #         "box_id": self.box_id,
-    #         "color_name": self.color_name,
-    #         "feature_name": self.feature_name,
-    #         "surface_name": self.surface_name,
-    #         "producer_name": self.producer_name,
-    #         "boxes_count": self.boxes_count,
-    #         "category_name": self.category_name,
-    #         "size_id": self.size_id,
-    #     }
-    #
-    #     try:
-    #         if self.images:
-    #             data["images_paths"] = [str(p.image_path) for p in self.images]
-    #     except Exception:
-    #         pass
-    #
-    #     try:
-    #         if self.size:
-    #             data["size_length"] = self.size.length
-    #             data["size_height"] = self.size.height
-    #             data["size_width"] = self.size.width
-    #     except Exception:
-    #         pass
-    #
-    #     try:
-    #         if self.box:
-    #             data["box_weight"] = self.box.weight
-    #             data["box_area"] = self.box.area
-    #     except Exception:
-    #         pass
-    #
-    #     return data
     def model_dump(self):
         insp = inspect(self)
         return {
@@ -133,23 +97,41 @@ class TileImages(Base):
         }
 
 
+# class Collections(Base):
+#     __tablename__ = "collections"
+#     name: Mapped[str] = mapped_column(primary_key=True)
+#     image_path: Mapped[str] = mapped_column(unique=True)
+#     categories: Mapped[list["CollectionCategory"]] = relationship("CollectionCategory", back_populates="collection")
+#
+#     def model_dump(self):
+#         return {
+#             "name": self.name,
+#             "image_path": self.image_path
+#         }
+
 class Collections(Base):
     __tablename__ = "collections"
-    name: Mapped[str] = mapped_column(primary_key=True)
+    # collection_name: Mapped[str] = mapped_column(
+    #     ForeignKey("collections.name"), primary_key=True)
+    name: Mapped[str] = mapped_column(
+        ForeignKey("collections.name"), primary_key=True)
     category_name: Mapped[str] = mapped_column(
         ForeignKey("categories.name"), primary_key=True
     )
-    image_path: Mapped[str] = mapped_column(unique=True, default=conf.image_path)
+    image_path: Mapped[str] = mapped_column(unique=True)
 
     category: Mapped["Categories"] = relationship(
         "Categories", back_populates="collections"
     )
 
+    #collection: Mapped["Collections"] = relationship("Collection", back_populates="categories")
+
     def model_dump(self):
         return {
+            #"collection_name": self.collection_name,
             "name": self.name,
-            "image_path": self.image_path,
             "category_name": self.category_name,
+            "image_path": self.image_path
         }
 
 
