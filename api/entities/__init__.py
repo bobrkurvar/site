@@ -11,7 +11,8 @@ from .tile_producers import router as tile_producers_router
 from .tile_size import router as tile_size_router
 from .tile_surface import router as tile_surface_router
 
-admin_router = APIRouter(dependencies=[Depends(get_user_from_token)])
+#admin_router = APIRouter(dependencies=[Depends(get_user_from_token)])
+admin_router = APIRouter()
 admin_router.include_router(tile_router)
 admin_router.include_router(tile_size_router)
 admin_router.include_router(tile_color_router)
