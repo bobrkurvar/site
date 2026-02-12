@@ -287,7 +287,7 @@ class Crud:
             deleted_records = result.scalars().all()
 
             if not deleted_records:
-                raise NotFoundError(model.__name__, str(filters))
+                raise NotFoundError(model.__name__, **filters)
 
             log.debug(
                 "Удалено %d записей из %s с фильтрами: %s",
