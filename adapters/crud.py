@@ -370,10 +370,7 @@ class Crud:
 
             if limit:
                 query = query.limit(limit)
-            log.debug("FILTERS: %s", filters)
-            log.debug("QUERY: %s", query)
             result = (await session.execute(query)).unique().scalars().all()
-            log.debug("RESULT: %s", result)
             return [r.model_dump() for r in result]
 
         if session is not None:
