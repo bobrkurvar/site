@@ -55,8 +55,8 @@ async def admin_page(request: Request, manager: dbManagerDep):
         boxes_unique_weight.add(box["weight"])
         boxes_unique_area.add(box["area"])
 
-    tiles = [map_to_tile_domain(t) for t in tiles]
-    boxes_unique_count = set(tile.boxes_count for tile in tiles)
+    tiles = [map_to_tile_domain(**t) for t in tiles]
+    boxes_unique_count = set(q.boxes_count for q in tiles)
 
     categories = await manager.read(Categories)
 
