@@ -30,7 +30,7 @@ async def generate_image_products_catalog_and_details(img: bytes):
     response = await http_client.generate_images(
         data=img, targets=("products", "details")
     )
-    return  base64.b64decode(response["products"])
+    return base64.b64decode(response["products"])
 
 
 async def generate_image_collections_catalog(img: bytes):

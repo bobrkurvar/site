@@ -103,19 +103,20 @@ def generate_image_variant(image_bytes: bytes, target: str):
 
 
 class ImageWithTarget(BaseModel):
-    data: bytes
+    data: str
     targets: tuple
 
 
 @app.post("/generate-images")
 async def generate_image(image_data: ImageWithTarget):
+    data =  base64.b64decode(image_data.data)
     loop = asyncio.get_running_loop()
     images = {}
     for target in image_data.targets:
         image = await loop.run_in_executor(
             executor,
             generate_image_variant,
-            image_data.data,
+            data,
             target,
         )
         #images[target] = image
