@@ -26,6 +26,7 @@ async def get_collections_page(
 ):
     limit = COLLECTIONS_PER_PAGE
     offset = (page - 1) * limit
+    log.debug("category: %s", category)
     category_name = (await manager.read(Slug, slug=category))[0]["name"]
     category_collections = await manager.read(
         CollectionCategory, category_name=category_name, offset=offset, limit=limit, to_join=["collection"]
