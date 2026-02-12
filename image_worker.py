@@ -7,6 +7,7 @@ from fastapi import FastAPI
 # from pathlib import Path
 from PIL import Image, ImageOps
 from pydantic import BaseModel
+import base64
 
 from core import logger
 
@@ -117,5 +118,6 @@ async def generate_image(image_data: ImageWithTarget):
             image_data.data,
             target,
         )
-        images[target] = image
+        #images[target] = image
+        images[target] = base64.b64encode(image).decode("utf-8")
     return images
