@@ -102,7 +102,9 @@ class TileImages(Base):
 
 class Collections(Base):
     __tablename__ = "collections"
-    name: Mapped[str] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    #name: Mapped[str] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(unique=True)
     image_path: Mapped[str] = mapped_column(unique=True)
     categories: Mapped[list["CollectionCategory"]] = relationship(
         "CollectionCategory",
@@ -113,14 +115,17 @@ class Collections(Base):
 
     def model_dump(self):
         return {
+            "id": self.id,
             "name": self.name,
             "image_path": self.image_path
         }
 
 class CollectionCategory(Base):
     __tablename__ = "collection_category"
-    collection_name: Mapped[str] = mapped_column(
-        ForeignKey("collections.name", ondelete="CASCADE"), primary_key=True)
+    # collection_name: Mapped[str] = mapped_column(
+    #     ForeignKey("collections.name", ondelete="CASCADE"), primary_key=True)
+    collection_id: Mapped[int] = mapped_column(
+        ForeignKey("collections.id", ondelete="CASCADE"), primary_key=True)
     category_name: Mapped[str] = mapped_column(
         ForeignKey("categories.name", ondelete="CASCADE"), primary_key=True
     )
@@ -133,7 +138,8 @@ class CollectionCategory(Base):
     def model_dump(self):
         insp = inspect(self)
         return {
-            "collection_name": self.collection_name,
+            "collection_id": self.collection_id,
+            "collection_name": None if "collection" in insp.unloaded else self.collection.name,
             "category_name": self.category_name,
             "image_path": None if "collection" in insp.unloaded else self.collection.image_path,
         }

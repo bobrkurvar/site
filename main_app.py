@@ -43,6 +43,6 @@ app.add_exception_handler(ForeignKeyViolationError, foreign_key_handler)
 @app.exception_handler(Exception)
 async def global_exc_handler(request: Request, exc):
     if request.url.path.startswith("/admin"):
-        await admin_global_error_handler(request, exc)
+        return await admin_global_error_handler(request, exc)
     else:
-        await global_error_handler(request, exc)
+        return await global_error_handler(request, exc)

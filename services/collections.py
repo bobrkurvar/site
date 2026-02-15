@@ -27,6 +27,7 @@ async def add_collection(
                 image_path=str(image_path),
                 session=uow.session,
             )
+            await manager.create(Slug, name=name, slug=slugify(name))
             try:
                 async with file_manager.session() as files:
                     await files.save(image_path, image)
@@ -42,7 +43,6 @@ async def add_collection(
                 log.debug("путь %s уже занять", image_path)
                 raise
         await manager.create(CollectionCategory, collection_name=name, category_name=category_name, session=uow.session)
-        await manager.create(Slug, name=name, slug=slugify(name))
         return collection_record
 
 

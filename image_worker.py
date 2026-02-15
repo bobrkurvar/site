@@ -119,6 +119,5 @@ async def generate_image(image_data: ImageWithTarget):
             data,
             target,
         )
-        #images[target] = image
         images[target] = base64.b64encode(image).decode("utf-8")
     return images
