@@ -1,6 +1,8 @@
 from decimal import Decimal
 from services.UoW import UnitOfWork
 from domain import TileColor, TileSize, TileSurface, Categories, Box, Producer
+from PIL import Image
+import io
 
 def _iter_files(file_manager, layer: str, names=None):
     path = file_manager.resolve_path(layer=layer)
@@ -58,3 +60,10 @@ async def fill_handbooks(
         await manager.create(Producer, name=producer_name)
         await manager.create(Box, weight=box_weight, area=box_area)
 
+
+def create_fake_image(format='JPEG', size=(100, 100), color='red'):
+    """Создаёт изображение заданного формата и возвращает его байты."""
+    img = Image.new('RGB', size, color=color)
+    img_byte_arr = io.BytesIO()
+    img.save(img_byte_arr, format=format)
+    return img_byte_arr.getvalue()

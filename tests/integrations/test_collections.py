@@ -6,9 +6,10 @@ import core.logger
 from domain import Collections, NotFoundError, CollectionCategory, Slug
 from services.collections import add_collection, delete_collection
 from adapters.images import CollectionImagesManager
-from tests.fakes import generate_collections_images
+from .helpers import create_fake_image
 
 from .conftest import manager_with_categories, manager
+from adapters.images import generate_image_collections_catalog
 
 log = logging.getLogger(__name__)
 
@@ -20,10 +21,10 @@ async def test_create_collection_category_when_collection_not_exists_success(man
     file_manager = CollectionImagesManager(root='tests/images')
     collection = await add_collection(
         name="collection1",
-        image=b"MAIN",
+        image=create_fake_image(),
         category_name="category1",
         manager=manager_with_categories,
-        generate_images=generate_collections_images,
+        generate_images=generate_image_collections_catalog,
         file_manager=file_manager,
     )
 
@@ -50,18 +51,18 @@ async def test_create_collection_category_when_collection_exists_success(manager
     file_manager = CollectionImagesManager(root='tests/images')
     collection = await add_collection(
         name="collection1",
-        image=b"MAIN",
+        image=create_fake_image(),
         category_name="category1",
         manager=manager_with_categories,
-        generate_images=generate_collections_images,
+        generate_images=generate_image_collections_catalog,
         file_manager=file_manager,
     )
     await add_collection(
         name="collection1",
-        image=b"MAIN",
+        image=create_fake_image(),
         category_name="category2",
         manager=manager_with_categories,
-        generate_images=generate_collections_images,
+        generate_images=generate_image_collections_catalog,
         file_manager=file_manager,
     )
 
@@ -86,10 +87,10 @@ async def test_delete_collection_success(manager_with_categories):
     file_manager = CollectionImagesManager(root='tests/images')
     collection = await add_collection(
         name="collection1",
-        image=b"MAIN",
+        image=create_fake_image(),
         category_name="category1",
         manager=manager_with_categories,
-        generate_images=generate_collections_images,
+        generate_images=generate_image_collections_catalog,
         file_manager=file_manager,
     )
     await delete_collection(

@@ -10,6 +10,10 @@ from sqlalchemy import text
 from adapters.crud import get_db_manager
 from core import conf
 from domain import Categories
+from adapters.http_client import get_http_client
+import asyncio
+
+from image_worker import app
 
 log = logging.getLogger(__name__)
 
@@ -73,12 +77,24 @@ def migrate_test_db(request):
         for item in request.session.items
         for marker in item.iter_markers()
     ):
+        yield
         return
     alembic_cfg = Config("alembic.ini")
     alembic_cfg.set_main_option("sqlalchemy.url", conf.test_db_url)
     command.upgrade(alembic_cfg, "head")
 
     yield
+
+
+@pytest.fixture(scope="session", autouse=True)
+def http_client():
+    http_client = get_http_client(app=app)
+    http_client.connect()
+    yield http_client
+    asyncio.run(http_client.close())
+
+
+
 
 
 

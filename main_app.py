@@ -5,13 +5,14 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
 from adapters.crud import get_db_manager
-from adapters.http_client import http_client
+from adapters.http_client import get_http_client
 from api import main_router
 from api.error_handlers import *
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    http_client = get_http_client()
     http_client.connect()
     manager = get_db_manager()
     manager.connect()

@@ -380,8 +380,7 @@ class Crud:
                 return await _read_internal(session)
 
 
-db_manager: Crud | None = None
-
+_db_manager: Crud | None = None
 
 
 def get_db_manager(test=False) -> Crud:
@@ -400,8 +399,8 @@ def get_db_manager(test=False) -> Crud:
         domain.Slug: models.Slug,
         domain.CollectionCategory: models.CollectionCategory,
     }
-    global db_manager
-    if db_manager is None:
-        db_manager = Crud(db_host, domain_with_orm)
+    global _db_manager
+    if _db_manager is None:
+        _db_manager = Crud(db_host, domain_with_orm)
 
-    return db_manager
+    return _db_manager

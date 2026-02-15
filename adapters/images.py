@@ -5,7 +5,7 @@ import aiofiles
 
 from adapters.files import FileManager
 
-from .http_client import http_client
+from .http_client import get_http_client
 import base64
 
 log = logging.getLogger(__name__)
@@ -14,16 +14,18 @@ log = logging.getLogger(__name__)
 
 async def generate_image_products_catalog_and_details(img: bytes):
     img = base64.b64encode(img).decode("utf-8")
+    http_client = get_http_client()
     response = await http_client.generate_images(
         data=img, targets=("products", "details")
     )
     response["products"] =  base64.b64decode(response["products"])
-    response["details"] = base64.b64decode(response["products"])
+    response["details"] = base64.b64decode(response["details"])
     return response
 
 
 async def generate_image_collections_catalog(img: bytes):
     img = base64.b64encode(img).decode("utf-8")
+    http_client = get_http_client()
     response =  await http_client.generate_images(
         data=img, targets=("collections",)
     )
@@ -33,6 +35,7 @@ async def generate_image_collections_catalog(img: bytes):
 
 async def generate_slides(img: bytes):
     img = base64.b64encode(img).decode("utf-8")
+    http_client = get_http_client()
     response = await http_client.generate_images(
         data=img, targets=("slides",)
     )

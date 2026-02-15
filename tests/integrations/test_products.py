@@ -5,14 +5,13 @@ import pytest
 
 import core.logger
 from adapters.crud import get_db_manager
-from adapters.images import ProductImagesManager
+from adapters.images import ProductImagesManager, generate_image_products_catalog_and_details
 from domain import Tile, TileImages
 from services.tile import add_tile, delete_tile, update_tile
-from tests.fakes import generate_products_images
 from tests.conftest import domain_handbooks_models
 from .conftest import manager
 
-from .helpers import product_files_count, fill_handbooks
+from .helpers import product_files_count, fill_handbooks, create_fake_image
 
 log = logging.getLogger(__name__)
 
@@ -33,14 +32,14 @@ async def test_integrate_create_tile_success_when_handbooks_not_exists(domain_ha
         box_weight=Decimal(30),
         box_area=Decimal(1),
         boxes_count=3,
-        main_image=b"MAIN",
+        main_image=create_fake_image(),
         category_name="category",
         manager=manager,
-        images=[b"A", b"B"],
+        images=[create_fake_image(), create_fake_image()],
         color_feature="feature",
         surface="surface",
         file_manager=file_manager,
-        generate_images=generate_products_images,
+        generate_images=generate_image_products_catalog_and_details,
     )
 
     # 1. Tile создан
@@ -91,14 +90,14 @@ async def test_create_tile_success_when_all_handbooks_exists(domain_handbooks_mo
         box_weight=Decimal(30),
         box_area=Decimal(1),
         boxes_count=3,
-        main_image=b"MAIN",
+        main_image=create_fake_image(),
         category_name="category",
         manager=manager,
-        images=[b"A", b"B"],
+        images=[create_fake_image(), create_fake_image()],
         color_feature="feature",
         surface="surface",
         file_manager=file_manager,
-        generate_images=generate_products_images,
+        generate_images=generate_image_products_catalog_and_details,
     )
 
     # 1. Tile создан
@@ -139,14 +138,14 @@ async def test_update_tile_success_when_new_attributes_in_handbooks(domain_handb
         box_weight=Decimal(30),
         box_area=Decimal(1),
         boxes_count=3,
-        main_image=b"MAIN",
+        main_image=create_fake_image(),
         category_name="category",
         manager=manager,
-        images=[b"A", b"B"],
+        images=[create_fake_image(), create_fake_image()],
         color_feature="feature",
         surface="surface",
         file_manager=file_manager,
-        generate_images=generate_products_images,
+        generate_images=generate_image_products_catalog_and_details,
     )
 
     article = record["id"] # фильтр для обновления по артикулу
