@@ -77,7 +77,8 @@ def storage():
             ),
             Table(
                 name=Collections,
-                columns=["name", "image_path"],
+                columns=["id", "name", "image_path"],
+                defaults={"id": 1, "image_path": None}
             ),
             Table(
                 name=Tile,
@@ -98,7 +99,7 @@ def storage():
             Table(name=Slug,columns=["name", "slug"]),
             Table(
                 name=CollectionCategory,
-                columns=["collection_name", "category_name"]
+                columns=["collection_id", "category_name"]
             )
         ]
     )
@@ -106,13 +107,13 @@ def storage():
     return storage
 
 
+
 @pytest.fixture
-def fake_manager(storage):
+def manager(storage):
     return FakeCRUD(storage)
 
-
 @pytest.fixture
-def manager_factory(fake_manager):
+def manager_factory(manager):
 
     async def _manage_with_items(n: int = 0, color_fix: bool = False):
         sizes = generate_tile_sizes(n)
@@ -121,7 +122,7 @@ def manager_factory(fake_manager):
         file_manager = FakeProductImagesManager()
         for i in range(n):
             await add_tile(
-                manager=fake_manager,
+                manager=manager,
                 uow_class=FakeUoW,
                 name=f"Tile{i+1}",
                 length=sizes[i]["length"],
@@ -140,7 +141,7 @@ def manager_factory(fake_manager):
                 generate_images=noop_generate,
                 file_manager=file_manager,
             )
-        return fake_manager
+        return manager
 
     return _manage_with_items
 
@@ -165,6 +166,11 @@ def manager_with_handbooks(storage_with_filled_handbooks):
     return FakeCRUD(storage_with_filled_handbooks)
 
 
-@pytest.fixture
-def manager_without_handbooks(storage):
-    return FakeCRUD(storage)
+# @pytest.fixture
+# def storage_with_collection(storage):
+#     storage.add(Collections, name="collection1")
+#     return storage
+#
+# @pytest.fixture
+# def manager_with_collection(storage_with_collection):
+#     return FakeCRUD(storage_with_collection)

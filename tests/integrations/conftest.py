@@ -9,6 +9,7 @@ from sqlalchemy import text
 
 from adapters.crud import get_db_manager
 from core import conf
+from domain import Categories
 
 log = logging.getLogger(__name__)
 
@@ -44,6 +45,14 @@ async def manager(request):
     await manager.close_and_dispose()
 
 
+@pytest.fixture
+async def manager_with_categories(manager):
+    category_name1, category_name2 = "category1", "category2"
+    await manager.create(Categories, name=category_name1)
+    await manager.create(Categories, name=category_name2)
+    return manager
+
+
 @pytest.fixture(autouse=True)
 def clean_fs_after_test(request):
     yield
@@ -70,4 +79,6 @@ def migrate_test_db(request):
     command.upgrade(alembic_cfg, "head")
 
     yield
+
+
 

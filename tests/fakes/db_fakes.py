@@ -49,11 +49,14 @@ def join_tile_with_images(new_table, other_table):
             row["images_paths"] = images
 
 def join_category_collection_with_collection(new_table, other_table):
-    new_table.columns += ["image_path"]
+    new_table.columns += ["collection_name", "image_path"]
     for row in new_table.rows:
         to_row = {}
         for other_row in other_table:
-            to_row.update(image_path=other_row["length"])
+            to_row.update(
+                collection_name=other_row["collection_name"],
+                image_path=other_row["image_path"]
+            )
         row.update(to_row)
 
 class Table:

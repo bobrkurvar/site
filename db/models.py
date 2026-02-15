@@ -105,7 +105,7 @@ class Collections(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     #name: Mapped[str] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(unique=True)
-    image_path: Mapped[str] = mapped_column(unique=True)
+    image_path: Mapped[str] = mapped_column(unique=True, nullable=True)
     categories: Mapped[list["CollectionCategory"]] = relationship(
         "CollectionCategory",
         back_populates="collection",

@@ -18,15 +18,18 @@ async def add_collection(
 ):
 
     async with uow_class(manager._session_factory) as uow:
-        image_path = file_manager.base_collection_path(name)
+        #image_path = file_manager.base_collection_path(name)
         collection_record = await manager.read(Collections, name=name, session=uow.session)
         if not collection_record:
             collection_record = await manager.create(
                 Collections,
                 name=name,
-                image_path=str(image_path),
+                #image_path=str(image_path),
                 session=uow.session,
             )
+            coll_id = collection_record["id"]
+            image_path = file_manager.base_collection_path(str(coll_id))
+            await manager.update(Collections, {"id": coll_id}, image_path=str(image_path), session=uow.session)
             await manager.create(Slug, name=name, slug=slugify(name))
             try:
                 async with file_manager.session() as files:
@@ -42,7 +45,10 @@ async def add_collection(
             except FileExistsError:
                 log.debug("путь %s уже занять", image_path)
                 raise
-        await manager.create(CollectionCategory, collection_name=name, category_name=category_name, session=uow.session)
+        else:
+            collection_record = collection_record[0]
+            coll_id = collection_record["id"]
+        await manager.create(CollectionCategory, collection_id=coll_id, category_name=category_name, session=uow.session)
         return collection_record
 
 

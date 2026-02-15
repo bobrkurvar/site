@@ -21,7 +21,7 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade():
     # Удаляем старые FK
     op.drop_constraint(
-        "collections_new_category_name_fkey",
+        "collections_category_name_fkey",
         "collection_category",
         type_="foreignkey"
     )
