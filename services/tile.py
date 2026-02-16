@@ -135,6 +135,7 @@ async def set_composite_parameter(
             for_tile_name
         ],
     )
+    #log.debug("OTHER NAME: %s, OTHER VALUE: %s, FOR TILE NAME: %s", other_name, other_value, for_tile_name)
     for_models[model] = {main_name: main_value, other_name: other_value}
     mapped[main_name] = main_value
 
@@ -151,8 +152,6 @@ async def map_to_domain_for_filter(
     mapped: dict[Any, Any] = {}
 
     for param, value in params.items():
-        if value == "":
-            continue
         for_tile.update(**{param: value})
 
         if param == "producer_name":
@@ -194,34 +193,34 @@ async def map_to_domain_for_filter(
         elif param == "box_weight":
             for_tile.pop(param)
             await set_composite_parameter(
-                manager,
-                session,
-                article,
-                value,
-                mapped,
-                for_models,
-                "weight",
-                "area",
-                Box,
-                param,
-                ["box"]
+                manager=manager,
+                session=session,
+                article=article,
+                main_value=value,
+                mapped=mapped,
+                for_models=for_models,
+                main_name="weight",
+                other_name="area",
+                model=Box,
+                for_tile_name="box_area",
+                to_join=["box"]
             )
 
 
         elif param == "box_area":
             for_tile.pop(param)
             await set_composite_parameter(
-                manager,
-                session,
-                article,
-                value,
-                mapped,
-                for_models,
-                "area",
-                "weight",
-                Box,
-                param,
-                ["box"]
+                manager=manager,
+                session=session,
+                article=article,
+                main_value=value,
+                mapped=mapped,
+                for_models=for_models,
+                main_name="area",
+                other_name="weight",
+                model=Box,
+                for_tile_name="box_weight",
+                to_join=["box"]
             )
 
     return for_tile, for_models
