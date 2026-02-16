@@ -2,6 +2,7 @@ import logging
 
 from domain import *
 from services.UoW import UnitOfWork
+from typing import Any
 
 from .exceptions import FileStorageError
 from slugify import slugify
@@ -101,7 +102,6 @@ async def delete_tile(
         uow_class=UnitOfWork,
         **filters
 ):
-
     async with uow_class(manager) as uow:
         tiles = await manager.read(
             Tile, to_join=["images"], session=uow.session, **filters
@@ -114,94 +114,114 @@ async def delete_tile(
         return del_res
 
 
+async def set_composite_parameter(
+    manager: CrudPort,
+    session,
+    article: int,
+    main_value,
+    mapped: dict,
+    for_models: dict,
+    main_name: str,
+    other_name: str,
+    model,
+    for_tile_name: str | None = None,
+    to_join: list | None = None
+):
+    to_join = [] if to_join is None else to_join
+    for_tile_name = main_name if for_tile_name is None else for_tile_name
+    other_value = mapped.setdefault(
+        other_name,
+        (await manager.read(Tile, id=article, to_join=to_join, session=session))[0][
+            for_tile_name
+        ],
+    )
+    for_models[model] = {main_name: main_value, other_name: other_value}
+    mapped[main_name] = main_value
+
+
+
 async def map_to_domain_for_filter(
         article: int,
         manager: CrudPort,
         session,
         **params
 ):
-    for_tile = {}
-    for_models = {}
-    mapped = {}
+    for_tile: dict[Any, Any] = {}
+    for_models: dict[Any, Any] = {}
+    mapped: dict[Any, Any] = {}
 
     for param, value in params.items():
-        if param == "name":
-            for_tile.update(name=value)
+        for_tile.update(**{param: value})
 
-        elif param == "producer_name":
-            for_tile.update(producer_name=value)
+        if param == "producer_name":
             for_models[Producer] = {"name": value}
 
         elif param == "category_name":
-            for_tile.update(category_name=value)
             for_models[Categories] = {"name": value}
-
         elif param == "surface_name":
-            for_tile.update(surface_name=value)
             for_models[TileSurface] = {"name": value}
-
-        elif param == "boxes_count":
-            for_tile.update(boxes_count=int(value))
-
         elif param == "size":
-            length_str, width_str, height_str = value.split()
-            for_models[TileSize] = {
-                "length": Decimal(length_str),
-                "width": Decimal(width_str),
-                "height": Decimal(height_str),
-            }
+            for_tile.pop("size")
+            for_models[TileSize] = value
 
         elif param == "feature_name":
-            color_name = mapped.setdefault(
+            await set_composite_parameter(
+                manager,
+                session,
+                article,
+                value,
+                mapped,
+                for_models,
+                param,
                 "color_name",
-                (await manager.read(Tile, id=article, session=session))[0][
-                    "color_name"
-                ],
+                TileColor
             )
-            for_tile.update(feature_name=value)
-            for_models[TileColor] = {"color_name": color_name, "feature_name": value}
-            mapped["feature_name"] = value
 
         elif param == "color_name":
-            feature_name = mapped.setdefault(
+            await set_composite_parameter(
+                manager,
+                session,
+                article,
+                value,
+                mapped,
+                for_models,
+                param,
                 "feature_name",
-                (await manager.read(Tile, id=article, session=session))[0][
-                    "feature_name"
-                ],
+                TileColor
             )
-            for_models[TileColor] = {"color_name": value, "feature_name": feature_name}
-            for_tile.update(color_name=value)
-            mapped["color_name"] = value
 
         elif param == "box_weight":
-            box_area = mapped.setdefault(
-                "box_area",
-                (
-                    await manager.read(
-                        Tile, to_join=["box"], id=article, session=session
-                    )
-                )[0]["box_area"],
+            for_tile.pop(param)
+            await set_composite_parameter(
+                manager,
+                session,
+                article,
+                value,
+                mapped,
+                for_models,
+                "weight",
+                "area",
+                Box,
+                param,
+                ["box"]
             )
-            for_models[Box] = {
-                "weight": Decimal(value),
-                "area": Decimal(box_area),
-            }
-            mapped["box_weight"] = value
+
 
         elif param == "box_area":
-            box_weight = mapped.setdefault(
-                "box_weight",
-                (
-                    await manager.read(
-                        Tile, to_join=["box"], id=article, session=session
-                    )
-                )[0]["box_area"],
+            for_tile.pop(param)
+            await set_composite_parameter(
+                manager,
+                session,
+                article,
+                value,
+                mapped,
+                for_models,
+                "area",
+                "weight",
+                Box,
+                param,
+                ["box"]
             )
-            for_models[Box] = {
-                "weight": Decimal(box_weight),
-                "area": Decimal(value),
-            }
-            mapped["box_area"] = value
 
     return for_tile, for_models
 
@@ -225,8 +245,7 @@ async def update_tile(manager: CrudPort, article: int, uow_class=UnitOfWork, **p
                 for_tiles["box_id"] = item["id"]
             elif model is TileSize:
                 for_tiles["size_id"] = item["id"]
-
-        log.debug("for_tiles: %s", for_tiles)
+        log.debug("For tiles: %s For models: %s", for_tiles, for_models)
 
         await manager.update(
             Tile, filters=dict(id=article), session=uow.session, **for_tiles

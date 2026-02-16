@@ -19,7 +19,7 @@ async def get_tokens_and_check_user(
         cur = await manager.read(Admin, username=username)
         if len(cur) == 0:
             log.debug("USER NOT FOUND")
-            raise NotFoundError(Admin, username, "username")
+            raise NotFoundError(Admin, username="username")
         cur = cur[0]
         username = cur.get("username")
         password_hash = cur.get("password")

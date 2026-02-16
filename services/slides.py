@@ -28,5 +28,5 @@ async def add_slides(images: list[bytes], generate_images, file_manager: SlideIm
             pass
 
 
-async def delete_slides(file_manager):
-    file_manager.delete_all_slides()
+async def delete_slides(file_manager: SlideImagesPort):
+    await file_manager.delete_all_slides()

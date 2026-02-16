@@ -1,7 +1,7 @@
 import logging
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Form, Request
+from fastapi import APIRouter, Depends, Form, Request, Response
 from fastapi.templating import Jinja2Templates
 from starlette.responses import RedirectResponse
 
@@ -89,7 +89,7 @@ async def admin_login(request: Request, manager: dbManagerDep):
             access_token, refresh_token = await get_tokens_and_check_user(
                 manager, refresh_token
             )
-            response = RedirectResponse("/admin", status_code=303)
+            response: Response = RedirectResponse("/admin", status_code=303)
             response.set_cookie(
                 "access_token", access_token, httponly=True, max_age=900
             )

@@ -16,7 +16,7 @@ def get_user_from_token(request: Request):
     log.debug("Starting get_user_from_token")
     try:
         log.debug("token %s", token)
-        payload = jwt.decode(token, secret_key, algorithms=algorithm)
+        payload = jwt.decode(token, secret_key, algorithms=algorithm) # type: ignore
         log.debug("Decoded payload: %s", payload)
         username = payload.get("sub")
         if username is None:

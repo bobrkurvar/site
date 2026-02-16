@@ -31,7 +31,7 @@ class SlideImagesPort(Protocol):
     def session(self) -> FileSessionPort: pass
     async def delete_all_slides(self) -> int: pass
     @property
-    def get_all_slides_paths(self) -> list[str]: pass
+    def get_all_slides_paths(self) -> tuple[str, ...]: pass
     def base_slide_path(self, file_name: str) -> Path: pass
     @property
     def slides_file_count(self) -> int: pass

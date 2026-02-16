@@ -2,7 +2,7 @@ import asyncio
 import logging
 from pathlib import Path
 
-import aiofiles
+import aiofiles # type: ignore
 
 log = logging.getLogger(__name__)
 
@@ -30,7 +30,7 @@ class FileManager:
     def session(self):
         return FileSession(self)
 
-    def resolve_path(self, file_name: str | None = "", layer: str = None) -> Path:
+    def resolve_path(self, file_name: str = "", layer: str | None = None) -> Path:
         if layer not in self._layers:
             raise ValueError(f"Unknown layer: {layer}")
         return self._root / self._layers.get(layer, "") / file_name
@@ -50,7 +50,7 @@ class FileManager:
     async def delete_by_layers(self, base_path: str | Path, layers: list[str]) -> int:
         file_name = Path(base_path).name
         paths = [self.resolve_path(file_name, layer) for layer in layers]
-        paths.append(base_path)
+        paths.append(base_path) # type: ignore
         return await self.delete_async(paths)
 
     async def delete_async(self, paths):

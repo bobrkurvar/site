@@ -127,7 +127,7 @@ async def test_update_tile_success_when_new_attributes_in_handbooks(
     # новые данные
     new_filters = dict(
         name="NewTile",
-        size="500 300 20",
+        size={"length": Decimal(500), "width": Decimal(300), "height": Decimal(20)},
         color_name="NewColor",
         producer_name="NewProducer",
         box_weight=Decimal(50),
@@ -149,11 +149,11 @@ async def test_update_tile_success_when_new_attributes_in_handbooks(
         new_filters["size_height"],
     ) = (Decimal(500), Decimal(300), Decimal(20))
 
-    # 1 проверка всех новых полей
+    # проверка всех новых полей
     for f, v in new_filters.items():
         assert new_record[0][f] == v
 
-    # 2. Проверка всех справочников, поля в справочниках не должны изменятся, а должны появится новые
+    # Проверка всех справочников, поля в справочниках не должны изменятся, а должны появится новые
     for model in domain_handbooks_models:
         rows = await manager.read(model)
         assert len(rows) == 2, f"{model} should have at least one row"

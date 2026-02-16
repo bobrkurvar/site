@@ -34,14 +34,14 @@ def resize_image(
     mode: str,
 ) -> Image.Image:
     if mode == "fit":
-        img.thumbnail(target_size, Image.LANCZOS)
+        img.thumbnail(target_size, Image.LANCZOS) # type: ignore
         return img
 
     if mode == "cover":
         return ImageOps.fit(
             img,
             target_size,
-            method=Image.LANCZOS,
+            method=Image.LANCZOS, # type ignore
             centering=(0.5, 0.5),
         )
 
@@ -50,13 +50,13 @@ def resize_image(
 
 def image_to_bytes(
     img: Image.Image,
-    format: str = "JPEG",
+    img_format: str = "JPEG",
     quality: int = 82,
 ) -> bytes:
     buf = BytesIO()
     img.save(
         buf,
-        format=format,
+        format=img_format,
         quality=quality,
         optimize=True,
         progressive=True,

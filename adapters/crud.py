@@ -22,19 +22,25 @@ class Crud:
     def __init__(self, url, domain_with_orm: dict | None = None):
         self.url = url
         self._engine = None
-        self.session_factory = None
+        self._session_factory: async_sessionmaker | None = None
         self._mapper = domain_with_orm if domain_with_orm else {}
 
     def connect(self):
         if self._engine is None:
             self._engine = create_async_engine(self.url)
-        if self.session_factory is None:
-            self.session_factory = async_sessionmaker(self._engine)
+        if self._session_factory is None:
+            self._session_factory = async_sessionmaker(self._engine)
+
+    @property
+    def session_factory(self) -> async_sessionmaker:
+        if self._session_factory is None:
+            raise RuntimeError("Not connected")
+        return self._session_factory
 
     async def close_and_dispose(self):
         log.debug("подключение к движку %s закрывается", self._engine)
         await self._engine.dispose()
-        self.session_factory = None
+        self._session_factory = None
         self._engine = None
 
     def register(self, domain_cls, orm_cls):
@@ -64,7 +70,6 @@ class Crud:
                 return obj.model_dump()
 
         try:
-
             if session is not None:
                 return await _create_internal(session)
 
@@ -77,7 +82,7 @@ class Crud:
 
             if pgcode == "23505":
                 constraint_name = (
-                    getattr(err.orig.diag, "constraint_name", "unknown")
+                    getattr(err.orig.diag, "constraint_name", "unknown") # type: ignore
                     if hasattr(err.orig, "diag")
                     else "unknown"
                 )
@@ -85,10 +90,10 @@ class Crud:
 
             elif pgcode == "23503":
                 detail = (
-                    getattr(err.orig.diag, "message_detail", str(err))
+                    getattr(err.orig.diag, "message_detail", str(err)) # type: ignore
                     if hasattr(err.orig, "diag")
                     else str(err)
-                )
+                ) # type: ignore
                 raise ForeignKeyViolationError(model.__name__, detail)
 
             raise

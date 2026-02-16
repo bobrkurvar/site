@@ -54,8 +54,8 @@ class UnauthorizedError(Exception):
 
     def __init__(
         self,
-        validate: bool = None,
-        refresh_token: bool = None,
+        validate: bool | None = None,
+        refresh_token: bool | None = None,
         access_token: bool | None = None,
     ):
         self.headers = {"WWW-Authenticate": "Bearer"}

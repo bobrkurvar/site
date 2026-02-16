@@ -21,6 +21,6 @@ async def insert_slide_image(images: Annotated[list[UploadFile], File()]):
 
 
 @router.post("/delete")
-async def insert_slide_image():
-    await delete_slides()
+async def delete_slide_image():
+    await delete_slides(file_manager=SlideImagesManager())
     return RedirectResponse("/admin", status_code=303)

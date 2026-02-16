@@ -7,5 +7,5 @@ class TileSizeInput(BaseModel):
 
 
 class TileDelete(BaseModel):
-    name: str = None
-    size: TileSizeInput = None
+    name: str | None = None
+    size: TileSizeInput | None = None

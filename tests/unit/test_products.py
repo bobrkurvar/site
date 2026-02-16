@@ -19,7 +19,6 @@ log = logging.getLogger(__name__)
 async def test_create_tile_success_when_all_handbooks_exists(
     manager_with_handbooks, domain_handbooks_models
 ):
-    manager = manager_with_handbooks
     fs = {}
     file_manager = FakeProductImagesManager(fs=fs)
     # выполнение add_tile
@@ -35,7 +34,7 @@ async def test_create_tile_success_when_all_handbooks_exists(
         boxes_count=3,
         main_image=b"MAIN",
         category_name="category",
-        manager=manager,
+        manager=manager_with_handbooks,
         images=[b"A", b"B"],
         color_feature="feature",
         surface="surface",
@@ -51,7 +50,7 @@ async def test_create_tile_success_when_all_handbooks_exists(
     tile_id = record["id"]
     # проверка всех справочников
     for model in domain_handbooks_models:
-        handbook = await manager.read(model)
+        handbook = await manager_with_handbooks.read(model)
         assert len(handbook) == 1, f"model: {model}"
 
     # 2. Все изображения записались во фейковую ФС
@@ -70,7 +69,7 @@ async def test_create_tile_success_when_all_handbooks_exists(
     assert fs[expected_paths[0]] == b"MAIN"
     assert fs[expected_paths[1]] == b"A"
     assert fs[expected_paths[2]] == b"B"
-    images_table = await manager.read(TileImages)
+    images_table = await manager_with_handbooks.read(TileImages)
     assert len(images_table) == 3
 
 
@@ -139,7 +138,6 @@ async def test_create_tile_success_when_all_handbooks_not_exists(
 async def test_update_tile_success_when_new_attributes_in_handbooks(
     manager_with_handbooks, domain_handbooks_models
 ):
-    manager = manager_with_handbooks
     file_manager = FakeProductImagesManager()
     record = await add_tile(
         name="Tile",
@@ -153,7 +151,7 @@ async def test_update_tile_success_when_new_attributes_in_handbooks(
         boxes_count=3,
         main_image=b"MAIN",
         category_name="category",
-        manager=manager,
+        manager=manager_with_handbooks,
         images=[b"A", b"B"],
         color_feature="feature",
         surface="surface",
@@ -166,7 +164,7 @@ async def test_update_tile_success_when_new_attributes_in_handbooks(
     # новые данные
     new_filters = dict(
         name="NewTile",
-        size="500 300 20",
+        size={"length": Decimal(500), "width": Decimal(300), "height": Decimal(20)},
         color_name="NewColor",
         producer_name="NewProducer",
         box_weight=Decimal(50),
@@ -177,30 +175,25 @@ async def test_update_tile_success_when_new_attributes_in_handbooks(
         surface_name="NewSurface",
     )
 
-    await update_tile(manager, article, uow_class=FakeUoW, **new_filters)
-    new_record = await manager.read(Tile, id=article, to_join=["box", "size"])
+    await update_tile(manager_with_handbooks, article, uow_class=FakeUoW, **new_filters)
+    new_record = (await manager_with_handbooks.read(Tile, id=article, to_join=["box", "size"]))[0]
+    log.debug("NEW RECORD: %s", new_record)
 
-    # новый размер принимается на ввод как три числа через пробел, но для проверки данных и базы нужен их вид как чисел - длина, ширина, высота
-    new_filters.pop("size")
-    (
-        new_filters["size_length"],
-        new_filters["size_width"],
-        new_filters["size_height"],
-    ) = (Decimal(500), Decimal(300), Decimal(20))
+    size = new_filters.pop("size")
+    new_filters["size_length"], new_filters["size_width"], new_filters["size_height"] = size["length"], size["width"], size["height"]
 
     # 1 проверка всех новых полей
     for f, v in new_filters.items():
-        assert new_record[0][f] == v
+        assert new_record[f] == v, f"key: {f}, expected value: {v}, real value: {new_record[f]}"
 
     # 2. Проверка всех справочников, поля в справочниках не должны изменятся, а должны появится новые
     for table_name in domain_handbooks_models:
-        rows = await manager.read(table_name)
+        rows = await manager_with_handbooks.read(table_name)
         assert len(rows) == 2, f"{table_name.__name__} should have at least one row"
 
 
 @pytest.mark.asyncio
 async def test_delete_tile_by_article(manager_with_handbooks, domain_handbooks_models):
-    manager = manager_with_handbooks
     fs = {}
     file_manager = FakeProductImagesManager(fs=fs)
     record = await add_tile(
@@ -215,7 +208,7 @@ async def test_delete_tile_by_article(manager_with_handbooks, domain_handbooks_m
         boxes_count=3,
         main_image=b"MAIN",
         category_name="category",
-        manager=manager,
+        manager=manager_with_handbooks,
         images=[b"A", b"B"],
         color_feature="feature",
         surface="surface",
@@ -236,7 +229,7 @@ async def test_delete_tile_by_article(manager_with_handbooks, domain_handbooks_m
     ]
     log.debug("FS: %s", fs)
     records = await delete_tile(
-        manager, uow_class=FakeUoW, id=tile_id, file_manager=file_manager
+        manager_with_handbooks, uow_class=FakeUoW, id=tile_id, file_manager=file_manager
     )
     assert len(records) == 1
 
@@ -246,9 +239,9 @@ async def test_delete_tile_by_article(manager_with_handbooks, domain_handbooks_m
     for i in records:
         assert i["id"] == tile_id
 
-    new_records = await manager.read(Tile, id=tile_id)
+    new_records = await manager_with_handbooks.read(Tile, id=tile_id)
     assert new_records == []
 
     for table_name in domain_handbooks_models:
-        rows = await manager.read(table_name)
+        rows = await manager_with_handbooks.read(table_name)
         assert len(rows) == 1

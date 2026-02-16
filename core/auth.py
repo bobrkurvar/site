@@ -71,14 +71,14 @@ async def get_tokens(
     username: str | None = None,
 ):
     access_token = None
-    if password is not None and verify(password, password_hash):
+    if password is not None and verify(password, password_hash): # type: ignore
         log.debug("password verify")
         access_token, refresh_token = await create_dict_tokens_and_save(username)
     elif refresh_token is not None:
         log.info("refresh token существует")
         payload = jwt.decode(refresh_token, secret_key, algorithms=algorithm)
         log.debug("PAYLOAD: %s", payload)
-        check_refresh_token(refresh_token, username)
+        check_refresh_token(refresh_token, username) # type: ignore
         log.info("refresh token прошёл проверку")
         username = payload.get("sub")
         access_token, refresh_token = await create_dict_tokens_and_save(username)

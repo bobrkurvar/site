@@ -2,7 +2,7 @@ import base64
 import logging
 from pathlib import Path
 
-import aiofiles
+#import aiofiles # type: ignore
 
 from adapters.files import FileManager
 
@@ -58,9 +58,9 @@ async def generate_slides(img: bytes):
 
 class ProductImagesManager(FileManager):
     def __init__(
-        self, root: str = "static/images", layers: dict | None = None, fs=aiofiles
+        self, root: str = "static/images", layers: dict | None = None
     ):
-        super().__init__(root, layers, fs)
+        super().__init__(root, layers)
 
     async def delete_product(self, base_path: str | Path) -> int:
         return await self.delete_by_layers(base_path, ["products", "details"])
@@ -83,9 +83,9 @@ class ProductImagesManager(FileManager):
 
 class CollectionImagesManager(FileManager):
     def __init__(
-        self, root: str = "static/images", layers: dict | None = None, fs=aiofiles
+        self, root: str = "static/images", layers: dict | None = None
     ):
-        super().__init__(root, layers, fs)
+        super().__init__(root, layers)
 
     async def delete_collection(self, base_path: str | Path) -> int:
         return await self.delete_by_layers(base_path, ["collections"])
@@ -101,9 +101,9 @@ class CollectionImagesManager(FileManager):
 
 class SlideImagesManager(FileManager):
     def __init__(
-        self, root: str = "static/images", layers: dict | None = None, fs=aiofiles
+        self, root: str = "static/images", layers: dict | None = None
     ):
-        super().__init__(root, layers, fs)
+        super().__init__(root, layers)
 
 
     async def delete_all_slides(self) -> int:
@@ -116,21 +116,21 @@ class SlideImagesManager(FileManager):
     def base_slide_path(self, file_name: str) -> Path:
         return self.resolve_path(file_name, "original_slide")
 
-    def get_slides_image_path(self, base_path: str) -> str:
+    def get_slides_image_path(self, base_path: str | Path) -> str:
         name = Path(base_path).name
         path_slides = self.resolve_path(name, "slides")
         return self.get_directory(path_slides, base_path)
 
     @property
-    def get_all_slides_paths(self) -> list[str]:
+    def get_all_slides_paths(self) -> tuple[str, ...]:
         path = self.resolve_path(layer="original_slide")
-        return [
+        return tuple(
             self.get_slides_image_path(file)
             for file in path.iterdir()
             if file.is_file()
-        ]
+        )
 
     @property
-    def slides_files_count(self) -> int:
+    def slides_file_count(self) -> int:
         path = self.resolve_path(layer="original_slide")
         return sum(1 for f in path.iterdir() if f.is_file())
