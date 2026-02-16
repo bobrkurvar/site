@@ -193,7 +193,7 @@ async def test_update_tile_success_when_new_attributes_in_handbooks(
 
 
 @pytest.mark.asyncio
-async def test_update_tile_success_when_composite_half_composite_param(
+async def test_update_tile_success_when_composite_half_composite_color_name_box_weight_param(
     manager_with_handbooks, domain_handbooks_models
 ):
     file_manager = FakeProductImagesManager()
@@ -237,7 +237,7 @@ async def test_update_tile_success_when_composite_half_composite_param(
 
     size = new_filters.pop("size")
     new_filters["size_length"], new_filters["size_width"], new_filters["size_height"] = size["length"], size["width"], size["height"]
-    new_filters["box_area"] = Decimal(1)
+    new_filters["box_area"], new_filters["feature_name"] = Decimal(1), "feature" # половины композитного ключа берутся из той же записи продукта
 
     # 1 проверка всех новых полей
     for f, v in new_filters.items():
@@ -247,6 +247,63 @@ async def test_update_tile_success_when_composite_half_composite_param(
     for table_name in domain_handbooks_models:
         rows = await manager_with_handbooks.read(table_name)
         assert len(rows) == 2, f"{table_name.__name__} should have at least one row"
+
+@pytest.mark.asyncio
+async def test_update_tile_success_when_composite_half_composite_feature_name_box_area_param(
+    manager_with_handbooks, domain_handbooks_models
+):
+    file_manager = FakeProductImagesManager()
+    record = await add_tile(
+        name="Tile",
+        length=Decimal(300),
+        width=Decimal(200),
+        height=Decimal(10),
+        color_name="color",
+        producer_name="producer",
+        box_weight=Decimal(30),
+        box_area=Decimal(1),
+        boxes_count=3,
+        main_image=b"MAIN",
+        category_name="category",
+        manager=manager_with_handbooks,
+        images=[b"A", b"B"],
+        color_feature="feature",
+        surface="surface",
+        uow_class=FakeUoW,
+        file_manager=file_manager,
+        generate_images=generate_products_images,
+    )
+    article = record["id"]  # фильтр для обновления по артикулу
+
+    # новые данные
+    new_filters = dict(
+        name="NewTile",
+        size={"length": Decimal(500), "width": Decimal(300), "height": Decimal(20)},
+        feature_name="NewFeature",
+        producer_name="NewProducer",
+        box_area=Decimal(50),
+        boxes_count=5,
+        category_name="NewCategory",
+        surface_name="NewSurface",
+    )
+
+    await update_tile(manager_with_handbooks, article, uow_class=FakeUoW, **new_filters)
+    new_record = (await manager_with_handbooks.read(Tile, id=article, to_join=["box", "size"]))[0]
+    log.debug("NEW RECORD: %s", new_record)
+
+    size = new_filters.pop("size")
+    new_filters["size_length"], new_filters["size_width"], new_filters["size_height"] = size["length"], size["width"], size["height"]
+    new_filters["box_weight"], new_filters["color_name"] = Decimal(30), "color" # другие половины композитного ключа берутся из той же записи продукта
+
+    # 1 проверка всех новых полей
+    for f, v in new_filters.items():
+        assert new_record[f] == v, f"key: {f}, expected value: {v}, real value: {new_record[f]}"
+
+    # 2. Проверка всех справочников, поля в справочниках не должны изменятся, а должны появится новые
+    for table_name in domain_handbooks_models:
+        rows = await manager_with_handbooks.read(table_name)
+        assert len(rows) == 2, f"{table_name.__name__} should have at least one row"
+
 
 
 @pytest.mark.asyncio

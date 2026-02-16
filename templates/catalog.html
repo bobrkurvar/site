@@ -20,8 +20,13 @@
                 <h3>Фильтры</h3>
                 <form class="filters-form" method="get" action="{{ path }}" id="filtersForm">
                     <div class="filter-group">
-                        <label>Поиск по названию:</label>
-                        <input type="text" name="name" placeholder="Введите название..." value="{{ request.query_params.get('name', '') }}">
+                        <label>Поиск производителю:</label>
+                        <select name="producer">
+                            <option value="">Все производители</option>
+                            {% for producer in producers %}
+                            <option value="{{ producer.name }}" {% if request.query_params.get('producer') == producer.name %}selected{% endif %}>{{ producer.name }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
                     <div class="filter-group">
                         <label>Размер:</label>

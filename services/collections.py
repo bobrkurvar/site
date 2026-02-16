@@ -29,8 +29,8 @@ async def add_collection(
                 name=name,
                 # image_path=str(image_path),
                 session=uow.session,
-            )
-            coll_id = collection_record["id"]
+            ) # type: ignore
+            coll_id = collection_record["id"] # type: ignore
             image_path = file_manager.base_collection_path(str(coll_id))
             await manager.update(
                 Collections,
@@ -54,8 +54,8 @@ async def add_collection(
                 log.debug("путь %s уже занять", image_path)
                 raise
         else:
-            collection_record = collection_record[0]
-            coll_id = collection_record["id"]
+            collection_record = collection_record[0] # type: ignore
+            coll_id = collection_record["id"] #type: ignore
         log.debug(
             "Create CollectionCategory with collection: %s, category: %s",
             coll_id,

@@ -8,14 +8,14 @@ log = logging.getLogger(__name__)
 
 async def build_tile_filters(
     manager,
-    name: str | None,
+    producer: str | None,
     size: str | None,
     color: str | None,
     category: str | None = None,
 ) -> dict:
     filters = {}
-    if name:
-        filters["name"] = name
+    if producer:
+        filters["producer_name"] = producer
     if color:
         filters["color_name"] = color
     if size:

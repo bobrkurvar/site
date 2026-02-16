@@ -11,13 +11,15 @@ from core import conf
 from db import models
 from domain.exceptions import (AlreadyExistsError, ForeignKeyViolationError,
                                NotFoundError)
+from services.ports import CrudPort
+from typing import Any
 
 log = logging.getLogger(__name__)
 
 
 
 
-class Crud:
+class Crud(CrudPort):
 
     def __init__(self, url, domain_with_orm: dict | None = None):
         self.url = url

@@ -76,11 +76,11 @@ async def add_tile(
         images = [img for img in images if img]
         images.insert(0, main_image)
         for n, img in enumerate(images):
-            str_name = str(tile_record["id"]) + "-" + str(n)
+            str_name = str(tile_record["id"]) + "-" + str(n) # type: ignore
             image_path = file_manager.base_product_path(str_name)
             await manager.create(
                 TileImages,
-                tile_id=tile_record["id"],
+                tile_id=tile_record["id"], #type: ignore
                 image_path=str(image_path),
                 session=uow.session,
             )

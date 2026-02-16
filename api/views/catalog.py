@@ -11,6 +11,7 @@ from domain import Slug, Tile, map_to_tile_domain
 from services.views import (build_data_for_filters, build_main_images,
                             build_tile_filters, fetch_items,
                             get_categories_for_items)
+from domain import Producer
 
 router = APIRouter(tags=["presentation"], prefix="/catalog")
 dbManagerDep = Annotated[Crud, Depends(get_db_manager)]
@@ -56,12 +57,12 @@ async def get_catalog_tiles_page(
     request: Request,
     category_name: str,
     manager: dbManagerDep,
-    name: str | None = None,
+    producer: str | None = None,
     size: str | None = None,
     color: str | None = None,
     page: int = 1,
 ):
-    filters = await build_tile_filters(manager, name, size, color, category_name)
+    filters = await build_tile_filters(manager, producer, size, color, category_name)
     limit = ITEMS_PER_PAGE
     offset = (page - 1) * limit
 
@@ -76,6 +77,7 @@ async def get_catalog_tiles_page(
     log.debug("main_images: %s", main_images)
     total_pages = max((total_count + limit - 1) // limit, 1)
     categories = await get_categories_for_items(manager)
+    producers = await manager.read(Producer)
 
     return templates.TemplateResponse(
         "catalog.html",
@@ -90,6 +92,7 @@ async def get_catalog_tiles_page(
             "main_images": main_images,
             "categories": categories,
             "category": category_name,
+            "producers": producers,
             "active_tab": "products",
         },
     )
