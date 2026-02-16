@@ -39,14 +39,14 @@ async def admin_create_tile_collection(
 async def admin_delete_tile_collections(
     manager: dbManagerDep,
     collection_name: Annotated[str, Form()],
-    #category_name: Annotated[str, Form()],
+    # category_name: Annotated[str, Form()],
 ):
     collection_name = collection_name.strip()
-    #category_name = category_name.strip()
+    # category_name = category_name.strip()
     await delete_collection(
         collection_name=collection_name,
         manager=manager,
-        #category_name=category_name,
+        # category_name=category_name,
         file_manager=CollectionImagesManager(),
     )
     return RedirectResponse("/admin", status_code=303)

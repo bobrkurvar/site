@@ -30,26 +30,25 @@ class FileManager:
     def session(self):
         return FileSession(self)
 
-    def resolve_path(self, file_name: str | None = "", layer: str = None):
+    def resolve_path(self, file_name: str | None = "", layer: str = None) -> Path:
         if layer not in self._layers:
             raise ValueError(f"Unknown layer: {layer}")
         return self._root / self._layers.get(layer, "") / file_name
 
-    async def save(self, image_path, img):
-        upload_dir = image_path.parent
+    async def save(self, image_path: Path | str, img):
+        upload_dir = Path(image_path).parent
         if upload_dir:
             upload_dir.mkdir(parents=True, exist_ok=True)
             async with self._fs.open(image_path, "xb") as fw:
                 await fw.write(img)
 
-    async def save_by_layer(self, image_path, img, layer: str):
+    async def save_by_layer(self, image_path: Path | str, img: bytes, layer: str):
         file_name = Path(image_path).name
         image_path = self.resolve_path(file_name, layer)
         await self.save(image_path, img)
 
-    async def delete_by_layers(self, base_path: str | Path, layers: list[str]):
-        base_path = Path(base_path) if isinstance(base_path, str) else base_path
-        file_name = base_path.name
+    async def delete_by_layers(self, base_path: str | Path, layers: list[str]) -> int:
+        file_name = Path(base_path).name
         paths = [self.resolve_path(file_name, layer) for layer in layers]
         paths.append(base_path)
         return await self.delete_async(paths)
@@ -58,7 +57,7 @@ class FileManager:
         return await asyncio.to_thread(self._delete, paths)
 
     @staticmethod
-    def _delete(paths: list[Path]):
+    def _delete(paths: list[Path]) -> int:
         deleted = 0
         for path in paths:
             if isinstance(path, str):
@@ -68,10 +67,11 @@ class FileManager:
         return deleted
 
     @staticmethod
-    def get_directory(main_path: Path, other_path: str | Path):
+    def get_directory(main_path: Path, other_path: str | Path) -> str:
         if main_path.exists():
             return str(main_path)
         return str(other_path)
+
 
 class FileSession:
     def __init__(self, file_manager: FileManager):
@@ -101,6 +101,5 @@ class FileSession:
         await self._fm.delete_async(self._saved_files)
 
     # --- проксируем всё остальное ---
-    def __getattr__(self, name):
-        return getattr(self._fm, name)
-
+    # def __getattr__(self, name):
+    #     return getattr(self._fm, name)

@@ -7,7 +7,7 @@ from starlette.responses import RedirectResponse
 
 from adapters.crud import Crud, get_db_manager
 from domain import *
-from domain.exceptions import UnauthorizedError, NotFoundError
+from domain.exceptions import NotFoundError, UnauthorizedError
 from services.auth import get_tokens_and_check_user
 
 router = APIRouter(tags=["admin"], prefix="/admin")
@@ -18,10 +18,10 @@ log = logging.getLogger(__name__)
 
 @router.get("")
 async def admin_page(request: Request, manager: dbManagerDep):
-    #cookies = request.cookies
-    #access_token = request.cookies.get("access_token")
-    #log.debug("cookies: %s", cookies)
-    #if access_token is None:
+    # cookies = request.cookies
+    # access_token = request.cookies.get("access_token")
+    # log.debug("cookies: %s", cookies)
+    # if access_token is None:
     #    return RedirectResponse("/admin/login", status_code=303)
 
     tiles = await manager.read(Tile, to_join=["images", "size", "box"])
@@ -76,7 +76,7 @@ async def admin_page(request: Request, manager: dbManagerDep):
             "boxes_unique_area": boxes_unique_area,
             "categories": categories,
             "boxes_unique_count": boxes_unique_count,
-            #"access_token": access_token,
+            # "access_token": access_token,
         },
     )
 
@@ -101,9 +101,7 @@ async def admin_login(request: Request, manager: dbManagerDep):
                 "admin_login.html", {"request": request}
             )
     else:
-        response = templates.TemplateResponse(
-            "admin_login.html", {"request": request}
-        )
+        response = templates.TemplateResponse("admin_login.html", {"request": request})
     return response
 
 
@@ -119,7 +117,9 @@ async def admin_login_submit(
         )
         if access_token and refresh_token:
             response = RedirectResponse("/admin", status_code=303)
-            response.set_cookie("access_token", access_token, httponly=True, max_age=900)
+            response.set_cookie(
+                "access_token", access_token, httponly=True, max_age=900
+            )
             response.set_cookie(
                 "refresh_token", refresh_token, httponly=True, max_age=86400 * 7
             )

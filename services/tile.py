@@ -2,7 +2,10 @@ import logging
 
 from domain import *
 from services.UoW import UnitOfWork
+
+from .exceptions import FileStorageError
 from slugify import slugify
+from .ports import ProductImagesPort, CrudPort
 
 log = logging.getLogger(__name__)
 
@@ -26,15 +29,15 @@ async def add_tile(
     boxes_count: int,
     main_image: bytes,
     category_name: str,
-    manager,
+    manager: CrudPort,
     images: list[bytes] | list,
     generate_images,
-    file_manager,
+    file_manager: ProductImagesPort,
     color_feature: str = "",
     surface: str | None = None,
     uow_class=UnitOfWork,
 ):
-    async with uow_class(manager._session_factory) as uow:
+    async with uow_class(manager) as uow:
 
         size = await add_items(
             TileSize, manager, uow.session, height=height, width=width, length=length
@@ -50,7 +53,9 @@ async def add_tile(
         )
         await add_items(Producer, manager, uow.session, name=producer_name)
         await add_items(Categories, manager, uow.session, name=category_name)
-        await add_items(Slug, manager, uow.session, name=name, slug=slugify(name))
+        await add_items(
+            Slug, manager, uow.session, name=category_name, slug=slugify(category_name)
+        )
         box = await add_items(
             Box, manager, uow.session, weight=box_weight, area=box_area
         )
@@ -67,7 +72,6 @@ async def add_tile(
             boxes_count=boxes_count,
             session=uow.session,
         )
-        # file_manager.set_path("static/images/base/products")
         images = [img for img in images if img]
         images.insert(0, main_image)
         for n, img in enumerate(images):
@@ -85,20 +89,20 @@ async def add_tile(
                     miniatures = await generate_images(img)
                     for layer, miniature in miniatures.items():
                         await files.save_by_layer(image_path, miniature, layer)
-            except TypeError:
-                log.debug(
-                    "generate_image_variant_callback  или save_files не получили нужную функцию"
-                )
-                raise
-            except FileExistsError:
+            except FileExistsError as exc:
                 log.debug("путь %s уже занять", image_path)
-                raise
+                raise FileStorageError(f"путь {image_path} уже занять") from exc
         return tile_record
 
 
-async def delete_tile(manager, file_manager, uow_class=UnitOfWork, **filters):
+async def delete_tile(
+        manager: CrudPort,
+        file_manager: ProductImagesPort,
+        uow_class=UnitOfWork,
+        **filters
+):
 
-    async with uow_class(manager._session_factory) as uow:
+    async with uow_class(manager) as uow:
         tiles = await manager.read(
             Tile, to_join=["images"], session=uow.session, **filters
         )
@@ -110,7 +114,12 @@ async def delete_tile(manager, file_manager, uow_class=UnitOfWork, **filters):
         return del_res
 
 
-async def map_to_domain_for_filter(article: int, manager, session, **params):
+async def map_to_domain_for_filter(
+        article: int,
+        manager: CrudPort,
+        session,
+        **params
+):
     for_tile = {}
     for_models = {}
     mapped = {}
@@ -197,10 +206,10 @@ async def map_to_domain_for_filter(article: int, manager, session, **params):
     return for_tile, for_models
 
 
-async def update_tile(manager, article, uow_class=UnitOfWork, **params):
+async def update_tile(manager: CrudPort, article: int, uow_class=UnitOfWork, **params):
     log.debug("PARAMS: %s", params)
 
-    async with uow_class(manager._session_factory) as uow:
+    async with uow_class(manager) as uow:
         for_tiles, for_models = await map_to_domain_for_filter(
             article, manager, uow.session, **params
         )

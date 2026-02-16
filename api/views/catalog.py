@@ -7,9 +7,10 @@ from fastapi.templating import Jinja2Templates
 from adapters.crud import Crud, get_db_manager
 from adapters.images import ProductImagesManager
 from core.config import ITEMS_PER_PAGE
-from domain import Tile, map_to_tile_domain, Slug
+from domain import Slug, Tile, map_to_tile_domain
 from services.views import (build_data_for_filters, build_main_images,
-                            build_tile_filters, fetch_items, get_categories_for_items)
+                            build_tile_filters, fetch_items,
+                            get_categories_for_items)
 
 router = APIRouter(tags=["presentation"], prefix="/catalog")
 dbManagerDep = Annotated[Crud, Depends(get_db_manager)]

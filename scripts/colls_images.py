@@ -4,7 +4,7 @@ from pathlib import Path
 
 import core.logger
 from adapters.crud import get_db_manager
-from domain import Collections, CollectionCategory
+from domain import CollectionCategory, Collections
 
 log = logging.getLogger(__name__)
 
@@ -17,8 +17,10 @@ async def new_images_paths_for_collections():
         collection_name = collection["collection_name"]
         category_name = collection["category_name"]
         old_paths = (
-            Path("static/images/base/collections") / (collection_name + '-' + category_name),
-            Path("static/images/collections/catalog") / (collection_name + '-' + category_name),
+            Path("static/images/base/collections")
+            / (collection_name + "-" + category_name),
+            Path("static/images/collections/catalog")
+            / (collection_name + "-" + category_name),
         )
         new_paths = [
             Path("static/images/base/collections") / collection_name,
@@ -31,7 +33,11 @@ async def new_images_paths_for_collections():
                 print(f"Папка {new} уже существует. Пропускаем.")
             except FileNotFoundError:
                 print(f"Папка {old} не найдена.")
-            await manager.update(Collections, filters={"name": collection["collection_name"]}, image_path=str(new))
+            await manager.update(
+                Collections,
+                filters={"name": collection["collection_name"]},
+                image_path=str(new),
+            )
 
 
 async def main():

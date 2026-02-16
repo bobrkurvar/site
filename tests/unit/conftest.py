@@ -2,8 +2,8 @@ from decimal import Decimal
 
 import pytest
 
-from domain import (Box, Categories, Collections, Producer, Tile, TileColor,
-                    TileImages, TileSize, TileSurface, Slug, CollectionCategory)
+from domain import (Box, Categories, CollectionCategory, Collections, Producer,
+                    Slug, Tile, TileColor, TileImages, TileSize, TileSurface)
 from services.tile import add_tile
 from tests.fakes import (FakeCRUD, FakeProductImagesManager, FakeStorage,
                          FakeUoW, Table, noop_generate)
@@ -78,7 +78,7 @@ def storage():
             Table(
                 name=Collections,
                 columns=["id", "name", "image_path"],
-                defaults={"id": 1, "image_path": None}
+                defaults={"id": 1, "image_path": None},
             ),
             Table(
                 name=Tile,
@@ -96,21 +96,18 @@ def storage():
                 ],
                 defaults={"id": 1},
             ),
-            Table(name=Slug,columns=["name", "slug"]),
-            Table(
-                name=CollectionCategory,
-                columns=["collection_id", "category_name"]
-            )
+            Table(name=Slug, columns=["name", "slug"]),
+            Table(name=CollectionCategory, columns=["collection_id", "category_name"]),
         ]
     )
 
     return storage
 
 
-
 @pytest.fixture
 def manager(storage):
     return FakeCRUD(storage)
+
 
 @pytest.fixture
 def manager_factory(manager):
@@ -148,12 +145,7 @@ def manager_factory(manager):
 
 @pytest.fixture
 def storage_with_filled_handbooks(storage):
-    storage.add(
-        TileSize,
-        length=Decimal(300),
-        width=Decimal(200),
-        height=Decimal(10)
-    )
+    storage.add(TileSize, length=Decimal(300), width=Decimal(200), height=Decimal(10))
     storage.add(TileColor, color_name="color", feature_name="feature")
     storage.add(Producer, name="producer")
     storage.add(Box, weight=Decimal(30), area=Decimal(1))

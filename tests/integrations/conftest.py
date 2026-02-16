@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import shutil
 from pathlib import Path
@@ -8,15 +9,14 @@ from alembic.config import Config
 from sqlalchemy import text
 
 from adapters.crud import get_db_manager
-from core import conf
-from domain import Categories
 from adapters.http_client import get_http_client
-import asyncio
-
+from core import conf
+from domain import *
 from image_worker import app
 
-log = logging.getLogger(__name__)
+from .helpers import fill_handbooks
 
+log = logging.getLogger(__name__)
 
 
 @pytest.fixture
@@ -57,8 +57,34 @@ async def manager_with_categories(manager):
     return manager
 
 
+@pytest.fixture
+async def manager_with_filled_handbooks(manager):
+    await fill_handbooks(
+        length=Decimal(300),
+        width=Decimal(200),
+        height=Decimal(10),
+        color_name="color",
+        producer_name="producer",
+        box_weight=Decimal(30),
+        box_area=Decimal(1),
+        category_name="category",
+        manager=manager,
+        color_feature="feature",
+        surface="surface",
+    )
+    return manager
+
+
 @pytest.fixture(autouse=True)
 def clean_fs_after_test(request):
+    if not any(
+        "integration" in marker.name
+        for item in request.session.items
+        for marker in item.iter_markers()
+    ):
+        yield
+        return
+
     yield
     images_path = Path("tests/images")
     if images_path.exists() and images_path.is_dir():
@@ -82,19 +108,20 @@ def migrate_test_db(request):
     alembic_cfg = Config("alembic.ini")
     alembic_cfg.set_main_option("sqlalchemy.url", conf.test_db_url)
     command.upgrade(alembic_cfg, "head")
-
     yield
 
 
 @pytest.fixture(scope="session", autouse=True)
-def http_client():
+def http_client(request):
+    if not any(
+        "integration" in marker.name
+        for item in request.session.items
+        for marker in item.iter_markers()
+    ):
+        yield
+        return
+
     http_client = get_http_client(app=app)
     http_client.connect()
     yield http_client
     asyncio.run(http_client.close())
-
-
-
-
-
-

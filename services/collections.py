@@ -1,8 +1,10 @@
 import logging
 
-from domain import Collections, Slug, CollectionCategory
-from services.UoW import UnitOfWork
 from slugify import slugify
+
+from domain import CollectionCategory, Collections, Slug
+from services.UoW import UnitOfWork
+from .ports import CrudPort, CollectionImagesPort
 
 log = logging.getLogger(__name__)
 
@@ -11,25 +13,31 @@ async def add_collection(
     name: str,
     image: bytes,
     category_name: str,
-    manager,
+    manager: CrudPort,
     generate_images,
-    file_manager,
+    file_manager: CollectionImagesPort,
     uow_class=UnitOfWork,
 ):
 
-    async with uow_class(manager._session_factory) as uow:
-        #image_path = file_manager.base_collection_path(name)
-        collection_record = await manager.read(Collections, name=name, session=uow.session)
+    async with uow_class(manager) as uow:
+        collection_record = await manager.read(
+            Collections, name=name, session=uow.session
+        )
         if not collection_record:
             collection_record = await manager.create(
                 Collections,
                 name=name,
-                #image_path=str(image_path),
+                # image_path=str(image_path),
                 session=uow.session,
             )
             coll_id = collection_record["id"]
             image_path = file_manager.base_collection_path(str(coll_id))
-            await manager.update(Collections, {"id": coll_id}, image_path=str(image_path), session=uow.session)
+            await manager.update(
+                Collections,
+                {"id": coll_id},
+                image_path=str(image_path),
+                session=uow.session,
+            )
             await manager.create(Slug, name=name, slug=slugify(name))
             try:
                 async with file_manager.session() as files:
@@ -48,17 +56,27 @@ async def add_collection(
         else:
             collection_record = collection_record[0]
             coll_id = collection_record["id"]
-        await manager.create(CollectionCategory, collection_id=coll_id, category_name=category_name, session=uow.session)
+        log.debug(
+            "Create CollectionCategory with collection: %s, category: %s",
+            coll_id,
+            category_name,
+        )
+        await manager.create(
+            CollectionCategory,
+            collection_id=coll_id,
+            category_name=category_name,
+            session=uow.session,
+        )
         return collection_record
 
 
 async def delete_collection(
     collection_name: str,
-    manager,
-    file_manager,
+    manager: CrudPort,
+    file_manager: CollectionImagesPort,
     uow_class=UnitOfWork,
 ):
-    async with uow_class(manager._session_factory) as uow:
+    async with uow_class(manager) as uow:
         collection = await manager.delete(
             Collections,
             name=collection_name,

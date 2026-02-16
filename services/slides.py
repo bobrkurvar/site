@@ -1,21 +1,20 @@
 import logging
+from .ports import SlideImagesPort
 
 from core import logger
 
 log = logging.getLogger(__name__)
 
 
-async def add_slides(images: list[bytes], generate_images, file_manager):
+async def add_slides(images: list[bytes], generate_images, file_manager: SlideImagesPort):
     extra_num = file_manager.slides_file_count
     for i, image in enumerate(images):
         file_name = str(extra_num + i)
         try:
-            # await file_manager.save_slide_original(file_name, image)
-            # miniatures = await generate_images(image)
-            # for layer, miniature in miniatures.items():
-            #     await file_manager.save_by_layer(file_name, miniature, layer)
+            base_slide_path = file_manager.base_slide_path(file_name)
+            image_path = base_slide_path / file_name
             async with file_manager.session() as files:
-                await files.save_slide_original(file_name, image)
+                await files.save(image_path, image)
                 miniatures = await generate_images(image)
                 for layer, miniature in miniatures.items():
                     await files.save_by_layer(file_name, miniature, layer)
@@ -30,10 +29,4 @@ async def add_slides(images: list[bytes], generate_images, file_manager):
 
 
 async def delete_slides(file_manager):
-    # upload_dirs = [BASE_DIR / "slides", BASE_DIR / "base" / "slides"]
-    # log.debug("deleted slite dir: %s", upload_dirs)
-    # for upload_dir in upload_dirs:
-    #     for f in upload_dir.iterdir():
-    #         if f.is_file() and f.exists():
-    #             f.unlink()
     file_manager.delete_all_slides()

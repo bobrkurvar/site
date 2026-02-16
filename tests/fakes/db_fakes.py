@@ -2,7 +2,7 @@ import logging
 from copy import deepcopy
 from typing import Any
 
-from domain import Box, TileImages, TileSize, NotFoundError, Collections
+from domain import Box, Collections, NotFoundError, TileImages, TileSize
 
 log = logging.getLogger(__name__)
 
@@ -18,6 +18,7 @@ def join_tile_with_box(new_table, other_table):
                     {"box_area": other_row["area"], "box_weight": other_row["weight"]}
                 )
         row.update(to_row)
+
 
 def join_tile_with_size(new_table, other_table):
     new_table.columns += ["size_length", "size_width", "size_height"]
@@ -35,6 +36,7 @@ def join_tile_with_size(new_table, other_table):
                 )
         row.update(to_row)
 
+
 def join_tile_with_images(new_table, other_table):
     new_table.columns += ["images_paths"]
 
@@ -48,6 +50,7 @@ def join_tile_with_images(new_table, other_table):
         if images:
             row["images_paths"] = images
 
+
 def join_category_collection_with_collection(new_table, other_table):
     new_table.columns += ["collection_name", "image_path"]
     for row in new_table.rows:
@@ -55,9 +58,10 @@ def join_category_collection_with_collection(new_table, other_table):
         for other_row in other_table:
             to_row.update(
                 collection_name=other_row["collection_name"],
-                image_path=other_row["image_path"]
+                image_path=other_row["image_path"],
             )
         row.update(to_row)
+
 
 class Table:
 
@@ -100,7 +104,7 @@ class FakeStorage:
             "size": TileSize,
             "box": Box,
             "images": TileImages,
-            "collection": Collections
+            "collection": Collections,
         }
 
     def register_tables(self, models: list[Table]):
@@ -110,11 +114,7 @@ class FakeStorage:
     @staticmethod
     def _add_default(table_column, table, columns):
         columns.update(
-            {
-                table_column: (
-                    table.defaults[table_column] if table.defaults else None
-                )
-            }
+            {table_column: (table.defaults[table_column] if table.defaults else None)}
         )
         if isinstance(table.defaults[table_column], int):
             table.defaults[table_column] += 1
@@ -147,7 +147,7 @@ class FakeStorage:
 
         if distinct:
             if isinstance(distinct, str):
-                distinct = (distinct, )
+                distinct = (distinct,)
             seen = set()
             unique_result = []
             for row in result:

@@ -5,15 +5,15 @@ Revises: 82f83a491aea
 Create Date: 2026-02-12 08:52:04.838316
 
 """
+
 from typing import Sequence, Union
 
-from alembic import op
 import sqlalchemy as sa
-
+from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = '580731c087af'
-down_revision: Union[str, Sequence[str], None] = 'd0d0439927e9'
+revision: str = "580731c087af"
+down_revision: Union[str, Sequence[str], None] = "d0d0439927e9"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -25,15 +25,19 @@ def upgrade() -> None:
 
     op.create_table(
         "collections",
-        sa.Column("name", sa.String(),  primary_key=True),
-        sa.Column("image_path", sa.String(), unique=True)
+        sa.Column("name", sa.String(), primary_key=True),
+        sa.Column("image_path", sa.String(), unique=True),
     )
 
-    op.execute(sa.text("""
+    op.execute(
+        sa.text(
+            """
         INSERT INTO collections (name)
         SELECT DISTINCT collection_name
         FROM collection_category
-    """))
+    """
+        )
+    )
 
     op.create_foreign_key(
         "fk_collection_category_collection_name",
@@ -41,7 +45,7 @@ def upgrade() -> None:
         "collections",
         ["collection_name"],
         ["name"],
-        ondelete="CASCADE"
+        ondelete="CASCADE",
     )
 
 

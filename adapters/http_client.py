@@ -1,11 +1,13 @@
 import logging
 from functools import wraps
 
-#from aiohttp import ClientResponseError, ClientSession
-#from aiohttp.client_exceptions import ClientConnectorError
+from httpx import ASGITransport, AsyncClient, ConnectError, HTTPStatusError
 
 from core import conf
-from httpx import AsyncClient, ConnectError, HTTPStatusError, ASGITransport
+
+# from aiohttp import ClientResponseError, ClientSession
+# from aiohttp.client_exceptions import ClientConnectorError
+
 
 log = logging.getLogger(__name__)
 
@@ -64,7 +66,11 @@ class MyExternalApiForBot:
 
     def connect(self):
         if not self._client:
-            self._client = AsyncClient(transport = ASGITransport(app=self._app), base_url=self._url) if self._app else AsyncClient(base_url=self._url)
+            self._client = (
+                AsyncClient(transport=ASGITransport(app=self._app), base_url=self._url)
+                if self._app
+                else AsyncClient(base_url=self._url)
+            )
 
     async def generate_images(self, **data):
         try:
@@ -81,8 +87,10 @@ class MyExternalApiForBot:
             self._client = None
 
 
-#url = conf.image_service_url
+# url = conf.image_service_url
 _http_client: MyExternalApiForBot | None = None
+
+
 def get_http_client(app=None):
     global _http_client
     if _http_client is None:

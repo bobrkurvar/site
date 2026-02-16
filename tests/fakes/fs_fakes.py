@@ -36,7 +36,7 @@ class FakeFileManager:
         return self._root / self._layers.get(layer, "") / file_name
 
     async def save(self, image_path, img):
-        #log.debug("IN SAVE IMAGE_PATH: %s", image_path)
+        # log.debug("IN SAVE IMAGE_PATH: %s", image_path)
         self._fs[str(image_path)] = img
 
     async def save_by_layer(self, image_path, img, layer: str):
@@ -69,6 +69,7 @@ class FakeFileManager:
             return str(main_path)
         return str(other_path)
 
+
 class FakeFileSession:
     def __init__(self, file_manager: FakeFileManager):
         self._fm = file_manager
@@ -99,7 +100,6 @@ class FakeFileSession:
     # --- проксируем всё остальное ---
     def __getattr__(self, name):
         return getattr(self._fm, name)
-
 
 
 async def generate_products_images(*args, **kwargs) -> dict:

@@ -1,7 +1,9 @@
 import asyncio
+from pathlib import Path
+
 from adapters.crud import get_db_manager
 from domain import Collections
-from pathlib import Path
+
 
 async def main():
     manager = get_db_manager()
@@ -28,6 +30,7 @@ async def main():
                 print(f"Папка {new} уже существует. Пропускаем.")
             except FileNotFoundError:
                 print(f"Папка {old} не найдена.")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

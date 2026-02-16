@@ -1,7 +1,7 @@
 import logging
 from decimal import Decimal
 
-from domain import Tile, TileColor, TileSize, Slug, Categories
+from domain import Categories, Slug, Tile, TileColor, TileSize
 
 log = logging.getLogger(__name__)
 
@@ -30,7 +30,7 @@ async def build_tile_filters(
     if category is not None:
         category_name = (await manager.read(Slug, slug=category))[0]["name"]
         filters["category_name"] = category_name
-        #filters["category_name"] = Categories.get_category_from_slug(category)
+        # filters["category_name"] = Categories.get_category_from_slug(category)
 
     return filters
 
@@ -38,11 +38,17 @@ async def build_tile_filters(
 async def build_data_for_filters(
     manager, category: str | None = None, collection: str | None = None
 ):
-    #category = Categories.get_category_from_slug(category) if category else None
-    category = (await manager.read(Slug, slug=category))[0]["name"] if category else None
+    # category = Categories.get_category_from_slug(category) if category else None
+    category = (
+        (await manager.read(Slug, slug=category))[0]["name"] if category else None
+    )
     if collection is not None:
-        #collection = Collections.get_collection_from_slug(collection).lower()
-        collection = (await manager.read(Slug, slug=collection))[0]["name"] if collection else None
+        # collection = Collections.get_collection_from_slug(collection).lower()
+        collection = (
+            (await manager.read(Slug, slug=collection))[0]["name"]
+            if collection
+            else None
+        )
         log.debug("collection: %s", collection)
         seen = set()
         tile_sizes = await manager.read(Tile, to_join=["size"], category_name=category)
@@ -95,7 +101,7 @@ def build_main_images(tiles):
     main_images = {}
     for tile in tiles:
         img = tile["images_paths"][0]
-        #log.debug("image: %s", img)
+        # log.debug("image: %s", img)
         images_part = img.split("-")
         images_part[-1] = "0"
         main_images[tile["id"]] = "-".join(images_part)
@@ -127,18 +133,20 @@ async def fetch_collections_items(manager, collection, limit, offset, **filters)
     log.debug("offset: %s, limit: %s", offset, limit)
     log.debug("filters: %s", filters)
     items = await manager.read(Tile, to_join=["images", "size", "box"], **filters)
-    #collection = Collections.get_collection_from_slug(collection).lower()
+    # collection = Collections.get_collection_from_slug(collection).lower()
     collection = (await manager.read(Slug, slug=collection))[0]["name"].lower()
     items = [item for item in items if extract_quoted_word(item["name"]) == collection]
     total_count = len(items)
-    #log.debug("collection total count: %s", total_count)
+    # log.debug("collection total count: %s", total_count)
 
     items = items[offset : offset + limit]
-    #log.debug("collection count: %s", items)
+    # log.debug("collection count: %s", items)
 
     return items, total_count
 
 
 async def get_categories_for_items(manager):
-    categories = {cat["name"] for cat in await manager.read(Categories, order_by="name")}
+    categories = {
+        cat["name"] for cat in await manager.read(Categories, order_by="name")
+    }
     return await manager.read(Slug, name=categories)

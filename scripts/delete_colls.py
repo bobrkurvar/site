@@ -2,7 +2,7 @@ import asyncio
 import logging
 
 from adapters.crud import get_db_manager
-from domain import Collections, CollectionCategory, Slug
+from domain import CollectionCategory, Collections, Slug
 from services.UoW import UnitOfWork
 
 log = logging.getLogger(__name__)
@@ -20,11 +20,14 @@ async def delete_colls():
         for coll in coll_category:
             collection_id = coll["collection_id"]
             if collection_id not in coll_ids:
-                await manager.delete(CollectionCategory, session=uow.session, collection_id=collection_id)
+                await manager.delete(
+                    CollectionCategory, session=uow.session, collection_id=collection_id
+                )
         for slug in slugs:
             slug_name = slug["name"]
             if slug_name not in coll_names:
                 await manager.delete(Slug, session=uow.session, name=slug_name)
+
 
 async def main():
     await delete_colls()

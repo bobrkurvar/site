@@ -1,4 +1,5 @@
 import asyncio
+import base64
 import logging
 from concurrent.futures import ProcessPoolExecutor
 from io import BytesIO
@@ -7,7 +8,6 @@ from fastapi import FastAPI
 # from pathlib import Path
 from PIL import Image, ImageOps
 from pydantic import BaseModel
-import base64
 
 from core import logger
 
@@ -109,7 +109,7 @@ class ImageWithTarget(BaseModel):
 
 @app.post("/generate-images")
 async def generate_image(image_data: ImageWithTarget):
-    data =  base64.b64decode(image_data.data)
+    data = base64.b64decode(image_data.data)
     loop = asyncio.get_running_loop()
     images = {}
     for target in image_data.targets:

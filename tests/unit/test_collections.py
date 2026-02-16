@@ -3,16 +3,15 @@ import logging
 import pytest
 
 import core.logger
-from domain import Collections, NotFoundError, CollectionCategory, Slug
+from domain import CollectionCategory, Collections, NotFoundError, Slug
 from services.collections import add_collection, delete_collection
-from tests.fakes import (FakeCollectionImagesManager,
-                         FakeUoW, generate_collections_images)
+from tests.fakes import (FakeCollectionImagesManager, FakeUoW,
+                         generate_collections_images)
 
-from .helpers import collection_catalog_path
 from .conftest import manager
+from .helpers import collection_catalog_path
 
 log = logging.getLogger(__name__)
-
 
 
 @pytest.mark.asyncio
@@ -34,10 +33,10 @@ async def test_create_collection_category_when_collection_not_exists_success(man
     # сервисная функция должна вернуть запись
     assert collection is not None
 
-    collection_in_db = await manager.read(
-        Collections, name="collection1"
+    collection_in_db = await manager.read(Collections, name="collection1")
+    collection_category = await manager.read(
+        CollectionCategory, collection_id=collection["id"]
     )
-    collection_category = await manager.read(CollectionCategory, collection_id=collection["id"])
     slug = await manager.read(Slug, name=collection["name"])
     # действительно в базе есть запись коллекции
     assert len(collection_in_db) == 1
@@ -82,11 +81,11 @@ async def test_create_collection_category_when_collection_exists_success(manager
     # сервисная функция должна вернуть запись
     assert collection is not None
 
-    collection_in_db = await manager.read(
-        Collections, name="collection1"
-    )
+    collection_in_db = await manager.read(Collections, name="collection1")
     slug = await manager.read(Slug, name=collection["name"])
-    collection_category = await manager.read(CollectionCategory, collection_id=collection["id"])
+    collection_category = await manager.read(
+        CollectionCategory, collection_id=collection["id"]
+    )
     # действительно в базе есть запись одной коллекции
     assert len(collection_in_db) == 1
     # действительно в базе создались две записи коллекция-категория
@@ -118,9 +117,7 @@ async def test_delete_collection_success(manager):
         file_manager=file_manager,
     )
 
-    collection_in_db = await manager.read(
-        Collections, name=collection["name"]
-    )
+    collection_in_db = await manager.read(Collections, name=collection["name"])
     slug = await manager.read(Slug, name=collection["name"])
     assert len(collection_in_db) == 0
     assert len(slug) == 0

@@ -5,20 +5,20 @@ import pytest
 
 from domain import Tile, TileImages
 from services.tile import add_tile, delete_tile, update_tile
-from tests.fakes import (FakeProductImagesManager,
-                         FakeUoW, generate_products_images)
-from .conftest import manager_with_handbooks, manager
 from tests.conftest import domain_handbooks_models
+from tests.fakes import (FakeProductImagesManager, FakeUoW,
+                         generate_products_images)
 
+from .conftest import manager, manager_with_handbooks
 from .helpers import product_catalog_path, product_details_path
 
 log = logging.getLogger(__name__)
 
 
-
-
 @pytest.mark.asyncio
-async def test_create_tile_success_when_all_handbooks_exists(manager_with_handbooks, domain_handbooks_models):
+async def test_create_tile_success_when_all_handbooks_exists(
+    manager_with_handbooks, domain_handbooks_models
+):
     manager = manager_with_handbooks
     fs = {}
     file_manager = FakeProductImagesManager(fs=fs)
@@ -76,7 +76,7 @@ async def test_create_tile_success_when_all_handbooks_exists(manager_with_handbo
 
 @pytest.mark.asyncio
 async def test_create_tile_success_when_all_handbooks_not_exists(
-        manager, domain_handbooks_models
+    manager, domain_handbooks_models
 ):
     manager = manager
     fs = {}

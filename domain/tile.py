@@ -67,7 +67,6 @@ class Categories:
         return self.name
 
 
-
 class Tile:
     def __init__(
         self,
@@ -114,6 +113,7 @@ class Collections:
 
     def __str__(self):
         return self.name
+
 
 class CollectionCategory:
     def __init__(self, collection_name: str, category_name: str):

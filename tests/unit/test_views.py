@@ -1,6 +1,7 @@
 import logging
 
 import pytest
+from slugify import slugify
 
 from core.config import ITEMS_PER_PAGE
 from domain import Categories, Slug
@@ -8,7 +9,6 @@ from services.views import (build_data_for_filters, build_main_images,
                             build_tile_filters, extract_quoted_word,
                             fetch_items)
 from tests.unit.conftest import manager_factory
-from slugify import slugify
 
 log = logging.getLogger(__name__)
 
@@ -78,7 +78,7 @@ async def test_build_data_for_filters_catalog_with_categories_when_exists_handbo
 ):
     n = 5
     manager = await manager_factory(n)
-    category = "category" # так как фабрика создаёт категорию с таким именем
+    category = "category"  # так как фабрика создаёт категорию с таким именем
     category_slug = slugify(category)
     await manager.create(Slug, name=category, slug=category_slug)
     sizes, colors = await build_data_for_filters(manager, category=category_slug)
@@ -91,7 +91,7 @@ async def test_build_data_for_filters_catalog_with_categories_when_exists_handbo
 ):
     n = 5
     manager = await manager_factory(n, True)
-    category = "category" # так как фабрика создаёт категорию с таким именем
+    category = "category"  # так как фабрика создаёт категорию с таким именем
     category_slug = slugify(category)
     await manager.create(Slug, name=category, slug=category_slug)
     sizes, colors = await build_data_for_filters(manager, category=category_slug)

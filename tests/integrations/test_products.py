@@ -4,22 +4,25 @@ from decimal import Decimal
 import pytest
 
 import core.logger
-from adapters.crud import get_db_manager
-from adapters.images import ProductImagesManager, generate_image_products_catalog_and_details
-from domain import Tile, TileImages
+from adapters.images import (ProductImagesManager,
+                             generate_image_products_catalog_and_details)
+from domain import (Categories, Producer, Tile, TileColor, TileImages,
+                    TileSize, TileSurface)
 from services.tile import add_tile, delete_tile, update_tile
+from services.exceptions import ImageProcessingError
 from tests.conftest import domain_handbooks_models
-from .conftest import manager
 
-from .helpers import product_files_count, fill_handbooks, create_fake_image
+from .conftest import manager, manager_with_filled_handbooks
+from .helpers import create_fake_image, product_files_count
 
 log = logging.getLogger(__name__)
 
 
 @pytest.mark.asyncio
 @pytest.mark.integration
-async def test_integrate_create_tile_success_when_handbooks_not_exists(domain_handbooks_models, manager):
-    manager = get_db_manager(test=True)
+async def test_create_tile_success_when_handbooks_not_exists(
+    domain_handbooks_models, manager_with_filled_handbooks
+):
     file_manager = ProductImagesManager(root="tests/images")
     # выполнение add_tile
     record = await add_tile(
@@ -34,7 +37,7 @@ async def test_integrate_create_tile_success_when_handbooks_not_exists(domain_ha
         boxes_count=3,
         main_image=create_fake_image(),
         category_name="category",
-        manager=manager,
+        manager=manager_with_filled_handbooks,
         images=[create_fake_image(), create_fake_image()],
         color_feature="feature",
         surface="surface",
@@ -42,89 +45,60 @@ async def test_integrate_create_tile_success_when_handbooks_not_exists(domain_ha
         generate_images=generate_image_products_catalog_and_details,
     )
 
-    # 1. Tile создан
+    # Tile создан
     assert record is not None
-    assert "id" in record
     tile_id = record["id"]
 
     # проверка всех справочников
     for model in domain_handbooks_models:
-        handbook = await manager.read(model)
+        handbook = await manager_with_filled_handbooks.read(model)
         assert len(handbook) == 1, f"model: {model}"
 
-    images = await manager.read(TileImages, tile_id=tile_id)
+    images = await manager_with_filled_handbooks.read(TileImages, tile_id=tile_id)
     assert len(images) == 3
-    names = {f"{tile_id}-{i}" for i in range(3)}
-    log.debug("names: %s", names)
-    assert product_files_count(file_manager) == 9
-
-
-
-@pytest.mark.asyncio
-@pytest.mark.integration
-async def test_create_tile_success_when_all_handbooks_exists(domain_handbooks_models, manager):
-    file_manager = ProductImagesManager(root="tests/images")
-
-    # заполняю справочники данными, которые будут использоваться при создании
-    await fill_handbooks(
-        length=Decimal(300),
-        width=Decimal(200),
-        height=Decimal(10),
-        color_name="color",
-        producer_name="producer",
-        box_weight=Decimal(30),
-        box_area=Decimal(1),
-        category_name="category",
-        manager=manager,
-        color_feature="feature",
-        surface="surface",
-    )
-    # выполнение add_tile
-    record = await add_tile(
-        name="Tile",
-        length=Decimal(300),
-        width=Decimal(200),
-        height=Decimal(10),
-        color_name="color",
-        producer_name="producer",
-        box_weight=Decimal(30),
-        box_area=Decimal(1),
-        boxes_count=3,
-        main_image=create_fake_image(),
-        category_name="category",
-        manager=manager,
-        images=[create_fake_image(), create_fake_image()],
-        color_feature="feature",
-        surface="surface",
-        file_manager=file_manager,
-        generate_images=generate_image_products_catalog_and_details,
-    )
-
-    # 1. Tile создан
-    assert record is not None
-    assert "id" in record
-
-
-    # 1. Tile создан
-    assert record is not None
-    assert "id" in record
-    tile_id = record["id"]
-
-    # проверка всех справочников
-    for model in domain_handbooks_models:
-        handbook = await manager.read(model)
-        assert len(handbook) == 1, f"model: {model}"
-
-    images = await manager.read(TileImages, tile_id=tile_id)
-    assert len(images) == 3
-    names = {f"{tile_id}-{i}" for i in range(3)}
-    log.debug("names: %s", names)
     assert product_files_count(file_manager) == 9
 
 
 @pytest.mark.asyncio
 @pytest.mark.integration
-async def test_update_tile_success_when_new_attributes_in_handbooks(domain_handbooks_models, manager):
+async def test_create_tile_failure(domain_handbooks_models, manager):
+    file_manager = ProductImagesManager(root="tests/images")
+
+    async def generate_image_with_exc(*args, **kwargs):
+        raise ImageProcessingError
+
+    with pytest.raises(ImageProcessingError):
+        await add_tile(
+            name="Tile",
+            length=Decimal(300),
+            width=Decimal(200),
+            height=Decimal(10),
+            color_name="color",
+            producer_name="producer",
+            box_weight=Decimal(30),
+            box_area=Decimal(1),
+            boxes_count=3,
+            main_image=create_fake_image(),
+            category_name="category",
+            manager=manager,
+            images=[create_fake_image(), create_fake_image()],
+            color_feature="feature",
+            surface="surface",
+            file_manager=file_manager,
+            generate_images=generate_image_with_exc,
+        )
+
+    images = await manager.read(TileImages)
+    assert len(images) == 0
+    assert product_files_count(file_manager) == 0
+
+
+
+@pytest.mark.asyncio
+@pytest.mark.integration
+async def test_update_tile_success_when_new_attributes_in_handbooks(
+    domain_handbooks_models, manager
+):
     file_manager = ProductImagesManager(root="tests/images")
 
     # выполнение add_tile
@@ -148,7 +122,7 @@ async def test_update_tile_success_when_new_attributes_in_handbooks(domain_handb
         generate_images=generate_image_products_catalog_and_details,
     )
 
-    article = record["id"] # фильтр для обновления по артикулу
+    article = record["id"]  # фильтр для обновления по артикулу
 
     # новые данные
     new_filters = dict(
@@ -183,63 +157,54 @@ async def test_update_tile_success_when_new_attributes_in_handbooks(domain_handb
     for model in domain_handbooks_models:
         rows = await manager.read(model)
         assert len(rows) == 2, f"{model} should have at least one row"
-#
-#
-# @pytest.mark.asyncio
-# async def test_delete_tile_by_article(
-#     manager_with_handbooks
-# ):
-#     manager = manager_with_handbooks
-#     fs = {}
-#
-#     record = await add_tile(
-#         name="Tile",
-#         length=Decimal(300),
-#         width=Decimal(200),
-#         height=Decimal(10),
-#         color_name="color",
-#         producer_name="producer",
-#         box_weight=Decimal(30),
-#         box_area=Decimal(1),
-#         boxes_count=3,
-#         main_image=b"MAIN",
-#         category_name="category",
-#         manager=manager,
-#         images=[b"A", b"B"],
-#         color_feature="feature",
-#         surface="surface",
-#         uow_class=FakeUoW,
-#         save_files=get_fake_save_files_function_with_fs(fs),
-#         generate_image_variant_callback=get_fake_save_bg_products_and_details_with_fs(fs)
-#     )
-#
-#     article = record["id"]
-#     expected_paths = [
-#         f"static/images/base/products/{article}-0",
-#         f"static/images/base/products/{article}-1",
-#         f"static/images/base/products/{article}-2",
-#     ]
-#     log.debug("FS: %s", fs)
-#
-#     records = await delete_tile(manager, uow_class=FakeUoW, id=article, delete_files=get_fake_delete_files_function_with_fs(fs))
-#     assert len(records) == 1
-#
-#     for path in expected_paths:
-#         assert path not in fs.keys()
-#
-#     for i in records:
-#         assert i['id'] == article
-#
-#     new_records = await manager.read(Tile, id=article)
-#     assert new_records == []
-#
-#     should_be_handbooks = [
-#         table
-#         for table in manager.storage.tables
-#         if table is not Tile and table is not TileImages
-#     ]
-#     for table_name in should_be_handbooks:
-#         rows = await manager.read(table_name)
-#         assert len(rows) == 1
-#
-#
+
+
+@pytest.mark.asyncio
+async def test_delete_tile_by_article(manager_with_filled_handbooks):
+    file_manager = ProductImagesManager(root="tests/images")
+
+    record = await add_tile(
+        name="Tile",
+        length=Decimal(300),
+        width=Decimal(200),
+        height=Decimal(10),
+        color_name="color",
+        producer_name="producer",
+        box_weight=Decimal(30),
+        box_area=Decimal(1),
+        boxes_count=3,
+        main_image=create_fake_image(),
+        category_name="category",
+        manager=manager_with_filled_handbooks,
+        images=[create_fake_image(), create_fake_image()],
+        color_feature="feature",
+        surface="surface",
+        file_manager=file_manager,
+        generate_images=generate_image_products_catalog_and_details,
+    )
+
+    article = record["id"]
+
+    records = await delete_tile(
+        manager_with_filled_handbooks, id=article, file_manager=file_manager
+    )
+    assert len(records) == 1
+
+    for i in records:
+        assert i["id"] == article
+
+    new_records = await manager_with_filled_handbooks.read(Tile, id=article)
+    assert not new_records
+
+    # При удалении продукта записи в связанных справочника не должны удаляться
+    should_be_handbooks = (TileSurface, TileColor, TileSize, Producer, Categories)
+    for table_name in should_be_handbooks:
+        rows = await manager_with_filled_handbooks.read(table_name)
+        assert len(rows) == 1
+
+    # изображение должно каскадно удалиться
+    images = await manager_with_filled_handbooks.read(TileImages)
+    assert len(images) == 0
+    names = (f"{article}-0", f"{article}-1", f"{article}-2")
+    # файлы изображений удалились
+    assert product_files_count(file_manager) == 0
