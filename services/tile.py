@@ -151,11 +151,12 @@ async def map_to_domain_for_filter(
     mapped: dict[Any, Any] = {}
 
     for param, value in params.items():
+        if value == "":
+            continue
         for_tile.update(**{param: value})
 
         if param == "producer_name":
             for_models[Producer] = {"name": value}
-
         elif param == "category_name":
             for_models[Categories] = {"name": value}
         elif param == "surface_name":
