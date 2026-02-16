@@ -128,7 +128,7 @@ async def set_composite_parameter(
     to_join: list | None = None
 ):
     to_join = [] if to_join is None else to_join
-    for_tile_name = main_name if for_tile_name is None else for_tile_name
+    for_tile_name = other_name if for_tile_name is None else for_tile_name
     other_value = mapped.setdefault(
         other_name,
         (await manager.read(Tile, id=article, to_join=to_join, session=session))[0][
