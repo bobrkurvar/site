@@ -67,7 +67,7 @@ async def get_catalog_tiles_page(
     offset = (page - 1) * limit
 
     tiles, total_count = await fetch_items(manager, limit, offset, **filters)
-    sizes, colors = await build_data_for_filters(manager, category_name)
+    sizes, colors, producers = await build_data_for_filters(manager, category_name)
     main_images = build_main_images(tiles)
     product_manager = ProductImagesManager()
     for k in main_images:
@@ -77,7 +77,6 @@ async def get_catalog_tiles_page(
     log.debug("main_images: %s", main_images)
     total_pages = max((total_count + limit - 1) // limit, 1)
     categories = await get_categories_for_items(manager)
-    producers = await manager.read(Producer)
 
     return templates.TemplateResponse(
         "catalog.html",

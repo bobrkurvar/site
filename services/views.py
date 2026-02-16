@@ -38,17 +38,16 @@ async def build_tile_filters(
 async def build_data_for_filters(
     manager, category: str | None = None, collection: str | None = None
 ):
-    # category = Categories.get_category_from_slug(category) if category else None
     category = (
         (await manager.read(Slug, slug=category))[0]["name"] if category else None
     )
     if collection is not None:
-        # collection = Collections.get_collection_from_slug(collection).lower()
         collection = (
             (await manager.read(Slug, slug=collection))[0]["name"]
             if collection
             else None
         )
+        producers = await manager.read(Tile, distinct="producer_name", category_name=category)
         log.debug("collection: %s", collection)
         seen = set()
         tile_sizes = await manager.read(Tile, to_join=["size"], category_name=category)
@@ -62,7 +61,18 @@ async def build_data_for_filters(
                 seen.add(tile["size_id"])
         tile_sizes = unique
 
-        seen = set()
+        seen.clear()
+        unique = []
+        for tile in producers:
+            if (
+                extract_quoted_word(tile["name"]) == collection
+                and tile["producer_name"] not in seen
+            ):
+                unique.append(tile)
+                seen.add(tile["producer_name"])
+        producers = unique
+
+        seen.clear()
         unique = []
         tile_colors = await manager.read(Tile, category_name=category)
         for tile in tile_colors:
@@ -80,6 +90,7 @@ async def build_data_for_filters(
             Tile, to_join=["size"], distinct="size_id", **filters
         )
         tile_colors = await manager.read(Tile, distinct="color_name", **filters)
+        producers = await manager.read(Tile, distinct="producer_name", **filters)
 
     sizes = [
         TileSize(
@@ -94,7 +105,7 @@ async def build_data_for_filters(
         TileColor(color_name=color["color_name"], feature_name=color["feature_name"])
         for color in tile_colors
     ]
-    return sizes, colors
+    return sizes, colors, producers
 
 
 def build_main_images(tiles):
