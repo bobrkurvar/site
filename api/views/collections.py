@@ -85,7 +85,7 @@ async def get_catalog_tiles_page(
         manager, collection, limit, offset, **filters
     )
 
-    sizes, colors = await build_data_for_filters(
+    sizes, colors, producers = await build_data_for_filters(
         manager, collection=collection, category=category
     )
     main_images = build_main_images(tiles)
@@ -110,6 +110,7 @@ async def get_catalog_tiles_page(
             "total_count": total_count,
             "main_images": main_images,
             "categories": categories,
+            "producers": producers,
             "active_tab": "None",
         },
     )

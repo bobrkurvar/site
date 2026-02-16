@@ -84,13 +84,11 @@ async def build_data_for_filters(
                 seen.add(tile["color_name"])
         tile_colors = unique
     else:
-        filters = {"category_name": category} if category else {}
-        log.debug("filters: %s", filters)
         tile_sizes = await manager.read(
-            Tile, to_join=["size"], distinct="size_id", **filters
+            Tile, to_join=["size"], distinct="size_id", category_name=category
         )
-        tile_colors = await manager.read(Tile, distinct="color_name", **filters)
-        producers = await manager.read(Tile, distinct="producer_name", **filters)
+        tile_colors = await manager.read(Tile, distinct="color_name", category_name=category)
+        producers = await manager.read(Tile, distinct="producer_name", category_name=category)
         producers = tuple(producer["producer_name"] for producer in producers)
 
     sizes = [
