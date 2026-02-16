@@ -121,7 +121,7 @@ async def admin_update_tile(
         for k, v in params.items()
         if v not in (None, "") and k not in ("manager", "article")
     }
-    if size is not None:
+    if size is not "":
         length, width, height = size.split()
         params.pop("size")
         params["size"] = {"length": Decimal(length), "width": Decimal(width), "height": Decimal(height)}
