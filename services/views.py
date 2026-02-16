@@ -68,7 +68,7 @@ async def build_data_for_filters(
                 extract_quoted_word(tile["name"]) == collection
                 and tile["producer_name"] not in seen
             ):
-                unique.append(tile)
+                unique.append(tile["producer_name"])
                 seen.add(tile["producer_name"])
         producers = unique
 
