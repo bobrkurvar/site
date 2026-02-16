@@ -74,7 +74,7 @@ async def get_catalog_tiles_page(
         main_images[k] = product_manager.get_product_catalog_image_path(main_images[k])
 
     tiles = [map_to_tile_domain(**tile) for tile in tiles]
-    log.debug("main_images: %s", main_images)
+    #log.debug("main_images: %s", main_images)
     total_pages = max((total_count + limit - 1) // limit, 1)
     categories = await get_categories_for_items(manager)
 

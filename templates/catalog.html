@@ -24,7 +24,7 @@
                         <select name="producer">
                             <option value="">Все производители</option>
                             {% for producer in producers %}
-                            <option value="{{ producer.name }}" {% if request.query_params.get('producer') == producer.name %}selected{% endif %}>{{ producer.name }}</option>
+                            <option value="{{ producer }}" {% if request.query_params.get('producer') == producer %}selected{% endif %}>{{ producer }}</option>
                             {% endfor %}
                         </select>
                     </div>
