@@ -30,10 +30,14 @@ async def test_build_tile_filters_with_exists_size(manager_factory):
     category_slug = slugify(category)
     await manager.create(Slug, name=category, slug=category_slug)
     filters = await build_tile_filters(
-        manager, name="tile1", size="1×1×1", color="color1", category=category_slug
+        manager,
+        producer="producer",
+        size="1×1×1",
+        color="color1",
+        category=category_slug,
     )
     assert filters == {
-        "name": "tile1",
+        "producer_name": "producer",
         "size_id": 1,
         "color_name": "color1",
         "category_name": category,
@@ -48,13 +52,13 @@ async def test_build_tile_filters_with_not_exists_size(manager_factory):
     await manager.create(Slug, name=category, slug=category_slug)
     filters = await build_tile_filters(
         manager,
-        name="tile1",
+        producer="producer",
         size="300×200×110",
         color="color1",
         category=category_slug,
     )
     assert filters == {
-        "name": "tile1",
+        "producer_name": "producer",
         "color_name": "color1",
         "category_name": category,
     }  # id размера не найдётся в базе и size_id не будет в фильтрах
@@ -68,8 +72,10 @@ async def test_build_data_for_filters_catalog_with_categories_when_exists_handbo
     category = "Tile"
     category_slug = slugify(category)
     await manager.create(Slug, name=category, slug=category_slug)
-    sizes, colors = await build_data_for_filters(manager, category=category_slug)
-    assert sizes == [] and colors == []
+    sizes, colors, producers = await build_data_for_filters(
+        manager, category=category_slug
+    )
+    assert not sizes and not colors and not producers
 
 
 @pytest.mark.asyncio
@@ -81,7 +87,9 @@ async def test_build_data_for_filters_catalog_with_categories_when_exists_handbo
     category = "category"  # так как фабрика создаёт категорию с таким именем
     category_slug = slugify(category)
     await manager.create(Slug, name=category, slug=category_slug)
-    sizes, colors = await build_data_for_filters(manager, category=category_slug)
+    sizes, colors, producers = await build_data_for_filters(
+        manager, category=category_slug
+    )
     assert len(sizes) == n and len(colors) == n
 
 
@@ -94,7 +102,9 @@ async def test_build_data_for_filters_catalog_with_categories_when_exists_handbo
     category = "category"  # так как фабрика создаёт категорию с таким именем
     category_slug = slugify(category)
     await manager.create(Slug, name=category, slug=category_slug)
-    sizes, colors = await build_data_for_filters(manager, category=category_slug)
+    sizes, colors, producers = await build_data_for_filters(
+        manager, category=category_slug
+    )
     assert len(sizes) == n and len(colors) == 1
 
 

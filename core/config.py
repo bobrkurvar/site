@@ -43,6 +43,6 @@ class Settings(BaseSettings):
 
 
 def load_config(path: Path | None = None) -> Settings:
-    #conf = Settings(_env_file=path) if path else Settings()
-    conf = Settings() # type: ignore
+    # conf = Settings(_env_file=path) if path else Settings()
+    conf = Settings()  # type: ignore
     return conf

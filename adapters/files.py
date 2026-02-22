@@ -2,7 +2,7 @@ import asyncio
 import logging
 from pathlib import Path
 
-import aiofiles # type: ignore
+import aiofiles  # type: ignore
 
 log = logging.getLogger(__name__)
 
@@ -50,7 +50,7 @@ class FileManager:
     async def delete_by_layers(self, base_path: str | Path, layers: list[str]) -> int:
         file_name = Path(base_path).name
         paths = [self.resolve_path(file_name, layer) for layer in layers]
-        paths.append(base_path) # type: ignore
+        paths.append(base_path)  # type: ignore
         return await self.delete_async(paths)
 
     async def delete_async(self, paths):

@@ -105,12 +105,12 @@ def storage():
 
 
 @pytest.fixture
-def manager(storage):
+def manager_fix(storage):
     return FakeCRUD(storage)
 
 
 @pytest.fixture
-def manager_factory(manager):
+def manager_factory(manager_fix):
 
     async def _manage_with_items(n: int = 0, color_fix: bool = False):
         sizes = generate_tile_sizes(n)
@@ -119,7 +119,7 @@ def manager_factory(manager):
         file_manager = FakeProductImagesManager()
         for i in range(n):
             await add_tile(
-                manager=manager,
+                manager=manager_fix,
                 uow_class=FakeUoW,
                 name=f"Tile{i+1}",
                 length=sizes[i]["length"],
@@ -138,7 +138,7 @@ def manager_factory(manager):
                 generate_images=noop_generate,
                 file_manager=file_manager,
             )
-        return manager
+        return manager_fix
 
     return _manage_with_items
 
@@ -157,12 +157,3 @@ def storage_with_filled_handbooks(storage):
 def manager_with_handbooks(storage_with_filled_handbooks):
     return FakeCRUD(storage_with_filled_handbooks)
 
-
-# @pytest.fixture
-# def storage_with_collection(storage):
-#     storage.add(Collections, name="collection1")
-#     return storage
-#
-# @pytest.fixture
-# def manager_with_collection(storage_with_collection):
-#     return FakeCRUD(storage_with_collection)

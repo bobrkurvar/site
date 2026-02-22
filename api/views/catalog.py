@@ -7,11 +7,10 @@ from fastapi.templating import Jinja2Templates
 from adapters.crud import Crud, get_db_manager
 from adapters.images import ProductImagesManager
 from core.config import ITEMS_PER_PAGE
-from domain import Slug, Tile, map_to_tile_domain
+from domain import Producer, Slug, Tile, map_to_tile_domain
 from services.views import (build_data_for_filters, build_main_images,
                             build_tile_filters, fetch_items,
                             get_categories_for_items)
-from domain import Producer
 
 router = APIRouter(tags=["presentation"], prefix="/catalog")
 dbManagerDep = Annotated[Crud, Depends(get_db_manager)]
@@ -74,7 +73,7 @@ async def get_catalog_tiles_page(
         main_images[k] = product_manager.get_product_catalog_image_path(main_images[k])
 
     tiles = [map_to_tile_domain(**tile) for tile in tiles]
-    #log.debug("main_images: %s", main_images)
+    # log.debug("main_images: %s", main_images)
     total_pages = max((total_count + limit - 1) // limit, 1)
     categories = await get_categories_for_items(manager)
 

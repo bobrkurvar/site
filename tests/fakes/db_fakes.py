@@ -119,7 +119,7 @@ class FakeStorage:
         if isinstance(table.defaults[table_column], int):
             table.defaults[table_column] += 1
 
-    def add(self, model, **columns):
+    def add(self, model, **columns) -> tuple[dict, ...] | dict:
         table = self.tables[model]
         for table_column in table.columns:
             if table_column not in columns:
@@ -129,10 +129,10 @@ class FakeStorage:
 
     def read(
         self, model, to_join=None, distinct=None, limit=None, offset=None, **filters
-    ):
+    ) -> tuple[dict, ...]:
         table = self.tables[model]
         if not table.rows:
-            return []
+            return tuple()
 
         result = []
         if to_join:
@@ -162,7 +162,7 @@ class FakeStorage:
         if limit:
             result = result[:limit]
 
-        return result
+        return tuple(result)
 
     def update(self, model, filters, **values):
         table = self.tables[model]
@@ -171,7 +171,7 @@ class FakeStorage:
                 for k, v in values.items():
                     table.rows[i][k] = v
 
-    def delete(self, model, **filters):
+    def delete(self, model, **filters) -> tuple[dict, ...]:
         table = self.tables[model]
         del_res = []
         for i in range(len(table.rows)):
@@ -180,7 +180,7 @@ class FakeStorage:
                 del table.rows[i]
         if not del_res:
             raise NotFoundError(model, **filters)
-        return del_res
+        return tuple(del_res)
 
 
 class FakeCRUD:
@@ -189,7 +189,7 @@ class FakeCRUD:
     def __init__(self, storage: FakeStorage):
         self.storage = storage
 
-    async def create(self, model, session=None, **columns):
+    async def create(self, model, session=None, **columns) -> tuple[dict, ...] | dict:
         return self.storage.add(model, **columns)
 
     async def read(
@@ -201,7 +201,7 @@ class FakeCRUD:
         limit=None,
         offset=None,
         **filters,
-    ):
+    ) -> tuple[dict, ...]:
         return self.storage.read(
             model,
             to_join=to_join,
@@ -214,7 +214,7 @@ class FakeCRUD:
     async def update(self, model, filters: dict, session=None, **values):
         return self.storage.update(model, filters, **values)
 
-    async def delete(self, model, session=None, **filters):
+    async def delete(self, model, session=None, **filters) -> tuple[dict, ...]:
         return self.storage.delete(model, **filters)
 
 

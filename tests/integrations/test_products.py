@@ -8,8 +8,8 @@ from adapters.images import (ProductImagesManager,
                              generate_image_products_catalog_and_details)
 from domain import (Categories, Producer, Tile, TileColor, TileImages,
                     TileSize, TileSurface)
-from services.tile import add_tile, delete_tile, update_tile
 from services.exceptions import ImageProcessingError
+from services.tile import add_tile, delete_tile, update_tile
 from tests.conftest import domain_handbooks_models
 
 from .conftest import manager, manager_with_filled_handbooks
@@ -91,7 +91,6 @@ async def test_create_tile_failure(domain_handbooks_models, manager):
     images = await manager.read(TileImages)
     assert len(images) == 0
     assert product_files_count(file_manager) == 0
-
 
 
 @pytest.mark.asyncio

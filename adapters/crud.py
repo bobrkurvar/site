@@ -1,5 +1,6 @@
 import logging
 from collections.abc import Collection
+from typing import Any
 
 from sqlalchemy import delete, select, update
 from sqlalchemy.exc import IntegrityError
@@ -11,15 +12,11 @@ from core import conf
 from db import models
 from domain.exceptions import (AlreadyExistsError, ForeignKeyViolationError,
                                NotFoundError)
-from services.ports import CrudPort
-from typing import Any
 
 log = logging.getLogger(__name__)
 
 
-
-
-class Crud(CrudPort):
+class Crud:
 
     def __init__(self, url, domain_with_orm: dict | None = None):
         self.url = url
@@ -84,7 +81,7 @@ class Crud(CrudPort):
 
             if pgcode == "23505":
                 constraint_name = (
-                    getattr(err.orig.diag, "constraint_name", "unknown") # type: ignore
+                    getattr(err.orig.diag, "constraint_name", "unknown")  # type: ignore
                     if hasattr(err.orig, "diag")
                     else "unknown"
                 )
@@ -92,10 +89,10 @@ class Crud(CrudPort):
 
             elif pgcode == "23503":
                 detail = (
-                    getattr(err.orig.diag, "message_detail", str(err)) # type: ignore
+                    getattr(err.orig.diag, "message_detail", str(err))  # type: ignore
                     if hasattr(err.orig, "diag")
                     else str(err)
-                ) # type: ignore
+                )  # type: ignore
                 raise ForeignKeyViolationError(model.__name__, detail)
 
             raise
@@ -138,7 +135,9 @@ class Crud(CrudPort):
             model = self._mapper[domain_model]
             query = update(model)
 
-            conditions = [getattr(model, field) == value for field, value in filters.items()]
+            conditions = [
+                getattr(model, field) == value for field, value in filters.items()
+            ]
             # for field, value in filters.items():
             #     query = query.where(getattr(model, field) == value)
             query = query.where(*conditions)

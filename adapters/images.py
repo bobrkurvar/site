@@ -1,17 +1,20 @@
 import base64
 import logging
+from binascii import Error
+from functools import wraps
 from pathlib import Path
 
-#import aiofiles # type: ignore
-
 from adapters.files import FileManager
+from services.exceptions import ImageProcessingError
 
 from .http_client import get_http_client
-from services.exceptions import ImageProcessingError
-from functools import wraps
-from binascii import Error
+
+# import aiofiles # type: ignore
+
+
 
 log = logging.getLogger(__name__)
+
 
 def generate_image_with_exc(generate):
     @wraps(generate)
@@ -23,6 +26,7 @@ def generate_image_with_exc(generate):
         if result is None:
             raise ImageProcessingError("Ошибка генерации")
         return result
+
     return wrapper
 
 
@@ -57,9 +61,7 @@ async def generate_slides(img: bytes):
 
 
 class ProductImagesManager(FileManager):
-    def __init__(
-        self, root: str = "static/images", layers: dict | None = None
-    ):
+    def __init__(self, root: str = "static/images", layers: dict | None = None):
         super().__init__(root, layers)
 
     async def delete_product(self, base_path: str | Path) -> int:
@@ -82,9 +84,7 @@ class ProductImagesManager(FileManager):
 
 
 class CollectionImagesManager(FileManager):
-    def __init__(
-        self, root: str = "static/images", layers: dict | None = None
-    ):
+    def __init__(self, root: str = "static/images", layers: dict | None = None):
         super().__init__(root, layers)
 
     async def delete_collection(self, base_path: str | Path) -> int:
@@ -100,11 +100,8 @@ class CollectionImagesManager(FileManager):
 
 
 class SlideImagesManager(FileManager):
-    def __init__(
-        self, root: str = "static/images", layers: dict | None = None
-    ):
+    def __init__(self, root: str = "static/images", layers: dict | None = None):
         super().__init__(root, layers)
-
 
     async def delete_all_slides(self) -> int:
         paths = [

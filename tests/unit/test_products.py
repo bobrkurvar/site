@@ -9,7 +9,7 @@ from tests.conftest import domain_handbooks_models
 from tests.fakes import (FakeProductImagesManager, FakeUoW,
                          generate_products_images)
 
-from .conftest import manager, manager_with_handbooks
+from .conftest import manager_fix, manager_with_handbooks
 from .helpers import product_catalog_path, product_details_path
 
 log = logging.getLogger(__name__)
@@ -75,9 +75,9 @@ async def test_create_tile_success_when_all_handbooks_exists(
 
 @pytest.mark.asyncio
 async def test_create_tile_success_when_all_handbooks_not_exists(
-    manager, domain_handbooks_models
+    manager_fix, domain_handbooks_models
 ):
-    manager = manager
+    manager = manager_fix
     fs = {}
     file_manager = FakeProductImagesManager(fs=fs)
     # выполнение add_tile
@@ -176,15 +176,23 @@ async def test_update_tile_success_when_new_attributes_in_handbooks(
     )
 
     await update_tile(manager_with_handbooks, article, uow_class=FakeUoW, **new_filters)
-    new_record = (await manager_with_handbooks.read(Tile, id=article, to_join=["box", "size"]))[0]
+    new_record = (
+        await manager_with_handbooks.read(Tile, id=article, to_join=["box", "size"])
+    )[0]
     log.debug("NEW RECORD: %s", new_record)
 
     size = new_filters.pop("size")
-    new_filters["size_length"], new_filters["size_width"], new_filters["size_height"] = size["length"], size["width"], size["height"]
+    (
+        new_filters["size_length"],
+        new_filters["size_width"],
+        new_filters["size_height"],
+    ) = (size["length"], size["width"], size["height"])
 
     # 1 проверка всех новых полей
     for f, v in new_filters.items():
-        assert new_record[f] == v, f"key: {f}, expected value: {v}, real value: {new_record[f]}"
+        assert (
+            new_record[f] == v
+        ), f"key: {f}, expected value: {v}, real value: {new_record[f]}"
 
     # 2. Проверка всех справочников, поля в справочниках не должны изменятся, а должны появится новые
     for table_name in domain_handbooks_models:
@@ -232,21 +240,33 @@ async def test_update_tile_success_when_composite_half_composite_color_name_box_
     )
 
     await update_tile(manager_with_handbooks, article, uow_class=FakeUoW, **new_filters)
-    new_record = (await manager_with_handbooks.read(Tile, id=article, to_join=["box", "size"]))[0]
+    new_record = (
+        await manager_with_handbooks.read(Tile, id=article, to_join=["box", "size"])
+    )[0]
     log.debug("NEW RECORD: %s", new_record)
 
     size = new_filters.pop("size")
-    new_filters["size_length"], new_filters["size_width"], new_filters["size_height"] = size["length"], size["width"], size["height"]
-    new_filters["box_area"], new_filters["feature_name"] = Decimal(1), "feature" # половины композитного ключа берутся из той же записи продукта
+    (
+        new_filters["size_length"],
+        new_filters["size_width"],
+        new_filters["size_height"],
+    ) = (size["length"], size["width"], size["height"])
+    new_filters["box_area"], new_filters["feature_name"] = (
+        Decimal(1),
+        "feature",
+    )  # половины композитного ключа берутся из той же записи продукта
 
     # 1 проверка всех новых полей
     for f, v in new_filters.items():
-        assert new_record[f] == v, f"key: {f}, expected value: {v}, real value: {new_record[f]}"
+        assert (
+            new_record[f] == v
+        ), f"key: {f}, expected value: {v}, real value: {new_record[f]}"
 
     # 2. Проверка всех справочников, поля в справочниках не должны изменятся, а должны появится новые
     for table_name in domain_handbooks_models:
         rows = await manager_with_handbooks.read(table_name)
         assert len(rows) == 2, f"{table_name.__name__} should have at least one row"
+
 
 @pytest.mark.asyncio
 async def test_update_tile_success_when_composite_half_composite_feature_name_box_area_param(
@@ -288,22 +308,32 @@ async def test_update_tile_success_when_composite_half_composite_feature_name_bo
     )
 
     await update_tile(manager_with_handbooks, article, uow_class=FakeUoW, **new_filters)
-    new_record = (await manager_with_handbooks.read(Tile, id=article, to_join=["box", "size"]))[0]
+    new_record = (
+        await manager_with_handbooks.read(Tile, id=article, to_join=["box", "size"])
+    )[0]
     log.debug("NEW RECORD: %s", new_record)
 
     size = new_filters.pop("size")
-    new_filters["size_length"], new_filters["size_width"], new_filters["size_height"] = size["length"], size["width"], size["height"]
-    new_filters["box_weight"], new_filters["color_name"] = Decimal(30), "color" # другие половины композитного ключа берутся из той же записи продукта
+    (
+        new_filters["size_length"],
+        new_filters["size_width"],
+        new_filters["size_height"],
+    ) = (size["length"], size["width"], size["height"])
+    new_filters["box_weight"], new_filters["color_name"] = (
+        Decimal(30),
+        "color",
+    )  # другие половины композитного ключа берутся из той же записи продукта
 
     # 1 проверка всех новых полей
     for f, v in new_filters.items():
-        assert new_record[f] == v, f"key: {f}, expected value: {v}, real value: {new_record[f]}"
+        assert (
+            new_record[f] == v
+        ), f"key: {f}, expected value: {v}, real value: {new_record[f]}"
 
     # 2. Проверка всех справочников, поля в справочниках не должны изменятся, а должны появится новые
     for table_name in domain_handbooks_models:
         rows = await manager_with_handbooks.read(table_name)
         assert len(rows) == 2, f"{table_name.__name__} should have at least one row"
-
 
 
 @pytest.mark.asyncio
@@ -354,7 +384,7 @@ async def test_delete_tile_by_article(manager_with_handbooks, domain_handbooks_m
         assert i["id"] == tile_id
 
     new_records = await manager_with_handbooks.read(Tile, id=tile_id)
-    assert new_records == []
+    assert not new_records
 
     for table_name in domain_handbooks_models:
         rows = await manager_with_handbooks.read(table_name)

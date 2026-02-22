@@ -1,12 +1,14 @@
 import logging
-from .ports import SlideImagesPort
 
 from core import logger
+
 
 log = logging.getLogger(__name__)
 
 
-async def add_slides(images: list[bytes], generate_images, file_manager: SlideImagesPort):
+async def add_slides(
+    images: list[bytes], generate_images, file_manager
+):
     extra_num = file_manager.slides_file_count
     for i, image in enumerate(images):
         file_name = str(extra_num + i)
@@ -28,5 +30,5 @@ async def add_slides(images: list[bytes], generate_images, file_manager: SlideIm
             pass
 
 
-async def delete_slides(file_manager: SlideImagesPort):
+async def delete_slides(file_manager):
     await file_manager.delete_all_slides()

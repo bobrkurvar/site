@@ -30,7 +30,7 @@ class FakeFileManager:
     def session(self):
         return FakeFileSession(self)
 
-    def resolve_path(self, file_name: str | None = "", layer: str = None):
+    def resolve_path(self, file_name: str = "", layer: str = None):
         if layer not in self._layers:
             raise ValueError(f"Unknown layer: {layer}")
         return self._root / self._layers.get(layer, "") / file_name

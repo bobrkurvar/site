@@ -8,7 +8,9 @@ from adapters.crud import get_db_manager
 from adapters.http_client import get_http_client
 from api import main_router
 from api.error_handlers import *
+from core.logger import setup_logging
 
+setup_logging()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

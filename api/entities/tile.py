@@ -124,7 +124,11 @@ async def admin_update_tile(
     if size != "":
         length, width, height = size.split()
         params.pop("size")
-        params["size"] = {"length": Decimal(length), "width": Decimal(width), "height": Decimal(height)}
+        params["size"] = {
+            "length": Decimal(length),
+            "width": Decimal(width),
+            "height": Decimal(height),
+        }
 
     log.debug("to update: %s", params)
     if params:

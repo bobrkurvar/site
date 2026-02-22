@@ -1,12 +1,12 @@
 import logging
+from typing import Any
+
+from slugify import slugify
 
 from domain import *
 from services.UoW import UnitOfWork
-from typing import Any
 
 from .exceptions import FileStorageError
-from slugify import slugify
-from .ports import ProductImagesPort, CrudPort
 
 log = logging.getLogger(__name__)
 
@@ -30,10 +30,10 @@ async def add_tile(
     boxes_count: int,
     main_image: bytes,
     category_name: str,
-    manager: CrudPort,
+    manager,
     images: list[bytes] | list,
     generate_images,
-    file_manager: ProductImagesPort,
+    file_manager,
     color_feature: str = "",
     surface: str | None = None,
     uow_class=UnitOfWork,
@@ -76,11 +76,11 @@ async def add_tile(
         images = [img for img in images if img]
         images.insert(0, main_image)
         for n, img in enumerate(images):
-            str_name = str(tile_record["id"]) + "-" + str(n) # type: ignore
+            str_name = str(tile_record["id"]) + "-" + str(n)  # type: ignore
             image_path = file_manager.base_product_path(str_name)
             await manager.create(
                 TileImages,
-                tile_id=tile_record["id"], #type: ignore
+                tile_id=tile_record["id"],  # type: ignore
                 image_path=str(image_path),
                 session=uow.session,
             )
@@ -97,10 +97,7 @@ async def add_tile(
 
 
 async def delete_tile(
-        manager: CrudPort,
-        file_manager: ProductImagesPort,
-        uow_class=UnitOfWork,
-        **filters
+    manager, file_manager, uow_class=UnitOfWork, **filters
 ):
     async with uow_class(manager) as uow:
         tiles = await manager.read(
@@ -115,7 +112,7 @@ async def delete_tile(
 
 
 async def set_composite_parameter(
-    manager: CrudPort,
+    manager,
     session,
     article: int,
     main_value,
@@ -125,7 +122,7 @@ async def set_composite_parameter(
     other_name: str,
     model,
     for_tile_name: str | None = None,
-    to_join: list | None = None
+    to_join: list | None = None,
 ):
     to_join = [] if to_join is None else to_join
     for_tile_name = other_name if for_tile_name is None else for_tile_name
@@ -135,18 +132,12 @@ async def set_composite_parameter(
             for_tile_name
         ],
     )
-    #log.debug("OTHER NAME: %s, OTHER VALUE: %s, FOR TILE NAME: %s", other_name, other_value, for_tile_name)
+    # log.debug("OTHER NAME: %s, OTHER VALUE: %s, FOR TILE NAME: %s", other_name, other_value, for_tile_name)
     for_models[model] = {main_name: main_value, other_name: other_value}
     mapped[main_name] = main_value
 
 
-
-async def map_to_domain_for_filter(
-        article: int,
-        manager: CrudPort,
-        session,
-        **params
-):
+async def map_to_domain_for_filter(article: int, manager, session, **params):
     for_tile: dict[Any, Any] = {}
     for_models: dict[Any, Any] = {}
     mapped: dict[Any, Any] = {}
@@ -174,7 +165,7 @@ async def map_to_domain_for_filter(
                 for_models,
                 param,
                 "color_name",
-                TileColor
+                TileColor,
             )
 
         elif param == "color_name":
@@ -187,7 +178,7 @@ async def map_to_domain_for_filter(
                 for_models,
                 param,
                 "feature_name",
-                TileColor
+                TileColor,
             )
 
         elif param == "box_weight":
@@ -203,9 +194,8 @@ async def map_to_domain_for_filter(
                 other_name="area",
                 model=Box,
                 for_tile_name="box_area",
-                to_join=["box"]
+                to_join=["box"],
             )
-
 
         elif param == "box_area":
             for_tile.pop(param)
@@ -220,13 +210,13 @@ async def map_to_domain_for_filter(
                 other_name="weight",
                 model=Box,
                 for_tile_name="box_weight",
-                to_join=["box"]
+                to_join=["box"],
             )
 
     return for_tile, for_models
 
 
-async def update_tile(manager: CrudPort, article: int, uow_class=UnitOfWork, **params):
+async def update_tile(manager, article: int, uow_class=UnitOfWork, **params):
     log.debug("PARAMS: %s", params)
 
     async with uow_class(manager) as uow:

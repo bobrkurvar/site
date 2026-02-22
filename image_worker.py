@@ -5,14 +5,22 @@ from concurrent.futures import ProcessPoolExecutor
 from io import BytesIO
 
 from fastapi import FastAPI
-# from pathlib import Path
 from PIL import Image, ImageOps
 from pydantic import BaseModel
+#from contextlib import asynccontextmanager
 
-from core import logger
+from core.logger import setup_logging
+
+setup_logging()
 
 app = FastAPI()
 log = logging.getLogger(__name__)
+
+
+# @asynccontextmanager
+# async def lifespan(app: FastAPI):
+#     setup_logging()
+#     yield
 
 
 NUM_WORKERS = 4  # процессов для CPU
@@ -34,14 +42,14 @@ def resize_image(
     mode: str,
 ) -> Image.Image:
     if mode == "fit":
-        img.thumbnail(target_size, Image.LANCZOS) # type: ignore
+        img.thumbnail(target_size, Image.LANCZOS)  # type: ignore
         return img
 
     if mode == "cover":
         return ImageOps.fit(
             img,
             target_size,
-            method=Image.LANCZOS, # type ignore
+            method=Image.LANCZOS,  # type ignore
             centering=(0.5, 0.5),
         )
 

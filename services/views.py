@@ -1,8 +1,8 @@
 import logging
 from decimal import Decimal
 
-from domain import Categories, Slug, Tile, TileColor, TileSize
 from core import logger
+from domain import Categories, Slug, Tile, TileColor, TileSize
 
 log = logging.getLogger(__name__)
 
@@ -31,7 +31,6 @@ async def build_tile_filters(
     if category is not None:
         category_name = (await manager.read(Slug, slug=category))[0]["name"]
         filters["category_name"] = category_name
-        # filters["category_name"] = Categories.get_category_from_slug(category)
 
     return filters
 
@@ -61,7 +60,7 @@ async def build_data_for_filters(
         seen.clear()
         unique = []
         for tile in producers:
-            #log.debug("%s, %s == %s, %s, producer_name: %s",tile["name"], collection, extract_quoted_word(tile["name"]), extract_quoted_word(tile["name"]) == collection, tile["producer_name"])
+            # log.debug("%s, %s == %s, %s, producer_name: %s",tile["name"], collection, extract_quoted_word(tile["name"]), extract_quoted_word(tile["name"]) == collection, tile["producer_name"])
             if (
                 extract_quoted_word(tile["name"]) == collection
                 and tile["producer_name"] not in seen
@@ -85,8 +84,12 @@ async def build_data_for_filters(
         tile_sizes = await manager.read(
             Tile, to_join=["size"], distinct="size_id", category_name=category
         )
-        tile_colors = await manager.read(Tile, distinct="color_name", category_name=category)
-        producers = await manager.read(Tile, distinct="producer_name", category_name=category)
+        tile_colors = await manager.read(
+            Tile, distinct="color_name", category_name=category
+        )
+        producers = await manager.read(
+            Tile, distinct="producer_name", category_name=category
+        )
         producers = tuple(producer["producer_name"] for producer in producers)
     log.debug("producers: %s", producers)
     sizes = [
