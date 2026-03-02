@@ -1,4 +1,3 @@
-from enum import Enum
 
 
 class RepositoryError(Exception):
@@ -37,42 +36,45 @@ class ForeignKeyViolationError(RepositoryError):
         super().__init__(f"Foreign key violation in {model_name}: {detail}")
 
 
-class AuthErrors(Enum):
-    validate = "validate error"
-    refresh = "refresh token error"
-    access = "access token error"
-    unexpected = "unexpected error"
-
-
 class UnauthorizedError(Exception):
-    """Ошибка внешнего ключа"""
+    def __init__(self, detail: str):
+        self.detail = detail
+        super().__init__(self.detail)
 
-    """
-    Исключение, которое будет возбуждено вследствие
-    попытке доступа к защищённому ресурсу без аутентификации
-    """
 
-    def __init__(
-        self,
-        validate: bool | None = None,
-        refresh_token: bool | None = None,
-        access_token: bool | None = None,
-    ):
-        self.headers = {"WWW-Authenticate": "Bearer"}
-        if validate:
-            self.error = AuthErrors.validate
-            self.detail = (
-                f"Попытка не аутентифицированного доступа, не валидные учётные данные"
-            )
-        elif refresh_token:
-            self.error = AuthErrors.refresh
-            self.detail = (
-                f"Попытка не аутентифицированного доступа, refresh token истёк"
-            )
-        elif access_token:
-            self.error = AuthErrors.access
-            self.detail = f"Попытка не аутентифицированного доступа, access token истёк"
-        else:
-            self.error = AuthErrors.unexpected
-            self.detail = f"Попытка не аутентифицированного доступа"
+class InvalidTokenError(UnauthorizedError):
+    def __init__(self, token_type: str):
+        self.detail = f"Неправильный {token_type} token"
+        super().__init__(self.detail)
+
+
+class InvalidAccessTokenError(InvalidTokenError):
+    def __init__(self):
+        super().__init__("access")
+
+
+class InvalidRefreshTokenError(InvalidTokenError):
+    def __init__(self):
+        super().__init__("refresh")
+
+
+class TokenExpireError(UnauthorizedError):
+    def __init__(self, token_type: str):
+        self.detail = f"Время жизни {token_type} token истекло"
+        super().__init__(self.detail)
+
+
+class AccessTokenExpireError(TokenExpireError):
+    def __init__(self):
+        super().__init__("access")
+
+
+class RefreshTokenExpireError(TokenExpireError):
+    def __init__(self):
+        super().__init__("refresh")
+
+
+class CredentialsValidateError(UnauthorizedError):
+    def __init__(self):
+        self.detail = "Не правильные учётные данные"
         super().__init__(self.detail)

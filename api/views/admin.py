@@ -8,7 +8,7 @@ from starlette.responses import RedirectResponse
 from adapters.crud import Crud, get_db_manager
 from domain import *
 from domain.exceptions import NotFoundError, UnauthorizedError
-from services.auth import get_tokens_and_check_user
+from services.auth import get_access_token
 
 router = APIRouter(tags=["admin"], prefix="/admin")
 dbManagerDep = Annotated[Crud, Depends(get_db_manager)]
@@ -23,7 +23,7 @@ async def admin_page(request: Request, manager: dbManagerDep):
     # log.debug("cookies: %s", cookies)
     # if access_token is None:
     #    return RedirectResponse("/admin/login", status_code=303)
-
+    await get_access_token(request.cookies)
     tiles = await manager.read(Tile, to_join=["images", "size", "box"])
     tile_sizes = await manager.read(TileSize)
     tile_sizes = [
@@ -76,36 +76,35 @@ async def admin_page(request: Request, manager: dbManagerDep):
             "boxes_unique_area": boxes_unique_area,
             "categories": categories,
             "boxes_unique_count": boxes_unique_count,
-            # "access_token": access_token,
         },
     )
 
 
-@router.get("/login")
-async def admin_login(request: Request, manager: dbManagerDep):
-    refresh_token = request.cookies.get("refresh_token")
-    if refresh_token is not None:
-        try:
-            access_token, refresh_token = await get_tokens_and_check_user(
-                manager, refresh_token
-            )
-            response: Response = RedirectResponse("/admin", status_code=303)
-            response.set_cookie(
-                "access_token", access_token, httponly=True, max_age=900
-            )
-            response.set_cookie(
-                "refresh_token", refresh_token, httponly=True, max_age=86400 * 7
-            )
-        except UnauthorizedError:
-            response = templates.TemplateResponse(
-                "admin_login.html", {"request": request}
-            )
-    else:
-        response = templates.TemplateResponse("admin_login.html", {"request": request})
-    return response
+# @router.get("/login")
+# async def admin_login(request: Request, manager: dbManagerDep):
+#     refresh_token = request.cookies.get("refresh_token")
+#     if refresh_token is not None:
+#         try:
+#             access_token, refresh_token = await get_tokens_and_check_user(
+#                 manager, refresh_token
+#             )
+#             response: Response = RedirectResponse("/admin", status_code=303)
+#             response.set_cookie(
+#                 "access_token", access_token, httponly=True, max_age=900
+#             )
+#             response.set_cookie(
+#                 "refresh_token", refresh_token, httponly=True, max_age=86400 * 7
+#             )
+#         except UnauthorizedError:
+#             response = templates.TemplateResponse(
+#                 "admin_login.html", {"request": request}
+#             )
+#     else:
+#         response = templates.TemplateResponse("admin_login.html", {"request": request})
+#     return response
 
 
-@router.post("/login/submit")
+@router.post("/login")
 async def admin_login_submit(
     manager: dbManagerDep,
     username: Annotated[str, Form()],
