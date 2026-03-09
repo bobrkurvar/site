@@ -1,5 +1,4 @@
 import json
-from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -42,7 +41,6 @@ class Settings(BaseSettings):
             return []
 
 
-def load_config(path: Path | None = None) -> Settings:
-    # conf = Settings(_env_file=path) if path else Settings()
+def load_config() -> Settings:
     conf = Settings()  # type: ignore
     return conf

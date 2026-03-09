@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="/static/tile_detail.css">
+<link rel="stylesheet" href="/static/css/tile_detail.css">
 {% endblock %}
 
 {% block content %}
@@ -89,9 +89,6 @@
                         <span class="spec-value">{{ tile.article }}</span>
                     </div>
                     {% endif %}
-
-
-
                 </div>
             </div>
         </aside>
@@ -102,26 +99,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-    const mainImage = document.getElementById("main-image");
-    const thumbs = document.querySelectorAll(".thumbnail");
-
-    thumbs.forEach(thumb => {
-        const img = thumb.querySelector(".thumbnail-image");
-
-        thumb.addEventListener("click", () => {
-            mainImage.src = img.src;
-
-            // снимаем подсветку со всех
-            document.querySelectorAll(".thumbnail").forEach(t => {
-                t.classList.remove("active-thumb");
-            });
-
-            // добавляем подсветку текущему
-            thumb.classList.add("active-thumb");
-        });
-    });
-});
-</script>
+<script src="/static/js/tile_detail.js"></script>
 {% endblock %}

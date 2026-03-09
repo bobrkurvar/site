@@ -46,17 +46,6 @@
             </div>
         </div>
 
-        <!-- <a href="/collections" class="menu-link {% if request.url.path == '/collections' %}active{% endif %}">Коллекции</a> -->
-        <!--<div class="menu-dropdown">
-            <button class="menu-link dropdown-btn">
-                Коллекции
-            </button>
-            <div class="dropdown-menu">
-                {% for category in categories %}
-                    <a href="/collections/{{ category.slug }}">{{ category.name }}</a>
-                {% endfor %}
-            </div>
-        </div>-->
 
         <a href="/clients" class="menu-link {% if request.url.path.startswith('/clients') %}active{% endif %}">Для клиентов</a>
     </nav>
@@ -71,26 +60,7 @@
 {% block extra_js %}
 {% endblock %}
 
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-    const dropdowns = document.querySelectorAll(".menu-dropdown");
-
-    dropdowns.forEach(drop => {
-        const btn = drop.querySelector(".dropdown-btn");
-        const menu = drop.querySelector(".dropdown-menu");
-
-        btn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            menu.classList.toggle("open");
-        });
-    });
-
-    document.addEventListener("click", () => {
-        document.querySelectorAll(".dropdown-menu.open")
-            .forEach(m => m.classList.remove("open"));
-    });
-});
-</script>
+<script src="/static/js/base"></script>
 
 </body>
 </html>
