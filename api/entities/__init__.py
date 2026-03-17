@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 
 from adapters.auth import get_user_from_token
 
@@ -10,9 +10,18 @@ from .tile_color import router as tile_color_router
 from .tile_producers import router as tile_producers_router
 from .tile_size import router as tile_size_router
 from .tile_surface import router as tile_surface_router
+from typing import Annotated
+from fastapi_csrf_protect.flexible import CsrfProtect
+
+csrfProtectDep = Annotated[CsrfProtect, Depends()]
+
+
+async def csrf_validate(request: Request,csrf_protect: csrfProtectDep):
+    if request.method in {"POST", "PUT", "DELETE", "PATCH"}:
+        await csrf_protect.validate_csrf(request)
 
 # admin_router = APIRouter(dependencies=[Depends(get_user_from_token)])
-admin_router = APIRouter()
+admin_router = APIRouter(dependencies=[Depends(csrf_validate)])
 admin_router.include_router(tile_router)
 admin_router.include_router(tile_size_router)
 admin_router.include_router(tile_color_router)

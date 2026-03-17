@@ -9,7 +9,8 @@ from adapters.http_client import get_http_client
 from api import main_router
 from api.error_handlers import *
 from core.logger import setup_logging
-from fastapi_csrf_protect import CsrfProtect
+from fastapi_csrf_protect.flexible import CsrfProtect
+from pydantic_settings import BaseSettings
 
 setup_logging()
 
@@ -25,22 +26,25 @@ async def lifespan(app: FastAPI):
 
 
 log = logging.getLogger(__name__)
-
-# csrf = CsrfProtect(
-#     secret="твой_очень_длинный_секретный_ключ_!!!",
-#     cookie_name="csrftoken",
-#     token_key="csrf_token",
-#     cookie_secure=True,
-#     cookie_samesite="lax",
-#     cookie_http_only=False,
-# )
-
 app = FastAPI(lifespan=lifespan)
 
 BASE_DIR = Path(__file__).resolve().parent
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
 app.include_router(main_router)
+
+class CsrfSettings(BaseSettings):
+    secret_key: str = "ваш-секретный-ключ-обязательно-измените"
+    cookie_samesite: str = "strict"
+    cookie_secure: bool = True
+    cookie_httponly: bool = True
+    max_age: int = 7200
+    refresh_age: int = 1800
+
+
+@CsrfProtect.load_config
+def get_csrf_config():
+    return CsrfSettings()
 
 
 @app.get("/{full_path:path}")

@@ -16,3 +16,8 @@ def save_in_cookie_refresh_token(response: Response, token, ttl: int):
 
 def get_refresh_token_from_cookie(request: Request):
     return get_from_cookie(request, REFRESH_KEY)
+
+
+def compute_fingerprint(request: Request):
+    user_agent = request.headers.get("user-agent", "")
+    client_ip = request.client.host

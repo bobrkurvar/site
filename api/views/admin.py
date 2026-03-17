@@ -9,21 +9,27 @@ from adapters.crud import Crud, get_db_manager
 from domain import *
 from domain.exceptions import NotFoundError, UnauthorizedError
 from services.auth import get_access_token
+from fastapi_csrf_protect.flexible import CsrfProtect
 
 router = APIRouter(tags=["admin"], prefix="/admin")
 dbManagerDep = Annotated[Crud, Depends(get_db_manager)]
+csrfProtectDep = Annotated[CsrfProtect, Depends()]
+
 templates = Jinja2Templates("templates")
 log = logging.getLogger(__name__)
 
 
 @router.get("")
-async def admin_page(request: Request, manager: dbManagerDep):
+async def admin_page(request: Request, manager: dbManagerDep, csrf_token: csrfProtectDep):
     # cookies = request.cookies
     # access_token = request.cookies.get("access_token")
     # log.debug("cookies: %s", cookies)
     # if access_token is None:
     #    return RedirectResponse("/admin/login", status_code=303)
-    await get_access_token(request.cookies)
+    #await get_access_token(request.cookies)
+    plain_token, signed_token = csrf_token.generate_csrf_tokens()
+
+
     tiles = await manager.read(Tile, to_join=["images", "size", "box"])
     tile_sizes = await manager.read(TileSize)
     tile_sizes = [
@@ -60,7 +66,7 @@ async def admin_page(request: Request, manager: dbManagerDep):
 
     categories = await manager.read(Categories)
 
-    return templates.TemplateResponse(
+    response = templates.TemplateResponse(
         "admin.html",
         {
             "request": request,
@@ -76,8 +82,11 @@ async def admin_page(request: Request, manager: dbManagerDep):
             "boxes_unique_area": boxes_unique_area,
             "categories": categories,
             "boxes_unique_count": boxes_unique_count,
+            "csrf_token": plain_token
         },
     )
+    csrf_token.set_csrf_cookie(signed_token, response)
+    return response
 
 
 # @router.get("/login")
