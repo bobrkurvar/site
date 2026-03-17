@@ -104,26 +104,26 @@ async def admin_page(request: Request, manager: dbManagerDep):
 #     return response
 
 
-@router.post("/login")
-async def admin_login_submit(
-    manager: dbManagerDep,
-    username: Annotated[str, Form()],
-    password: Annotated[str, Form()],
-):
-    try:
-        access_token, refresh_token = await get_tokens_and_check_user(
-            manager, username=username, password=password
-        )
-        if access_token and refresh_token:
-            response = RedirectResponse("/admin", status_code=303)
-            response.set_cookie(
-                "access_token", access_token, httponly=True, max_age=900
-            )
-            response.set_cookie(
-                "refresh_token", refresh_token, httponly=True, max_age=86400 * 7
-            )
-            return response
-    except UnauthorizedError:
-        return RedirectResponse("/admin/login?err=401", status_code=303)
-    except NotFoundError:
-        return RedirectResponse("/admin/login?err=409", status_code=303)
+# @router.post("/login")
+# async def admin_login_submit(
+#     manager: dbManagerDep,
+#     username: Annotated[str, Form()],
+#     password: Annotated[str, Form()],
+# ):
+#     try:
+#         access_token, refresh_token = await get_tokens_and_check_user(
+#             manager, username=username, password=password
+#         )
+#         if access_token and refresh_token:
+#             response = RedirectResponse("/admin", status_code=303)
+#             response.set_cookie(
+#                 "access_token", access_token, httponly=True, max_age=900
+#             )
+#             response.set_cookie(
+#                 "refresh_token", refresh_token, httponly=True, max_age=86400 * 7
+#             )
+#             return response
+#     except UnauthorizedError:
+#         return RedirectResponse("/admin/login?err=401", status_code=303)
+#     except NotFoundError:
+#         return RedirectResponse("/admin/login?err=409", status_code=303)

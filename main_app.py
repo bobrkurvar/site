@@ -9,6 +9,7 @@ from adapters.http_client import get_http_client
 from api import main_router
 from api.error_handlers import *
 from core.logger import setup_logging
+from fastapi_csrf_protect import CsrfProtect
 
 setup_logging()
 
@@ -24,6 +25,15 @@ async def lifespan(app: FastAPI):
 
 
 log = logging.getLogger(__name__)
+
+# csrf = CsrfProtect(
+#     secret="твой_очень_длинный_секретный_ключ_!!!",
+#     cookie_name="csrftoken",
+#     token_key="csrf_token",
+#     cookie_secure=True,
+#     cookie_samesite="lax",
+#     cookie_http_only=False,
+# )
 
 app = FastAPI(lifespan=lifespan)
 
