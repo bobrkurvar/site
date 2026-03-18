@@ -9,21 +9,27 @@ from adapters.crud import Crud, get_db_manager
 from domain import *
 from domain.exceptions import NotFoundError, UnauthorizedError
 from services.auth import get_access_token
+from fastapi_csrf_protect.flexible import CsrfProtect
 
 router = APIRouter(tags=["admin"], prefix="/admin")
 dbManagerDep = Annotated[Crud, Depends(get_db_manager)]
+csrfProtectDep = Annotated[CsrfProtect, Depends()]
+
 templates = Jinja2Templates("templates")
 log = logging.getLogger(__name__)
 
 
 @router.get("")
-async def admin_page(request: Request, manager: dbManagerDep):
+async def admin_page(request: Request, manager: dbManagerDep, csrf_token: csrfProtectDep):
     # cookies = request.cookies
     # access_token = request.cookies.get("access_token")
     # log.debug("cookies: %s", cookies)
     # if access_token is None:
     #    return RedirectResponse("/admin/login", status_code=303)
-    await get_access_token(request.cookies)
+    #await get_access_token(request.cookies)
+    plain_token, signed_token = csrf_token.generate_csrf_tokens()
+
+
     tiles = await manager.read(Tile, to_join=["images", "size", "box"])
     tile_sizes = await manager.read(TileSize)
     tile_sizes = [
@@ -60,7 +66,7 @@ async def admin_page(request: Request, manager: dbManagerDep):
 
     categories = await manager.read(Categories)
 
-    return templates.TemplateResponse(
+    response = templates.TemplateResponse(
         "admin.html",
         {
             "request": request,
@@ -76,8 +82,11 @@ async def admin_page(request: Request, manager: dbManagerDep):
             "boxes_unique_area": boxes_unique_area,
             "categories": categories,
             "boxes_unique_count": boxes_unique_count,
+            "csrf_token": plain_token
         },
     )
+    csrf_token.set_csrf_cookie(signed_token, response)
+    return response
 
 
 # @router.get("/login")
@@ -104,26 +113,26 @@ async def admin_page(request: Request, manager: dbManagerDep):
 #     return response
 
 
-@router.post("/login")
-async def admin_login_submit(
-    manager: dbManagerDep,
-    username: Annotated[str, Form()],
-    password: Annotated[str, Form()],
-):
-    try:
-        access_token, refresh_token = await get_tokens_and_check_user(
-            manager, username=username, password=password
-        )
-        if access_token and refresh_token:
-            response = RedirectResponse("/admin", status_code=303)
-            response.set_cookie(
-                "access_token", access_token, httponly=True, max_age=900
-            )
-            response.set_cookie(
-                "refresh_token", refresh_token, httponly=True, max_age=86400 * 7
-            )
-            return response
-    except UnauthorizedError:
-        return RedirectResponse("/admin/login?err=401", status_code=303)
-    except NotFoundError:
-        return RedirectResponse("/admin/login?err=409", status_code=303)
+# @router.post("/login")
+# async def admin_login_submit(
+#     manager: dbManagerDep,
+#     username: Annotated[str, Form()],
+#     password: Annotated[str, Form()],
+# ):
+#     try:
+#         access_token, refresh_token = await get_tokens_and_check_user(
+#             manager, username=username, password=password
+#         )
+#         if access_token and refresh_token:
+#             response = RedirectResponse("/admin", status_code=303)
+#             response.set_cookie(
+#                 "access_token", access_token, httponly=True, max_age=900
+#             )
+#             response.set_cookie(
+#                 "refresh_token", refresh_token, httponly=True, max_age=86400 * 7
+#             )
+#             return response
+#     except UnauthorizedError:
+#         return RedirectResponse("/admin/login?err=401", status_code=303)
+#     except NotFoundError:
+#         return RedirectResponse("/admin/login?err=409", status_code=303)

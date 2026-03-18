@@ -35,6 +35,7 @@
         <h2>Управление товарами</h2>
 
         <form id="tile-form" class="admin-form" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="token_key" value="{{ csrf_token }}">
             <!-- Артикул товара (для обновления) -->
             <div class="form-group">
                 <h3>Артикул / ID товара</h3>
@@ -162,6 +163,7 @@
     <section class="create-collection-section">
         <h3>Управление коллекцией</h3>
         <form method="POST" enctype="multipart/form-data" id="collection-form">
+            <input type="hidden" name="token_key" value="{{ csrf_token }}">
             <div class="form-group">
                 <label for="collection_name">Название коллекции</label>
                 <input type="text" id="collection_name" name="collection_name" placeholder="Введите название коллекции" required>
@@ -202,6 +204,7 @@
                 </div>
                 <div class="tile-actions">
                     <form method="post" action="/admin/tiles/delete">
+                        <input type="hidden" name="token_key" value="{{ csrf_token }}">
                         <input type="hidden" name="tile_id" value="{{ tile.article }}">
                         <button type="submit" class="delete-btn"
                                 onclick="return confirm('Удалить товар?')">
@@ -229,6 +232,7 @@
                 <div class="characteristic-item">
                     <span>{{ size.length }}×{{ size.width }}×{{ size.height }}</span>
                     <form method="post" action="/admin/tiles/sizes/delete">
+                        <input type="hidden" name="token_key" value="{{ csrf_token }}">
                         <input type="hidden" name="height" value="{{ size.height }}">
                         <input type="hidden" name="width" value="{{ size.width }}">
                         <input type="hidden" name="length" value="{{ size.length }}">
@@ -254,6 +258,7 @@
                         <span>{{ color.color_name }}</span>
                     {% endif %}
                     <form method="post" action="/admin/tiles/colors/delete">
+                        <input type="hidden" name="token_key" value="{{ csrf_token }}">
                         <input type="hidden" name="color_name" value="{{ color.color_name }}">
                         <input type="hidden" name="feature_name" value="{{ color.feature_name }}">
                         <button type="submit" class="delete-btn"
@@ -274,6 +279,7 @@
                 <div class="characteristic-item">
                     <span>{{ surface.name }}</span>
                     <form method="post" action="/admin/tiles/surfaces/delete">
+                        <input type="hidden" name="token_key" value="{{ csrf_token }}">
                         <input type="hidden" name="name" value="{{ surface.name }}">
                         <button type="submit" class="delete-btn"
                                 onclick="return confirm('Удалить поверхность?')">
@@ -293,6 +299,7 @@
                 <div class="characteristic-item">
                     <span>{{ producer.name }}</span>
                     <form method="post" action="/admin/tiles/producers/delete">
+                        <input type="hidden" name="token_key" value="{{ csrf_token }}">
                         <input type="hidden" name="name" value="{{ producer.name }}">
                         <button type="submit" class="delete-btn"
                                 onclick="return confirm('Удалить производителя?')">
@@ -312,6 +319,7 @@
                 <div class="characteristic-item">
                     <span>{{ box.weight }}кг {{ box.area }}м²</span>
                     <form method="post" action="/admin/tiles/boxes/delete">
+                        <input type="hidden" name="token_key" value="{{ csrf_token }}">
                         <input type="hidden" name="weight" value="{{ box.weight }}">
                         <input type="hidden" name="area" value="{{ box.area }}">
                         <button type="submit" class="delete-btn"
@@ -332,6 +340,7 @@
                 <div class="characteristic-item">
                     <span>{{ category.name }}</span>
                     <form method="post" action="/admin/tiles/categories/delete">
+                        <input type="hidden" name="token_key" value="{{ csrf_token }}">
                         <input type="hidden" name="name" value="{{ category.name }}">
                         <button type="submit" class="delete-btn"
                                 onclick="return confirm('Удалить категорию?')">
@@ -351,24 +360,28 @@
         <h2>Управление</h2>
         <div class="management-buttons">
             <form method="post" action="/admin/tiles/delete">
+                <input type="hidden" name="token_key" value="{{ csrf_token }}">
                 <button type="submit" class="delete-all-btn"
                         onclick="return confirm('Удалить ВСЕ товары?')">
                     Удалить все товары
                 </button>
             </form>
             <form method="post" action="/admin/tiles/colors/delete">
+                <input type="hidden" name="token_key" value="{{ csrf_token }}">
                 <button type="submit" class="delete-all-btn"
                         onclick="return confirm('Удалить ВСЕ цвета?')">
                     Удалить все цвета
                 </button>
             </form>
             <form method="post" action="/admin/tiles/surfaces/delete">
+                <input type="hidden" name="token_key" value="{{ csrf_token }}">
                 <button type="submit" class="delete-all-btn"
                         onclick="return confirm('Удалить ВСЕ поверхности?')">
                     Удалить все поверхности
                 </button>
             </form>
             <form method="post" action="/admin/tiles/sizes/delete">
+                <input type="hidden" name="token_key" value="{{ csrf_token }}">
                 <button type="submit" class="delete-all-btn"
                         onclick="return confirm('Удалить ВСЕ размеры?')">
                     Удалить все размеры
@@ -385,6 +398,7 @@
         <div class="form-row">
             <!-- Форма добавления слайда -->
             <form class="admin-form half-width" method="post" action="/admin/tiles/insert/slide-image" enctype="multipart/form-data">
+                <input type="hidden" name="token_key" value="{{ csrf_token }}">
                 <div class="form-group">
                     <label>Изображение слайда (обязательно)</label>
                     <input type="file" name="images" accept="image/*" multiple required>
@@ -397,6 +411,7 @@
             <div class="half-width">
                 <div class="danger-zone">
                     <form class="admin-form" method="post" action="/admin/tiles/delete/all-slide-image" onsubmit="return confirm('Вы уверены, что хотите удалить ВСЕ слайды?');">
+                        <input type="hidden" name="token_key" value="{{ csrf_token }}">
                         <button type="submit" class="btn-danger">Удалить все слайды</button>
                     </form>
                 </div>
