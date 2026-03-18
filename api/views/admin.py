@@ -8,8 +8,10 @@ from starlette.responses import RedirectResponse
 from adapters.crud import Crud, get_db_manager
 from domain import *
 from domain.exceptions import NotFoundError, UnauthorizedError
-from services.auth import get_access_token
+from services.auth import get_access_token, create_access_token, create_refresh_token
+from adapters.user_agent import fingerPrintDep
 from fastapi_csrf_protect.flexible import CsrfProtect
+from datetime import timedelta
 
 router = APIRouter(tags=["admin"], prefix="/admin")
 dbManagerDep = Annotated[Crud, Depends(get_db_manager)]
@@ -88,51 +90,39 @@ async def admin_page(request: Request, manager: dbManagerDep, csrf_token: csrfPr
     csrf_token.set_csrf_cookie(signed_token, response)
     return response
 
-
-# @router.get("/login")
-# async def admin_login(request: Request, manager: dbManagerDep):
-#     refresh_token = request.cookies.get("refresh_token")
-#     if refresh_token is not None:
-#         try:
-#             access_token, refresh_token = await get_tokens_and_check_user(
-#                 manager, refresh_token
-#             )
-#             response: Response = RedirectResponse("/admin", status_code=303)
-#             response.set_cookie(
-#                 "access_token", access_token, httponly=True, max_age=900
-#             )
-#             response.set_cookie(
-#                 "refresh_token", refresh_token, httponly=True, max_age=86400 * 7
-#             )
-#         except UnauthorizedError:
-#             response = templates.TemplateResponse(
-#                 "admin_login.html", {"request": request}
-#             )
-#     else:
-#         response = templates.TemplateResponse("admin_login.html", {"request": request})
-#     return response
+@router.post("/refresh")
+async def refresh_access_token(request: Request):
+    refresh_token = request.cookies.get("refresh_token", None)
+    if refresh_token:
+        response = RedirectResponse("/admin", 303)
+        response.set_cookie(
+            "refresh_token", refresh_token, httponly=True, max_age=86400 * 7, path="admin/refresh"
+        )
+    else:
+        response = RedirectResponse("admin/login", 303)
+    return response
 
 
-# @router.post("/login")
-# async def admin_login_submit(
-#     manager: dbManagerDep,
-#     username: Annotated[str, Form()],
-#     password: Annotated[str, Form()],
-# ):
-#     try:
-#         access_token, refresh_token = await get_tokens_and_check_user(
-#             manager, username=username, password=password
-#         )
-#         if access_token and refresh_token:
-#             response = RedirectResponse("/admin", status_code=303)
-#             response.set_cookie(
-#                 "access_token", access_token, httponly=True, max_age=900
-#             )
-#             response.set_cookie(
-#                 "refresh_token", refresh_token, httponly=True, max_age=86400 * 7
-#             )
-#             return response
-#     except UnauthorizedError:
-#         return RedirectResponse("/admin/login?err=401", status_code=303)
-#     except NotFoundError:
-#         return RedirectResponse("/admin/login?err=409", status_code=303)
+@router.post("/login")
+async def admin_login_submit(
+    manager: dbManagerDep,
+    username: Annotated[str, Form()],
+    password: Annotated[str, Form()],
+    fingerprint: fingerPrintDep
+):
+    try:
+        await check_user(manager, username=username, password=password)
+        refresh_time = timedelta(days=7)
+        access_token, refresh_token = create_access_token({"fp": fingerprint}), create_refresh_token({"fp": fingerprint}, refresh_time)
+        response = RedirectResponse("/admin", status_code=303)
+        response.set_cookie(
+            "access_token", access_token, httponly=True, max_age=900
+        )
+        response.set_cookie(
+            "refresh_token", refresh_token, httponly=True, max_age=86400 * 7
+        )
+        return response
+    except UnauthorizedError:
+        return RedirectResponse("/admin/login?err=401", status_code=303)
+    except NotFoundError:
+        return RedirectResponse("/admin/login?err=409", status_code=303)

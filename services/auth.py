@@ -53,7 +53,7 @@ def check_refresh_token(refresh_token: str, my_id: int):
 
 
 def get_access_token(
-    token_getter, token_setter
+    data: dict, token_getter, token_setter
 ):
     access_token = token_getter("access_token")
     if access_token is None:

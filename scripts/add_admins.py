@@ -3,7 +3,7 @@ import logging
 
 from adapters.crud import get_db_manager
 from core import conf
-from services.security import get_password_hash
+from services.security import get_hash
 from domain.user import Admin
 
 log = logging.getLogger(__name__)
@@ -15,7 +15,7 @@ async def add_admins():
     manager = get_db_manager()
     for admin in initial_admins:
         log.debug("ADMIN: %s", admin)
-        password = get_password_hash(admin["password"])
+        password = get_hash(admin["password"])
         log.debug("HASH PASWORD: %s,", password)
         await manager.create(Admin, username=admin["username"], password=password)
 

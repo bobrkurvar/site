@@ -1,10 +1,14 @@
 import bcrypt
+from core import conf
 
-def get_password_hash(password: str) -> str:
+
+def get_hash(string: str) -> str:
     salt = bcrypt.gensalt()
-    hashed = bcrypt.hashpw(password.encode(), salt)
+    combined = (string + conf.pepper).encode()
+    hashed = bcrypt.hashpw(combined, salt)
     return hashed.decode()
 
 
 def verify(password: str, hashed: str) -> bool:
-    return bcrypt.checkpw(password.encode(), hashed.encode())
+    combined = (password + conf.pepper).encode()
+    return bcrypt.checkpw(combined, hashed.encode())
