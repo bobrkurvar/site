@@ -17,11 +17,6 @@ app = FastAPI()
 log = logging.getLogger(__name__)
 
 
-# @asynccontextmanager
-# async def lifespan(app: FastAPI):
-#     setup_logging()
-#     yield
-
 
 NUM_WORKERS = 4  # процессов для CPU
 MAX_RETRIES = 3
