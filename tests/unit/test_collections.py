@@ -8,17 +8,17 @@ from services.collections import add_collection, delete_collection
 from tests.fakes import (FakeCollectionImagesManager, FakeUoW,
                          generate_collections_images)
 
-from .conftest import manager_fix
+from .conftest import crud
 from .helpers import collection_catalog_path
 
 log = logging.getLogger(__name__)
 
 
 @pytest.mark.asyncio
-async def test_create_collection_category_when_collection_not_exists_success(manager_fix):
+async def test_create_collection_category_when_collection_not_exists_success(crud):
     # когда создаётся раздел коллекции-категории, но нет коллекции в таблице коллекций, создаётся коллекция
     fs = {}
-    manager = manager_fix
+    manager = crud
     file_manager = FakeCollectionImagesManager(fs=fs)
     collection = await add_collection(
         name="collection1",
@@ -56,10 +56,10 @@ async def test_create_collection_category_when_collection_not_exists_success(man
 
 
 @pytest.mark.asyncio
-async def test_create_collection_category_when_collection_exists_success(manager_fix):
+async def test_create_collection_category_when_collection_exists_success(crud):
     # когда создаётся раздел коллекции-категории и коллекция в таблице коллекций есть, коллекция не создаётся
     fs = {}
-    manager = manager_fix
+    manager = crud
     file_manager = FakeCollectionImagesManager(fs=fs)
     collection = await add_collection(
         name="collection1",
@@ -100,9 +100,9 @@ async def test_create_collection_category_when_collection_exists_success(manager
 
 
 @pytest.mark.asyncio
-async def test_delete_collection_success(manager_fix):
+async def test_delete_collection_success(crud):
     fs = {}
-    manager = manager_fix
+    manager = crud
     file_manager = FakeCollectionImagesManager(fs=fs)
     collection = await add_collection(
         name="collection1",
@@ -128,8 +128,8 @@ async def test_delete_collection_success(manager_fix):
 
 
 @pytest.mark.asyncio
-async def test_delete_collection_fail(manager_fix):
-    manager = manager_fix
+async def test_delete_collection_fail(crud):
+    manager = crud
     file_manager = FakeCollectionImagesManager()
     with pytest.raises(NotFoundError):
         await delete_collection(

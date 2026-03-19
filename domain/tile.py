@@ -5,7 +5,7 @@ from slugify import slugify
 
 class TileSize:
     def __init__(self, size_id: int, width: Decimal, length: Decimal, height: Decimal):
-        self.id = size_id
+        self.size_id = size_id
         self.height = height
         self.width = width
         self.length = length
@@ -49,7 +49,7 @@ class Producer:
 class Box:
 
     def __init__(self, box_id: int, weight: Decimal, area: Decimal):
-        self.id = box_id
+        self.box_id = box_id
         self.weight = weight
         self.area = area
 

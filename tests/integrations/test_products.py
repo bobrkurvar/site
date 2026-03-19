@@ -10,7 +10,7 @@ from domain import (Categories, Producer, Tile, TileColor, TileImages,
                     TileSize, TileSurface)
 from services.exceptions import ImageProcessingError
 from services.tile import add_tile, delete_tile, update_tile
-from tests.conftest import domain_handbooks_models
+from tests.conftest import domain_handbooks_models_for_products
 
 from .conftest import manager, manager_with_filled_handbooks
 from .helpers import create_fake_image, product_files_count

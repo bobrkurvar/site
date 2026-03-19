@@ -8,5 +8,6 @@ static/images/products/
 static/images/collections/
 static/images/base/slides/
 static/images/slides
+.env
 
 

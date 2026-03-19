@@ -5,19 +5,20 @@ import pytest
 
 from domain import Tile, TileImages
 from services.tile import add_tile, delete_tile, update_tile
-from tests.conftest import domain_handbooks_models
 from tests.fakes import (FakeProductImagesManager, FakeUoW,
                          generate_products_images)
 
-from .conftest import manager_fix, manager_with_handbooks
 from .helpers import product_catalog_path, product_details_path
+from .conftest import crud, manager_with_handbooks
+from tests.conftest import domain_handbooks_models_for_products
+
 
 log = logging.getLogger(__name__)
 
 
 @pytest.mark.asyncio
 async def test_create_tile_success_when_all_handbooks_exists(
-    manager_with_handbooks, domain_handbooks_models
+    crud, domain_handbooks_models_for_products
 ):
     fs = {}
     file_manager = FakeProductImagesManager(fs=fs)
@@ -34,7 +35,7 @@ async def test_create_tile_success_when_all_handbooks_exists(
         boxes_count=3,
         main_image=b"MAIN",
         category_name="category",
-        manager=manager_with_handbooks,
+        manager=crud,
         images=[b"A", b"B"],
         color_feature="feature",
         surface="surface",
@@ -49,8 +50,8 @@ async def test_create_tile_success_when_all_handbooks_exists(
 
     tile_id = record["id"]
     # проверка всех справочников
-    for model in domain_handbooks_models:
-        handbook = await manager_with_handbooks.read(model)
+    for model in domain_handbooks_models_for_products:
+        handbook = await crud.read(model)
         assert len(handbook) == 1, f"model: {model}"
 
     # 2. Все изображения записались во фейковую ФС
@@ -69,15 +70,14 @@ async def test_create_tile_success_when_all_handbooks_exists(
     assert fs[expected_paths[0]] == b"MAIN"
     assert fs[expected_paths[1]] == b"A"
     assert fs[expected_paths[2]] == b"B"
-    images_table = await manager_with_handbooks.read(TileImages)
+    images_table = await crud.read(TileImages)
     assert len(images_table) == 3
 
 
 @pytest.mark.asyncio
 async def test_create_tile_success_when_all_handbooks_not_exists(
-    manager_fix, domain_handbooks_models
+    crud, domain_handbooks_models_for_products
 ):
-    manager = manager_fix
     fs = {}
     file_manager = FakeProductImagesManager(fs=fs)
     # выполнение add_tile
@@ -93,7 +93,7 @@ async def test_create_tile_success_when_all_handbooks_not_exists(
         boxes_count=3,
         main_image=b"MAIN",
         category_name="category",
-        manager=manager,
+        manager=crud,
         images=[b"A", b"B"],
         color_feature="feature",
         surface="surface",
@@ -107,8 +107,8 @@ async def test_create_tile_success_when_all_handbooks_not_exists(
     assert "id" in record
 
     # проверка всех справочников
-    for model in domain_handbooks_models:
-        handbook = await manager.read(model)
+    for model in domain_handbooks_models_for_products:
+        handbook = await crud.read(model)
         assert len(handbook) == 1, f"model: {model}"
 
     # 3. Все изображения записались во фейковую ФС
@@ -129,7 +129,7 @@ async def test_create_tile_success_when_all_handbooks_not_exists(
     assert fs[expected_paths[1]] == b"A"
     assert fs[expected_paths[2]] == b"B"
 
-    images_table = await manager.read(TileImages)
+    images_table = await crud.read(TileImages)
 
     assert len(images_table) == 3
 
