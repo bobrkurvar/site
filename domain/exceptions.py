@@ -1,5 +1,3 @@
-
-
 class RepositoryError(Exception):
     """Базовое исключение репозитория"""
 
@@ -64,12 +62,12 @@ class TokenExpireError(UnauthorizedError):
         super().__init__(self.detail)
 
 
-class AccessTokenExpireError(TokenExpireError):
+class AccessTokenNotExistsError(TokenExpireError):
     def __init__(self):
         super().__init__("access")
 
 
-class RefreshTokenExpireError(TokenExpireError):
+class RefreshTokenNotExistsError(TokenExpireError):
     def __init__(self):
         super().__init__("refresh")
 

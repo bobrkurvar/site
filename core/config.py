@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     secret_key: str
     algorithm: str
     initial_admins: str
+    pepper: str
 
     @property
     def db_url(self):

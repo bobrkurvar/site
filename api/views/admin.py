@@ -8,8 +8,11 @@ from starlette.responses import RedirectResponse
 from adapters.crud import Crud, get_db_manager
 from domain import *
 from domain.exceptions import NotFoundError, UnauthorizedError
-from services.auth import get_access_token, create_access_token, create_refresh_token
-from adapters.user_agent import fingerPrintDep
+from services.auth import (
+    create_token_from_refresh,
+    create_tokens_from_login,
+)
+from adapters.user_agent import fingerPrintDep, CookieManager
 from fastapi_csrf_protect.flexible import CsrfProtect
 from datetime import timedelta
 
@@ -22,15 +25,16 @@ log = logging.getLogger(__name__)
 
 
 @router.get("")
-async def admin_page(request: Request, manager: dbManagerDep, csrf_token: csrfProtectDep):
-    # cookies = request.cookies
-    # access_token = request.cookies.get("access_token")
-    # log.debug("cookies: %s", cookies)
-    # if access_token is None:
-    #    return RedirectResponse("/admin/login", status_code=303)
-    #await get_access_token(request.cookies)
-    plain_token, signed_token = csrf_token.generate_csrf_tokens()
+async def admin_page(
+    request: Request, manager: dbManagerDep, csrf_token: csrfProtectDep
+):
+    cookies = request.cookies
+    access_token = request.cookies.get("access_token")
+    log.debug("cookies: %s", cookies)
+    if access_token is None:
+        return RedirectResponse("/admin/refresh", status_code=303)
 
+    plain_token, signed_token = csrf_token.generate_csrf_tokens()
 
     tiles = await manager.read(Tile, to_join=["images", "size", "box"])
     tile_sizes = await manager.read(TileSize)
@@ -84,44 +88,42 @@ async def admin_page(request: Request, manager: dbManagerDep, csrf_token: csrfPr
             "boxes_unique_area": boxes_unique_area,
             "categories": categories,
             "boxes_unique_count": boxes_unique_count,
-            "csrf_token": plain_token
+            "csrf_token": plain_token,
         },
     )
     csrf_token.set_csrf_cookie(signed_token, response)
     return response
 
+
 @router.post("/refresh")
-async def refresh_access_token(request: Request):
-    refresh_token = request.cookies.get("refresh_token", None)
-    if refresh_token:
+async def refresh_access_token(request: Request, fingerprint: fingerPrintDep):
+    try:
         response = RedirectResponse("/admin", 303)
-        response.set_cookie(
-            "refresh_token", refresh_token, httponly=True, max_age=86400 * 7, path="admin/refresh"
-        )
-    else:
+        cookie_manager = CookieManager(request=request, response=response)
+        create_token_from_refresh(tokens_manager=cookie_manager, fp=fingerprint)
+    except RefreshTokenNotExistsError:
         response = RedirectResponse("admin/login", 303)
     return response
 
 
 @router.post("/login")
 async def admin_login_submit(
+    request: Request,
     manager: dbManagerDep,
     username: Annotated[str, Form()],
     password: Annotated[str, Form()],
-    fingerprint: fingerPrintDep
+    fingerprint: fingerPrintDep,
 ):
     try:
-        await check_user(manager, username=username, password=password)
-        refresh_time = timedelta(days=7)
-        access_token, refresh_token = create_access_token({"fp": fingerprint}), create_refresh_token({"fp": fingerprint}, refresh_time)
         response = RedirectResponse("/admin", status_code=303)
-        response.set_cookie(
-            "access_token", access_token, httponly=True, max_age=900
+        cookie_manager = CookieManager(request=request, response=response)
+        await create_tokens_from_login(
+            manager,
+            username=username,
+            password=password,
+            tokens_manager=cookie_manager,
+            fp=fingerprint,
         )
-        response.set_cookie(
-            "refresh_token", refresh_token, httponly=True, max_age=86400 * 7
-        )
-        return response
     except UnauthorizedError:
         return RedirectResponse("/admin/login?err=401", status_code=303)
     except NotFoundError:
