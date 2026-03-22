@@ -1,20 +1,17 @@
 import logging
+from datetime import timedelta
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Form, Request, Response
 from fastapi.templating import Jinja2Templates
+from fastapi_csrf_protect.flexible import CsrfProtect
 from starlette.responses import RedirectResponse
 
 from adapters.crud import Crud, get_db_manager
+from adapters.user_agent import CookieManager, fingerPrintDep
 from domain import *
 from domain.exceptions import NotFoundError, UnauthorizedError
-from services.auth import (
-    create_token_from_refresh,
-    create_tokens_from_login,
-)
-from adapters.user_agent import fingerPrintDep, CookieManager
-from fastapi_csrf_protect.flexible import CsrfProtect
-from datetime import timedelta
+from services.auth import create_token_from_refresh, create_tokens_from_login
 
 router = APIRouter(tags=["admin"], prefix="/admin")
 dbManagerDep = Annotated[Crud, Depends(get_db_manager)]

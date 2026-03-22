@@ -1,4 +1,5 @@
 import logging
+
 from domain import Box, Collections, NotFoundError, TileImages, TileSize
 
 log = logging.getLogger(__name__)
@@ -91,7 +92,6 @@ log = logging.getLogger(__name__)
 #             join_category_collection_with_collection(new_table, other)
 #
 #         return new_table
-
 
 
 # class FakeStorage:
@@ -214,10 +214,12 @@ log = logging.getLogger(__name__)
 #
 #     async def delete(self, model, session=None, **filters) -> tuple[dict, ...]:
 #         return self.storage.delete(model, **filters)
+from adapters.orm_mapper import DomainToOrmMapper
 
-import inspect
 
 class Table:
+
+    default_num = 0
 
     def __init__(
         self,
@@ -226,22 +228,15 @@ class Table:
     ):
         self.columns = set(columns)
         self.rows = rows if rows else []
-        self.default_num = 0
 
     def add_row(self, **row):
         for i in self.columns - row.keys():
-            log.debug("III: %s", i)
-            row[i] = self.default_num
-            self.default_num += 1
+            #log.debug("III: %s", i)
+            row[i] = self.__class__.default_num
+            self.__class__.default_num += 1
         self.rows.append(row)
         return row
 
-def get_columns(model):
-    sig = inspect.signature(model.__init__)
-    return [
-        name for name in sig.parameters
-        if name != "self"
-    ]
 
 class FakeCRUD:
     def __init__(self):
@@ -249,15 +244,17 @@ class FakeCRUD:
         self._session_factory = None
 
     def _new_table(self, model):
-        self.tables[model] = Table(get_columns(model))
+        self.tables[model] = Table(DomainToOrmMapper.fields(model))
 
     def _get_table(self, model):
         if model not in self.tables:
             self._new_table(model)
         return self.tables[model]
 
-    async def create(self, model, session=None, **row):
-        log.debug("FAKE CREATE: %s", model)
+    async def create(self, model, **row):
+        ignored = {"session", "seq_data"}
+        row = {k: v for k, v in row.items() if k not in ignored}
+        #log.debug("FAKE CREATE: %s", model)
         table = self._get_table(model)
         return table.add_row(**row)
 
@@ -265,25 +262,27 @@ class FakeCRUD:
         ignored = {"limit", "offset", "to_join", "distinct", "session"}
         table = self._get_table(model)
 
-        filters = {
-            k: v for k, v in kwargs.items()
-            if k not in ignored
-        }
+        filters = {k: v for k, v in kwargs.items() if k not in ignored}
 
         return tuple(
-            r for r in table.rows
-            if all(r.get(k) == v for k, v in filters.items())
+            r for r in table.rows if all(r.get(k) == v for k, v in filters.items())
         )
 
-    def update(self, model, filters, **values):
+    async def update(self, model, filters, **values):
+        ignored = {"session"}
+        log.debug("UPDATE FILTERS: %s", filters)
+        values = {k: v for k, v in values.items() if k not in ignored}
         table = self._get_table(model)
         for i in range(len(table.rows)):
             if all(table.rows[i][f] == v for f, v in filters.items()):
                 for k, v in values.items():
+                    log.debug("column %s :: new value %s", k, v)
                     table.rows[i][k] = v
 
+    async def delete(self, model, **filters) -> tuple[dict, ...]:
+        ignored = {"session"}
+        filters = {k: v for k, v in filters.items() if k not in ignored}
 
-    def delete(self, model, **filters) -> tuple[dict, ...]:
         table = self._get_table(model)
         del_res = []
         for i in range(len(table.rows)):

@@ -7,15 +7,16 @@ from io import BytesIO
 from fastapi import FastAPI
 from PIL import Image, ImageOps
 from pydantic import BaseModel
-#from contextlib import asynccontextmanager
 
 from core.logger import setup_logging
+
+# from contextlib import asynccontextmanager
+
 
 setup_logging()
 
 app = FastAPI()
 log = logging.getLogger(__name__)
-
 
 
 NUM_WORKERS = 4  # процессов для CPU

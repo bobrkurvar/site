@@ -12,7 +12,6 @@ from .http_client import get_http_client
 # import aiofiles # type: ignore
 
 
-
 log = logging.getLogger(__name__)
 
 
@@ -81,6 +80,7 @@ class ProductImagesManager(FileManager):
         name = base_path.name
         path_details = self.resolve_path(name, "details")
         return self.get_directory(path_details, base_path)
+
 
 
 class CollectionImagesManager(FileManager):

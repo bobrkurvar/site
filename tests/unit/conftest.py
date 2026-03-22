@@ -5,10 +5,11 @@ import pytest
 from domain import (Box, Categories, CollectionCategory, Collections, Producer,
                     Slug, Tile, TileColor, TileImages, TileSize, TileSurface)
 from services.tile import add_tile
-# from tests.fakes import (FakeCRUD, FakeProductImagesManager, FakeStorage,
-#                          FakeUoW, Table, noop_generate)
+from tests.fakes import (FakeCRUD, FakeProductImagesManager, FakeUoW,
+                         noop_generate)
+from core.logger import setup_test_logging
 
-from tests.fakes import FakeCRUD, FakeProductImagesManager, FakeUoW, noop_generate
+
 
 async def noop(*args, **kwargs):
     return None
@@ -48,93 +49,15 @@ def generate_categories(count):
     return [{"name": f"category{i}"} for i in range(1, count + 1)]
 
 
-# @pytest.fixture
-# def storage():
-#     storage = FakeStorage()
-#
-#     storage.register_tables(
-#         [
-#             Table(
-#                 name=TileSize,
-#                 columns=["id", "length", "width", "height"],
-#                 defaults={"id": 1},
-#             ),
-#             Table(name=TileSurface, columns=["name"]),
-#             Table(
-#                 name=TileImages,
-#                 columns=["image_id", "tile_id", "image_path"],
-#                 defaults={"image_id": 1},
-#             ),
-#             Table(
-#                 name=TileColor,
-#                 columns=["color_name", "feature_name"],
-#             ),
-#             Table(name=Producer, columns=["name"]),
-#             Table(name=Categories, columns=["name"]),
-#             Table(
-#                 name=Box,
-#                 columns=["id", "weight", "area"],
-#                 defaults={"id": 1},
-#             ),
-#             Table(
-#                 name=Collections,
-#                 columns=["id", "name", "image_path"],
-#                 defaults={"id": 1, "image_path": None},
-#             ),
-#             Table(
-#                 name=Tile,
-#                 columns=[
-#                     "id",
-#                     "name",
-#                     "size_id",
-#                     "color_name",
-#                     "feature_name",
-#                     "category_name",
-#                     "surface_name",
-#                     "producer_name",
-#                     "box_id",
-#                     "boxes_count",
-#                 ],
-#                 defaults={"id": 1},
-#             ),
-#             Table(name=Slug, columns=["name", "slug"]),
-#             Table(name=CollectionCategory, columns=["collection_id", "category_name"]),
-#         ]
-#     )
-#
-#     return storage
-
-
-
-@pytest.fixture
-def manager_with_tables():
-    def wrapper(*tables):
-        crud = FakeCRUD()
-        #crud.create_new_tables(*tables)
-        return crud
-    return wrapper
-
 
 @pytest.fixture
 def crud():
     return FakeCRUD()
 
-# @pytest.fixture
-# def manager_for_collections(manager_with_tables, domain_handbooks_models_for_collection):
-#     return manager_with_tables(domain_handbooks_models_for_collection)
-#
-#
-# @pytest.fixture
-# def manager_for_products(manager_with_tables, domain_handbooks_models_for_products):
-#     return manager_with_tables(domain_handbooks_models_for_products)
-
-# @pytest.fixture
-# def manager_fix(storage):
-#     return FakeCD(storage)
 
 
 @pytest.fixture
-def manager_factory(manager_fix):
+def manager_factory(crud):
 
     async def _manage_with_items(n: int = 0, color_fix: bool = False):
         sizes = generate_tile_sizes(n)
@@ -143,7 +66,7 @@ def manager_factory(manager_fix):
         file_manager = FakeProductImagesManager()
         for i in range(n):
             await add_tile(
-                manager=manager_fix,
+                manager=crud,
                 uow_class=FakeUoW,
                 name=f"Tile{i+1}",
                 length=sizes[i]["length"],
@@ -162,22 +85,16 @@ def manager_factory(manager_fix):
                 generate_images=noop_generate,
                 file_manager=file_manager,
             )
-        return manager_fix
+        return crud
 
     return _manage_with_items
 
 
 @pytest.fixture
-def storage_with_filled_handbooks(storage):
-    storage.add(TileSize, length=Decimal(300), width=Decimal(200), height=Decimal(10))
-    storage.add(TileColor, color_name="color", feature_name="feature")
-    storage.add(Producer, name="producer")
-    storage.add(Box, weight=Decimal(30), area=Decimal(1))
+async def manager_with_handbooks(crud):
+    await crud.create(TileSize, length=Decimal(300), width=Decimal(200), height=Decimal(10))
+    await crud.create(TileColor, color_name="color", feature_name="feature")
+    await crud.create(Producer, name="producer")
+    await crud.create(Box, weight=Decimal(30), area=Decimal(1))
 
-    return storage
-
-
-@pytest.fixture
-def manager_with_handbooks(storage_with_filled_handbooks):
-    return FakeCRUD(storage_with_filled_handbooks)
-
+    return crud

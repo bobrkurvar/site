@@ -5,7 +5,6 @@ from slugify import slugify
 from domain import CollectionCategory, Collections, Slug
 from services.UoW import UnitOfWork
 
-
 log = logging.getLogger(__name__)
 
 

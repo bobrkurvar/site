@@ -1,6 +1,7 @@
-from tests.fakes import FakeFileManager
 from datetime import timedelta
+
 from services.auth import create_access_token, create_refresh_token
+from tests.fakes import FakeFileManager
 
 
 def collection_catalog_path(manager: FakeFileManager):

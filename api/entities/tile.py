@@ -9,6 +9,7 @@ from adapters.images import (ProductImagesManager,
                              generate_image_products_catalog_and_details)
 from domain import *
 from services.tile import add_tile, delete_tile, update_tile
+from api.utils import api_input_to_params
 
 router = APIRouter(prefix="/admin/tiles")
 dbManagerDep = Annotated[Crud, Depends(get_db_manager)]
@@ -115,20 +116,20 @@ async def admin_update_tile(
             surface_name,
         )
     ]
-    params = locals()
     params = {
         k: v
-        for k, v in params.items()
+        for k, v in locals().items()
         if v not in (None, "") and k not in ("manager", "article")
     }
-    if size != "":
-        length, width, height = size.split()
-        params.pop("size")
-        params["size"] = {
-            "length": Decimal(length),
-            "width": Decimal(width),
-            "height": Decimal(height),
-        }
+    # if size != "":
+    #     length, width, height = size.split()
+    #     params.pop("size")
+    #     params["size"] = {
+    #         "length": Decimal(length),
+    #         "width": Decimal(width),
+    #         "height": Decimal(height),
+    #     }
+    params = api_input_to_params(**params)
 
     log.debug("to update: %s", params)
     if params:

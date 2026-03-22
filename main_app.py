@@ -3,16 +3,17 @@ from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+from fastapi_csrf_protect.flexible import CsrfProtect
+from pydantic_settings import BaseSettings
 
 from adapters.crud import get_db_manager
 from adapters.http_client import get_http_client
 from api import main_router
 from api.error_handlers import *
 from core.logger import setup_logging
-from fastapi_csrf_protect.flexible import CsrfProtect
-from pydantic_settings import BaseSettings
 
 setup_logging()
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -32,6 +33,7 @@ BASE_DIR = Path(__file__).resolve().parent
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
 app.include_router(main_router)
+
 
 class CsrfSettings(BaseSettings):
     secret_key: str = "ваш-секретный-ключ-обязательно-измените"

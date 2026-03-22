@@ -1,4 +1,5 @@
 import bcrypt
+
 from core import conf
 
 

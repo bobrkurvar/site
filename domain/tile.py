@@ -5,7 +5,7 @@ from slugify import slugify
 
 class TileSize:
     def __init__(self, size_id: int, width: Decimal, length: Decimal, height: Decimal):
-        self.size_id = size_id
+        self.id = size_id
         self.height = height
         self.width = width
         self.length = length
@@ -45,11 +45,15 @@ class Producer:
     def __str__(self):
         return f"{self.name}"
 
+    @staticmethod
+    def fields():
+        return "name"
+
 
 class Box:
 
     def __init__(self, box_id: int, weight: Decimal, area: Decimal):
-        self.box_id = box_id
+        self.id = box_id
         self.weight = weight
         self.area = area
 
@@ -66,6 +70,10 @@ class Categories:
     def __str__(self):
         return self.name
 
+    @staticmethod
+    def fields():
+        return "name", "slug"
+
 
 class Tile:
     def __init__(
@@ -81,6 +89,7 @@ class Tile:
         surface: TileSurface | None = None,
     ):
         self.id = article
+        self.article = article
         self.name = name
         self.color = color
         self.size = size
@@ -88,12 +97,13 @@ class Tile:
         self.box = box
         self.boxes_count = boxes_count
         self.producer = producer
-        self.article = article
-        self.tile_type = category_name
+        self.category = category_name
 
     @property
     def present(self):
-        return f"{self.tile_type} {self.name} {self.size} {self.color} {self.surface or ''}"
+        return (
+            f"{self.category} {self.name} {self.size} {self.color} {self.surface or ''}"
+        )
 
     def __str__(self):
         return f"{self.article} {str(self.color)} {self.surface} {self.name}"

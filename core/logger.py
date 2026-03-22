@@ -30,3 +30,10 @@ def setup_logging():
     logging.getLogger("asyncio").setLevel(logging.WARNING)
 
     logger.addFilter(IgnoreFilter())
+
+def setup_test_logging():
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
+    # Не добавляем StreamHandler
+    logging.getLogger("asyncio").setLevel(logging.WARNING)
+    logger.addFilter(IgnoreFilter())

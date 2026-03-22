@@ -1,8 +1,5 @@
-import asyncio
 import logging
 from pathlib import Path
-
-from core import logger
 
 log = logging.getLogger(__name__)
 
@@ -52,7 +49,8 @@ class FakeFileManager:
         return await self.delete_async(paths)
 
     async def delete_async(self, paths):
-        return await asyncio.to_thread(self._delete, paths)
+        #return await asyncio.to_thread(self._delete, paths)
+        pass
 
     def _delete(self, paths):
         fake_deleted = 0
@@ -101,7 +99,6 @@ class FakeFileSession:
     def __getattr__(self, name):
         return getattr(self._fm, name)
 
-
 async def generate_products_images(*args, **kwargs) -> dict:
     return {"products": b"aaa", "details": b"bbb"}
 
@@ -112,3 +109,4 @@ async def generate_collections_images(*args, **kwargs) -> dict:
 
 async def noop_generate(*args, **kwargs) -> dict:
     return {}
+

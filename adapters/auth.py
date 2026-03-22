@@ -1,16 +1,18 @@
 import logging
+from datetime import timedelta
 from typing import Annotated
 
 import jwt
-from fastapi import Depends, Response, Request
+from fastapi import Depends, Request, Response
 from fastapi.security.oauth2 import OAuth2PasswordBearer
 
 from adapters.crud import Crud, get_db_manager
-from domain import (AccessTokenExpireError, InvalidAccessTokenError, RefreshTokenExpireError, NotFoundError, CredentialsValidateError, Admin)
+from core import conf
+from domain import (AccessTokenExpireError, Admin, CredentialsValidateError,
+                    InvalidAccessTokenError, NotFoundError,
+                    RefreshTokenExpireError)
 from services.auth import create_access_token, create_refresh_token
 from services.security import verify
-from datetime import timedelta
-from core import conf
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login", auto_error=False)
 secret_key = conf.secret_key

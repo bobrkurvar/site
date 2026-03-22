@@ -3,8 +3,8 @@ import logging
 
 from adapters.crud import get_db_manager
 from core import conf
-from services.security import get_hash
 from domain.user import Admin
+from services.security import get_hash
 
 log = logging.getLogger(__name__)
 

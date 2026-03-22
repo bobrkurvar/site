@@ -96,9 +96,7 @@ async def add_tile(
         return tile_record
 
 
-async def delete_tile(
-    manager, file_manager, uow_class=UnitOfWork, **filters
-):
+async def delete_tile(manager, file_manager, uow_class=UnitOfWork, **filters):
     async with uow_class(manager) as uow:
         tiles = await manager.read(
             Tile, to_join=["images"], session=uow.session, **filters
@@ -111,132 +109,96 @@ async def delete_tile(
         return del_res
 
 
-async def set_composite_parameter(
+def dict_for_update_model(tile_field: str, value):
+    if tile_field in ("size", "box", "color"):
+        res = value
+    elif tile_field.endswith("name"):
+        res = {"name": value}
+    else:
+        res = {tile_field: value}
+    return res
+
+
+def model_to_update_values(model, **values):
+    if model is TileSize:
+        res = {"size_id": values["id"]}
+    elif model is Box:
+        res = {"box_id": values["id"]}
+    elif model is TileSurface:
+        res = {"surface_name": values["name"]}
+    elif model is Producer:
+        res = {"producer_name": values["name"]}
+    elif model is Categories:
+        res = {"category_name": values["name"]}
+    else:
+        res = values
+    return res
+
+
+def set_values_from_db(values: dict, key: str, value_from_db):
+    if key not in values:
+        values[key] = value_from_db
+
+
+async def create_composite(manager, article: int, values, columns, *to_join):
+    model = (await manager.read(Tile, to_join=list(to_join), id=article))[0]
+    for k, v in model.items():
+        if k in columns:
+            set_values_from_db(values, k, v)
+
+
+async def create_new_model(manager, article: int, model, session, **values):
+    if model is TileSize:
+        await create_composite(manager, article, values, ("size_length", "size_width", "size_height"), "size")
+    elif model is Box:
+        await create_composite(manager, article, values, ("box_area", "box_weight"),"box")
+    elif model is TileColor:
+        await create_composite(manager, article, values, ("color_name", "feature_name"),"color")
+    log.debug("model: %s values: %s", model, values)
+    model_values = await add_items(model, manager, session, **values)
+    return model_to_update_values(model, **model_values)
+
+
+def map_param_to_domain_model(param_name: str):
+    mapper = {
+        "name": Tile,
+        "boxes_count": Tile,
+        "size": TileSize,
+        "color": TileColor,
+        "producer_name": Producer,
+        "box": Box,
+        "category_name": Categories,
+        "surface_name": TileSurface
+    }
+    return mapper[param_name]
+
+
+async def update_tile(
     manager,
-    session,
     article: int,
-    main_value,
-    mapped: dict,
-    for_models: dict,
-    main_name: str,
-    other_name: str,
-    model,
-    for_tile_name: str | None = None,
-    to_join: list | None = None,
+    uow_class=UnitOfWork,
+    name: str | None = None,
+    size: dict | None = None,
+    color: dict | None = None,
+    producer_name: str | None = None,
+    box: dict | None = None,
+    boxes_count: int | None = None,
+    category_name: str | None = None,
+    surface_name: str | None = None
 ):
-    to_join = [] if to_join is None else to_join
-    for_tile_name = other_name if for_tile_name is None else for_tile_name
-    other_value = mapped.setdefault(
-        other_name,
-        (await manager.read(Tile, id=article, to_join=to_join, session=session))[0][
-            for_tile_name
-        ],
-    )
-    # log.debug("OTHER NAME: %s, OTHER VALUE: %s, FOR TILE NAME: %s", other_name, other_value, for_tile_name)
-    for_models[model] = {main_name: main_value, other_name: other_value}
-    mapped[main_name] = main_value
-
-
-async def map_to_domain_for_filter(article: int, manager, session, **params):
-    for_tile: dict[Any, Any] = {}
-    for_models: dict[Any, Any] = {}
-    mapped: dict[Any, Any] = {}
-
-    for param, value in params.items():
-        for_tile.update(**{param: value})
-
-        if param == "producer_name":
-            for_models[Producer] = {"name": value}
-        elif param == "category_name":
-            for_models[Categories] = {"name": value}
-        elif param == "surface_name":
-            for_models[TileSurface] = {"name": value}
-        elif param == "size":
-            for_tile.pop("size")
-            for_models[TileSize] = value
-
-        elif param == "feature_name":
-            await set_composite_parameter(
-                manager,
-                session,
-                article,
-                value,
-                mapped,
-                for_models,
-                param,
-                "color_name",
-                TileColor,
-            )
-
-        elif param == "color_name":
-            await set_composite_parameter(
-                manager,
-                session,
-                article,
-                value,
-                mapped,
-                for_models,
-                param,
-                "feature_name",
-                TileColor,
-            )
-
-        elif param == "box_weight":
-            for_tile.pop(param)
-            await set_composite_parameter(
-                manager=manager,
-                session=session,
-                article=article,
-                main_value=value,
-                mapped=mapped,
-                for_models=for_models,
-                main_name="weight",
-                other_name="area",
-                model=Box,
-                for_tile_name="box_area",
-                to_join=["box"],
-            )
-
-        elif param == "box_area":
-            for_tile.pop(param)
-            await set_composite_parameter(
-                manager=manager,
-                session=session,
-                article=article,
-                main_value=value,
-                mapped=mapped,
-                for_models=for_models,
-                main_name="area",
-                other_name="weight",
-                model=Box,
-                for_tile_name="box_weight",
-                to_join=["box"],
-            )
-
-    return for_tile, for_models
-
-
-async def update_tile(manager, article: int, uow_class=UnitOfWork, **params):
-    log.debug("PARAMS: %s", params)
-
+    params = {
+        k: v
+        for k, v in locals().items()
+        if v is not None and k not in {"manager", "article", "uow_class"}
+    }
+    to_update = {}
     async with uow_class(manager) as uow:
-        for_tiles, for_models = await map_to_domain_for_filter(
-            article, manager, uow.session, **params
-        )
-        log.debug("for_models: %s", for_models)
-        for model, values in for_models.items():
-            item = await add_items(
-                model,
-                manager,
-                uow.session,
-                **values,
-            )
-            if model is Box:
-                for_tiles["box_id"] = item["id"]
-            elif model is TileSize:
-                for_tiles["size_id"] = item["id"]
-        log.debug("For tiles: %s For models: %s", for_tiles, for_models)
-
-        await manager.update(
-            Tile, filters=dict(id=article), session=uow.session, **for_tiles
-        )
+        for k, v in params.items():
+            domain_model = map_param_to_domain_model(k)
+            if domain_model is Tile:
+                to_update.update({k: v})
+                continue
+            updated_in_model = dict_for_update_model(k, v)
+            updated_fields_in_tile = await create_new_model(manager, article, domain_model, uow.session, **updated_in_model)
+            to_update.update(updated_fields_in_tile)
+        await manager.update(Tile, session=uow.session, filters=dict(id=article), **to_update)

@@ -2,13 +2,10 @@ import logging
 
 from core import logger
 
-
 log = logging.getLogger(__name__)
 
 
-async def add_slides(
-    images: list[bytes], generate_images, file_manager
-):
+async def add_slides(images: list[bytes], generate_images, file_manager):
     extra_num = file_manager.slides_file_count
     for i, image in enumerate(images):
         file_name = str(extra_num + i)

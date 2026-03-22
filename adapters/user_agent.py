@@ -1,6 +1,8 @@
-from fastapi import Response, Request, Depends
-from services.security import get_hash
 from typing import Annotated
+
+from fastapi import Depends, Request, Response
+
+from services.security import get_hash
 
 
 class CookieManager:
@@ -17,15 +19,24 @@ class CookieManager:
     def set_refresh_token(self, value):
         ttl = 86400 * 7
         self.response.set_cookie(
-            self.refresh_token_key, value, httponly=True, max_age=ttl, samesite="strict", secure=True
+            self.refresh_token_key,
+            value,
+            httponly=True,
+            max_age=ttl,
+            samesite="strict",
+            secure=True,
         )
 
     def set_access_token(self, value):
         ttl = 900
         self.response.set_cookie(
-            self.access_token_key, value, httponly=True, max_age=ttl, samesite="strict", secure=True
+            self.access_token_key,
+            value,
+            httponly=True,
+            max_age=ttl,
+            samesite="strict",
+            secure=True,
         )
-
 
 
 def compute_fingerprint(request: Request) -> str:
