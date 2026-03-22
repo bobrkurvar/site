@@ -8,8 +8,8 @@ from alembic import command
 from alembic.config import Config
 from sqlalchemy import text
 
-from adapters.crud import get_db_manager
-from adapters.http_client import get_http_client
+from infrastructure.crud import get_db_manager
+from infrastructure.http_client import get_http_client
 from core import conf
 from domain import *
 from image_worker import app

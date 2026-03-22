@@ -5,7 +5,7 @@ from core import conf
 
 def get_hash(string: str) -> str:
     salt = bcrypt.gensalt()
-    combined = (string + conf.pepper).encode()
+    combined = (string + conf.pepper).encode()[:72]
     hashed = bcrypt.hashpw(combined, salt)
     return hashed.decode()
 

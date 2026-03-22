@@ -7,8 +7,8 @@ from fastapi.templating import Jinja2Templates
 from fastapi_csrf_protect.flexible import CsrfProtect
 from starlette.responses import RedirectResponse
 
-from adapters.crud import Crud, get_db_manager
-from adapters.user_agent import CookieManager, fingerPrintDep
+from infrastructure.crud import Crud, get_db_manager
+from infrastructure.user_agent import CookieManager, fingerPrintDep
 from domain import *
 from domain.exceptions import NotFoundError, UnauthorizedError
 from services.auth import create_token_from_refresh, create_tokens_from_login
@@ -92,14 +92,15 @@ async def admin_page(
     return response
 
 
-@router.post("/refresh")
+@router.get("/refresh")
 async def refresh_access_token(request: Request, fingerprint: fingerPrintDep):
+    log.debug("/admin/refresh")
     try:
         response = RedirectResponse("/admin", 303)
         cookie_manager = CookieManager(request=request, response=response)
         create_token_from_refresh(tokens_manager=cookie_manager, fp=fingerprint)
     except RefreshTokenNotExistsError:
-        response = RedirectResponse("admin/login", 303)
+        response = templates.TemplateResponse("admin_login.html", {"request": request})
     return response
 
 

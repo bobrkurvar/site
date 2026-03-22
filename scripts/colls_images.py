@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 
 import core.logger
-from adapters.crud import get_db_manager
+from infrastructure.crud import get_db_manager
 from domain import CollectionCategory, Collections
 
 log = logging.getLogger(__name__)

@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-from adapters.crud import get_db_manager
+from infrastructure.crud import get_db_manager
 from core import conf
 from domain.user import Admin
 from services.security import get_hash

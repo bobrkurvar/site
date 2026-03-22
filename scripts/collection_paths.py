@@ -1,7 +1,7 @@
 import asyncio
 from pathlib import Path
 
-from adapters.crud import get_db_manager
+from infrastructure.crud import get_db_manager
 from domain import Collections
 
 

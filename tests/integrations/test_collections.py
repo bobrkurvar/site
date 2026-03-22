@@ -3,8 +3,8 @@ import logging
 import pytest
 
 import core.logger
-from adapters.images import (CollectionImagesManager,
-                             generate_image_collections_catalog)
+from infrastructure.images import (CollectionImagesManager,
+                                   generate_image_collections_catalog)
 from domain import (AlreadyExistsError, CollectionCategory, Collections,
                     NotFoundError, Slug)
 from services.collections import add_collection, delete_collection

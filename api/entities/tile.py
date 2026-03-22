@@ -4,9 +4,9 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, File, Form, UploadFile
 from fastapi.responses import RedirectResponse
 
-from adapters.crud import Crud, get_db_manager
-from adapters.images import (ProductImagesManager,
-                             generate_image_products_catalog_and_details)
+from infrastructure.crud import Crud, get_db_manager
+from infrastructure.images import (ProductImagesManager,
+                                   generate_image_products_catalog_and_details)
 from domain import *
 from services.tile import add_tile, delete_tile, update_tile
 from api.utils import api_input_to_params

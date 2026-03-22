@@ -29,8 +29,9 @@ async def add_collection(
                 # image_path=str(image_path),
                 session=uow.session,
             )  # type: ignore
-            coll_id = collection_record["id"]  # type: ignore
-            image_path = file_manager.base_collection_path(str(coll_id))
+            coll_id = collection_record["id"]
+            file_name = str(coll_id)
+            image_path = file_manager.base_collection_path(file_name)
             await manager.update(
                 Collections,
                 {"id": coll_id},
@@ -43,7 +44,8 @@ async def add_collection(
                     await files.save(image_path, image)
                     miniatures = await generate_images(image)
                     for layer, miniature in miniatures.items():
-                        await files.save_by_layer(image_path, miniature, layer)
+                        #await files.save_by_layer(image_path, miniature, layer)
+                        await files.save_by_layer(file_name, miniature, layer)
             except TypeError:
                 log.debug(
                     "generate_image_variant_callback  или save_files не получили нужную функцию"
@@ -53,8 +55,9 @@ async def add_collection(
                 log.debug("путь %s уже занять", image_path)
                 raise
         else:
-            collection_record = collection_record[0]  # type: ignore
-            coll_id = collection_record["id"]  # type: ignore
+            collection_record = collection_record[0]
+            coll_id = collection_record["id"]
+
         log.debug(
             "Create CollectionCategory with collection: %s, category: %s",
             coll_id,

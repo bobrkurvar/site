@@ -76,8 +76,8 @@ async def add_tile(
         images = [img for img in images if img]
         images.insert(0, main_image)
         for n, img in enumerate(images):
-            str_name = str(tile_record["id"]) + "-" + str(n)  # type: ignore
-            image_path = file_manager.base_product_path(str_name)
+            file_name = str(tile_record["id"]) + "-" + str(n)  # type: ignore
+            image_path = file_manager.base_product_path(file_name)
             await manager.create(
                 TileImages,
                 tile_id=tile_record["id"],  # type: ignore
@@ -89,7 +89,8 @@ async def add_tile(
                     await files.save(image_path, img)
                     miniatures = await generate_images(img)
                     for layer, miniature in miniatures.items():
-                        await files.save_by_layer(image_path, miniature, layer)
+                        #await files.save_by_layer(image_path, miniature, layer)
+                        await files.save_by_layer(file_name, miniature, layer)
             except FileExistsError as exc:
                 log.debug("путь %s уже занять", image_path)
                 raise FileStorageError(f"путь {image_path} уже занять") from exc
@@ -107,6 +108,7 @@ async def delete_tile(manager, file_manager, uow_class=UnitOfWork, **filters):
             for image in images_paths:
                 await file_manager.delete_product(image)
         return del_res
+
 
 
 def dict_for_update_model(tile_field: str, value):

@@ -4,8 +4,8 @@ from decimal import Decimal
 import pytest
 
 import core.logger
-from adapters.images import (ProductImagesManager,
-                             generate_image_products_catalog_and_details)
+from infrastructure.images import (ProductImagesManager,
+                                   generate_image_products_catalog_and_details)
 from domain import (Categories, Producer, Tile, TileColor, TileImages,
                     TileSize, TileSurface)
 from services.exceptions import ImageProcessingError
@@ -93,7 +93,6 @@ async def test_create_tile_failure(domain_handbooks_models, manager):
     assert product_files_count(file_manager) == 0
 
 
-@pytest.mark.asyncio
 @pytest.mark.integration
 async def test_update_tile_success_when_new_attributes_in_handbooks(
     domain_handbooks_models, manager

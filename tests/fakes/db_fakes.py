@@ -214,7 +214,7 @@ log = logging.getLogger(__name__)
 #
 #     async def delete(self, model, session=None, **filters) -> tuple[dict, ...]:
 #         return self.storage.delete(model, **filters)
-from adapters.orm_mapper import DomainToOrmMapper
+from infrastructure.orm_mapper import DomainToOrmMapper
 
 
 class Table:

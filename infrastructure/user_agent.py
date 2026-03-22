@@ -25,6 +25,7 @@ class CookieManager:
             max_age=ttl,
             samesite="strict",
             secure=True,
+            path="/admin/refresh"
         )
 
     def set_access_token(self, value):

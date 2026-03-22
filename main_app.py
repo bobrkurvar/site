@@ -6,8 +6,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi_csrf_protect.flexible import CsrfProtect
 from pydantic_settings import BaseSettings
 
-from adapters.crud import get_db_manager
-from adapters.http_client import get_http_client
+from infrastructure.crud import get_db_manager
+from infrastructure.http_client import get_http_client
 from api import main_router
 from api.error_handlers import *
 from core.logger import setup_logging

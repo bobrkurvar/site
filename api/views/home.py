@@ -5,8 +5,8 @@ from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 
-from adapters.crud import Crud, get_db_manager
-from adapters.images import SlideImagesManager
+from infrastructure.crud import Crud, get_db_manager
+from infrastructure.images import SlideImagesManager
 from services.views import get_categories_for_items
 
 router = APIRouter()

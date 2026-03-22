@@ -67,9 +67,9 @@ def check_refresh_token(refresh_token: str, fp: str):
 
 def create_token_from_refresh(tokens_manager, fp: str):
     refresh_token = tokens_manager.get_refresh_token()
+    log.debug("refresh_token: %s", refresh_token)
     if refresh_token is not None:
         sub = check_refresh_token(refresh_token, fp)
-        # sub = jwt.decode(refresh_token, conf.secret_key, [conf.algorithm])
         access_token_ttl_in_seconds, refresh_token_ttl_in_seconds = 900, 86400 * 7
         access_token_ttl, refresh_token_ttl = timedelta(
             seconds=access_token_ttl_in_seconds

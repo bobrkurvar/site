@@ -4,8 +4,8 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Request
 from fastapi.templating import Jinja2Templates
 
-from adapters.crud import Crud, get_db_manager
-from adapters.images import ProductImagesManager
+from infrastructure.crud import Crud, get_db_manager
+from infrastructure.images import ProductImagesManager
 from core.config import ITEMS_PER_PAGE
 from domain import Producer, Slug, Tile, map_to_tile_domain
 from services.views import (build_data_for_filters, build_main_images,

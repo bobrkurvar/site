@@ -4,7 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, File, UploadFile
 from fastapi.responses import RedirectResponse
 
-from adapters.images import SlideImagesManager, generate_slides
+from infrastructure.images import SlideImagesManager, generate_slides
 from services.slides import add_slides, delete_slides
 
 router = APIRouter(prefix="/admin/slides")

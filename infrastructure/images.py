@@ -4,7 +4,7 @@ from binascii import Error
 from functools import wraps
 from pathlib import Path
 
-from adapters.files import FileManager
+from infrastructure.files import FileManager
 from services.exceptions import ImageProcessingError
 
 from .http_client import get_http_client
@@ -60,8 +60,9 @@ async def generate_slides(img: bytes):
 
 
 class ProductImagesManager(FileManager):
-    def __init__(self, root: str = "static/images", layers: dict | None = None):
-        super().__init__(root, layers)
+
+    def __init__(self, root: str = "static/images", layers: dict | None = None, storage=None):
+        super().__init__(root, layers, storage)
 
     async def delete_product(self, base_path: str | Path) -> int:
         return await self.delete_by_layers(base_path, ["products", "details"])
@@ -84,8 +85,8 @@ class ProductImagesManager(FileManager):
 
 
 class CollectionImagesManager(FileManager):
-    def __init__(self, root: str = "static/images", layers: dict | None = None):
-        super().__init__(root, layers)
+    def __init__(self, root: str = "static/images", layers: dict | None = None, storage=None):
+        super().__init__(root, layers, storage)
 
     async def delete_collection(self, base_path: str | Path) -> int:
         return await self.delete_by_layers(base_path, ["collections"])
@@ -100,15 +101,15 @@ class CollectionImagesManager(FileManager):
 
 
 class SlideImagesManager(FileManager):
-    def __init__(self, root: str = "static/images", layers: dict | None = None):
-        super().__init__(root, layers)
+    def __init__(self, root: str = "static/images", layers: dict | None = None, storage=None):
+        super().__init__(root, layers, storage)
 
     async def delete_all_slides(self) -> int:
         paths = [
             self.resolve_path(layer="original_slide"),
             self.resolve_path(layer="slides"),
         ]
-        return await self.delete_async(paths)
+        return await self.delete(paths)
 
     def base_slide_path(self, file_name: str) -> Path:
         return self.resolve_path(file_name, "original_slide")

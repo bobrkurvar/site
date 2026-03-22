@@ -4,9 +4,9 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, File, Form, UploadFile
 from fastapi.responses import RedirectResponse
 
-from adapters.crud import Crud, get_db_manager
-from adapters.images import (CollectionImagesManager,
-                             generate_image_collections_catalog)
+from infrastructure.crud import Crud, get_db_manager
+from infrastructure.images import (CollectionImagesManager,
+                                   generate_image_collections_catalog)
 from services.collections import add_collection, delete_collection
 
 router = APIRouter(prefix="/admin/tiles/collections")

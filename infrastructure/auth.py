@@ -6,11 +6,11 @@ import jwt
 from fastapi import Depends, Request, Response
 from fastapi.security.oauth2 import OAuth2PasswordBearer
 
-from adapters.crud import Crud, get_db_manager
+from infrastructure.crud import Crud, get_db_manager
 from core import conf
-from domain import (AccessTokenExpireError, Admin, CredentialsValidateError,
+from domain import (AccessTokenNotExistsError, Admin, CredentialsValidateError,
                     InvalidAccessTokenError, NotFoundError,
-                    RefreshTokenExpireError)
+                    RefreshTokenNotExistsError)
 from services.auth import create_access_token, create_refresh_token
 from services.security import verify
 
@@ -33,7 +33,7 @@ def get_user_from_token(token: Annotated[str, Depends(oauth2_scheme)]):
             raise InvalidAccessTokenError
         user = {"user_id": int(user_id), "roles": roles}
     except jwt.ExpiredSignatureError:
-        raise AccessTokenExpireError
+        raise AccessTokenNotExistsError
     except jwt.InvalidTokenError:
         raise InvalidAccessTokenError
     return user

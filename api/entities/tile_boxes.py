@@ -5,7 +5,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Form
 from fastapi.responses import RedirectResponse
 
-from adapters.crud import Crud, get_db_manager
+from infrastructure.crud import Crud, get_db_manager
 from domain import Box
 
 router = APIRouter(prefix="/admin/tiles/boxes")

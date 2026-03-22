@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Request
 from fastapi_csrf_protect.flexible import CsrfProtect
 
-from adapters.auth import get_user_from_token
+from infrastructure.auth import get_user_from_token
 
 from .category import router as categories_router
 from .collections import router as entity_collections_router
