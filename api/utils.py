@@ -1,5 +1,6 @@
 from decimal import Decimal
 
+
 def api_input_to_params(**input_params):
     if not input_params:
         return {}
@@ -23,4 +24,10 @@ def api_input_to_params(**input_params):
         else:
             params.update({k:v})
 
+    return params
+
+
+def strip_input_params(**params):
+    for k, v in params.items():
+        params[k] = v.strip()
     return params

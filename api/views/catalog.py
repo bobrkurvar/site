@@ -6,6 +6,7 @@ from fastapi.templating import Jinja2Templates
 
 from infrastructure.crud import Crud, get_db_manager
 from infrastructure.images import ProductImagesManager
+#from infrastructure.repo import get_special_repo, SpecialRepository
 from core.config import ITEMS_PER_PAGE
 from domain import Producer, Slug, Tile, map_to_tile_domain
 from services.views import (build_data_for_filters, build_main_images,
@@ -14,6 +15,7 @@ from services.views import (build_data_for_filters, build_main_images,
 
 router = APIRouter(tags=["presentation"], prefix="/catalog")
 dbManagerDep = Annotated[Crud, Depends(get_db_manager)]
+#specialRepoDep = Annotated[SpecialRepository, Depends(get_special_repo)]
 templates = Jinja2Templates("templates")
 log = logging.getLogger(__name__)
 

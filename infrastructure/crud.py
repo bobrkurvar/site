@@ -5,7 +5,7 @@ from typing import Any
 from sqlalchemy import delete, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, joinedload
 
 import domain
 from core import conf
@@ -138,8 +138,6 @@ class Crud:
             conditions = [
                 getattr(model, field) == value for field, value in filters.items()
             ]
-            # for field, value in filters.items():
-            #     query = query.where(getattr(model, field) == value)
             query = query.where(*conditions)
 
             query = query.values(**values)
@@ -152,11 +150,13 @@ class Crud:
             async with self.session_factory.begin() as session:
                 return await _update_internal(session)
 
+
     async def read(
         self,
         domain_model,
+        *,
         session=None,
-        to_join=None,
+        loaded=None,
         limit: int | None = None,
         offset: int | None = None,
         order_by: str | None = None,
@@ -169,13 +169,11 @@ class Crud:
 
             options = []
 
-            if to_join:
-
-                join_attrs = set(to_join)
-                log.debug("to_join: %s", to_join)
-                for join_attr in join_attrs:
-                    if hasattr(model, join_attr):
-                        options.append(selectinload(getattr(model, join_attr)))
+            if loaded:
+                loaded_attrs = set(loaded)
+                for loaded_attr in loaded_attrs:
+                    if hasattr(model, loaded_attr):
+                        options.append(selectinload(getattr(model, loaded_attr)))
 
             query = select(model)
 
@@ -211,6 +209,7 @@ class Crud:
         else:
             async with self.session_factory.begin() as session:
                 return await _read_internal(session)
+
 
 
 _db_manager: Crud | None = None

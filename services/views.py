@@ -1,7 +1,7 @@
 import logging
 from decimal import Decimal
+from collections.abc import Sequence
 
-from core import logger
 from domain import Categories, Slug, Tile, TileColor, TileSize
 
 log = logging.getLogger(__name__)
@@ -15,12 +15,11 @@ async def build_tile_filters(
     category: str | None = None,
 ) -> dict:
     filters = {}
-    if producer:
-        filters["producer_name"] = producer
-    if color:
-        filters["color_name"] = color
+    if producer: filters["producer_name"] = producer
+    if color: filters["color_name"] = color
     if size:
-        length, width, height = (Decimal(i) for i in size.split("×"))
+        #length, width, height = (Decimal(i) for i in size.split("×"))
+        length, width, height = (Decimal(i) for i in size.split())
         tile_size_id = await manager.read(
             TileSize, length=length, width=width, height=height
         )
@@ -35,63 +34,34 @@ async def build_tile_filters(
     return filters
 
 
+def tiles_from_ids_collection(tiles: Sequence, collection:str):
+    tiles_ids = []
+    for tile in tiles:
+        if extract_quoted_word(tile["name"]) == collection:
+            tiles_ids.append(tile["id"])
+    return tiles_ids
+
+
 async def build_data_for_filters(
     manager, category: str | None = None, collection: str | None = None
 ):
     category = (
         (await manager.read(Slug, slug=category))[0]["name"] if category else None
     )
-    producers = await manager.read(Tile, category_name=category)
+    tiles = await manager.read(Tile, loaded = ["size"], category_name=category)
+    log.debug("in category: %s, tiles: %s", category, len(tiles))
+    tiles_ids = None
     if collection is not None:
-        collection = ((await manager.read(Slug, slug=collection))[0]["name"]).lower()
         log.debug("collection: %s", collection)
-        seen = set()
-        tile_sizes = await manager.read(Tile, to_join=["size"], category_name=category)
-        unique = []
-        for tile in tile_sizes:
-            if (
-                extract_quoted_word(tile["name"]) == collection
-                and tile["size_id"] not in seen
-            ):
-                unique.append(tile)
-                seen.add(tile["size_id"])
-        tile_sizes = unique
+        collection = ((await manager.read(Slug, slug=collection))[0]["name"]).lower()
+        tiles_ids = tiles_from_ids_collection(tiles, collection)
 
-        seen.clear()
-        unique = []
-        for tile in producers:
-            # log.debug("%s, %s == %s, %s, producer_name: %s",tile["name"], collection, extract_quoted_word(tile["name"]), extract_quoted_word(tile["name"]) == collection, tile["producer_name"])
-            if (
-                extract_quoted_word(tile["name"]) == collection
-                and tile["producer_name"] not in seen
-            ):
-                unique.append(tile["producer_name"])
-                seen.add(tile["producer_name"])
-        producers = unique
-
-        seen.clear()
-        unique = []
-        tile_colors = await manager.read(Tile, category_name=category)
-        for tile in tile_colors:
-            if (
-                extract_quoted_word(tile["name"]) == collection
-                and tile["color_name"] not in seen
-            ):
-                unique.append(tile)
-                seen.add(tile["color_name"])
-        tile_colors = unique
-    else:
-        tile_sizes = await manager.read(
-            Tile, to_join=["size"], distinct="size_id", category_name=category
-        )
-        tile_colors = await manager.read(
-            Tile, distinct="color_name", category_name=category
-        )
-        producers = await manager.read(
-            Tile, distinct="producer_name", category_name=category
-        )
-        producers = tuple(producer["producer_name"] for producer in producers)
-    log.debug("producers: %s", producers)
+    tile_ids_filter = dict(id=tiles_ids) if tiles_ids else {}
+    tile_sizes = await manager.read(Tile, loaded=["size"], distinct="size_id", category_name=category, **tile_ids_filter)
+    tile_colors = await manager.read(Tile, distinct="color_name", category_name=category, **tile_ids_filter)
+    producers = await manager.read(Tile, distinct="producer_name", category_name=category, **tile_ids_filter)
+    log.debug("size: %s, colors: %s, producers: %s", len(tile_sizes), len(tile_colors), len(producers))
+    producers = tuple(producer["producer_name"] for producer in producers)
     sizes = [
         TileSize(
             size_id=size["size_id"],
@@ -112,11 +82,9 @@ def build_main_images(tiles):
     main_images = {}
     for tile in tiles:
         img = tile["images_paths"][0]
-        # log.debug("image: %s", img)
         images_part = img.split("-")
         images_part[-1] = "0"
         main_images[tile["id"]] = "-".join(images_part)
-        # main_images[tile["id"]] = img[:-2] + "-0"
     return main_images
 
 
@@ -128,30 +96,21 @@ def extract_quoted_word(name: str) -> str | None:
 
 
 async def fetch_items(manager, limit, offset, **filters):
-
-    total_items = await manager.read(Tile, to_join=["images", "size", "box"], **filters)
+    total_items = await manager.read(Tile, loaded=["images", "size", "box"], **filters)
     items = await manager.read(
-        Tile, to_join=["images", "size", "box"], limit=limit, offset=offset, **filters
+        Tile, loaded=["images", "size", "box"], limit=limit, offset=offset, **filters
     )
-
     filters.pop("category_name", None)
     total_count = len(total_items)
-
     return items, total_count
 
 
 async def fetch_collections_items(manager, collection, limit, offset, **filters):
-    log.debug("offset: %s, limit: %s", offset, limit)
-    log.debug("filters: %s", filters)
-    items = await manager.read(Tile, to_join=["images", "size", "box"], **filters)
-    # collection = Collections.get_collection_from_slug(collection).lower()
+    items = await manager.read(Tile, loaded=["images", "size", "box"], **filters)
     collection = (await manager.read(Slug, slug=collection))[0]["name"].lower()
     items = [item for item in items if extract_quoted_word(item["name"]) == collection]
     total_count = len(items)
-    # log.debug("collection total count: %s", total_count)
-
     items = items[offset : offset + limit]
-    # log.debug("collection count: %s", items)
 
     return items, total_count
 

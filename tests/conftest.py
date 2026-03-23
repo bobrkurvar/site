@@ -14,3 +14,4 @@ def domain_handbooks_models_for_products():
 @pytest.fixture
 def domain_handbooks_models_for_collection():
     return Collections, CollectionCategory
+

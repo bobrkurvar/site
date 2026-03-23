@@ -29,34 +29,64 @@ def generate_image_with_exc(generate):
     return wrapper
 
 
-@generate_image_with_exc
-async def generate_image_products_catalog_and_details(img: bytes):
-    img = base64.b64encode(img).decode("utf-8")
-    http_client = get_http_client()
-    response = await http_client.generate_images(
-        data=img, targets=("products", "details")
-    )
-    response["products"] = base64.b64decode(response["products"])
-    response["details"] = base64.b64decode(response["details"])
-    return response
+# @generate_image_with_exc
+# async def generate_image_products_catalog_and_details(img: bytes):
+#     img = base64.b64encode(img).decode("utf-8")
+#     http_client = get_http_client()
+#     response = await http_client.generate_images(
+#         data=img, targets=("products", "details")
+#     )
+#     response["products"] = base64.b64decode(response["products"])
+#     response["details"] = base64.b64decode(response["details"])
+#     return response
+#
+#
+# @generate_image_with_exc
+# async def generate_image_collections_catalog(img: bytes):
+#     img = base64.b64encode(img).decode("utf-8")
+#     http_client = get_http_client()
+#     response = await http_client.generate_images(data=img, targets=("collections",))
+#     response["collections"] = base64.b64decode(response["collections"])
+#     return response
+#
+#
+# @generate_image_with_exc
+# async def generate_slides(img: bytes):
+#     img = base64.b64encode(img).decode("utf-8")
+#     http_client = get_http_client()
+#     response = await http_client.generate_images(data=img, targets=("slides",))
+#     response["slides"] = base64.b64decode(response["slides"])
+#     return response
+
+class ImageGenerator:
+    def __init__(self, api_client=None):
+        self._api_client = api_client if api_client else get_http_client()
+
+    @generate_image_with_exc
+    async def products_catalog_and_details(self, img: bytes):
+        img = base64.b64encode(img).decode("utf-8")
+        response = await self._api_client.generate_images(
+            data=img, targets=("products", "details")
+        )
+        response["products"] = base64.b64decode(response["products"])
+        response["details"] = base64.b64decode(response["details"])
+        return response
 
 
-@generate_image_with_exc
-async def generate_image_collections_catalog(img: bytes):
-    img = base64.b64encode(img).decode("utf-8")
-    http_client = get_http_client()
-    response = await http_client.generate_images(data=img, targets=("collections",))
-    response["collections"] = base64.b64decode(response["collections"])
-    return response
+    @generate_image_with_exc
+    async def collections_catalog(self, img: bytes):
+        img = base64.b64encode(img).decode("utf-8")
+        response = await self._api_client.generate_images(data=img, targets=("collections",))
+        response["collections"] = base64.b64decode(response["collections"])
+        return response
 
 
-@generate_image_with_exc
-async def generate_slides(img: bytes):
-    img = base64.b64encode(img).decode("utf-8")
-    http_client = get_http_client()
-    response = await http_client.generate_images(data=img, targets=("slides",))
-    response["slides"] = base64.b64decode(response["slides"])
-    return response
+    @generate_image_with_exc
+    async def slides(self, img: bytes):
+        img = base64.b64encode(img).decode("utf-8")
+        response = await self._api_client.generate_images(data=img, targets=("slides",))
+        response["slides"] = base64.b64decode(response["slides"])
+        return response
 
 
 class ProductImagesManager(FileManager):

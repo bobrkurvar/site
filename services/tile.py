@@ -32,7 +32,7 @@ async def add_tile(
     category_name: str,
     manager,
     images: list[bytes] | list,
-    generate_images,
+    images_generator,
     file_manager,
     color_feature: str = "",
     surface: str | None = None,
@@ -87,9 +87,8 @@ async def add_tile(
             try:
                 async with file_manager.session() as files:
                     await files.save(image_path, img)
-                    miniatures = await generate_images(img)
+                    miniatures = await images_generator.products_catalog_and_details(img)
                     for layer, miniature in miniatures.items():
-                        #await files.save_by_layer(image_path, miniature, layer)
                         await files.save_by_layer(file_name, miniature, layer)
             except FileExistsError as exc:
                 log.debug("путь %s уже занять", image_path)
@@ -100,7 +99,7 @@ async def add_tile(
 async def delete_tile(manager, file_manager, uow_class=UnitOfWork, **filters):
     async with uow_class(manager) as uow:
         tiles = await manager.read(
-            Tile, to_join=["images"], session=uow.session, **filters
+            Tile, loaded=["images"], session=uow.session, **filters
         )
         del_res = await manager.delete(Tile, session=uow.session, **filters)
         for tile in tiles:
@@ -143,10 +142,18 @@ def set_values_from_db(values: dict, key: str, value_from_db):
 
 
 async def create_composite(manager, article: int, values, columns, *to_join):
-    model = (await manager.read(Tile, to_join=list(to_join), id=article))[0]
+    model = (await manager.read(Tile, loaded=list(to_join), id=article))[0]
     for k, v in model.items():
         if k in columns:
+            k = map_tile_param_to_model_param(k)
             set_values_from_db(values, k, v)
+
+
+def map_tile_param_to_model_param(tile_param: str):
+    if tile_param in ("size_length", "size_width", "size_height", "box_area", "box_weight"):
+        return tile_param.split("_")[1]
+    else:
+        return tile_param
 
 
 async def create_new_model(manager, article: int, model, session, **values):
