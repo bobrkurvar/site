@@ -6,6 +6,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi_csrf_protect.flexible import CsrfProtect
 from pydantic_settings import BaseSettings
 
+from domain import InvalidAccessTokenError, InvalidRefreshTokenError
 from infrastructure.crud import get_db_manager
 from infrastructure.http_client import get_http_client
 from api import main_router
@@ -57,6 +58,10 @@ async def catch_all(full_path: str):
 app.add_exception_handler(NotFoundError, not_found_handler)
 app.add_exception_handler(AlreadyExistsError, already_exists_handler)
 app.add_exception_handler(ForeignKeyViolationError, foreign_key_handler)
+app.add_exception_handler(RefreshTokenNotExistsError, invalid_tokens_or_not_exists_handler)
+app.add_exception_handler(InvalidRefreshTokenError, invalid_tokens_or_not_exists_handler)
+app.add_exception_handler(InvalidAccessTokenError, invalid_tokens_or_not_exists_handler)
+app.add_exception_handler(CredentialsValidateError, invalid_credentials_error_handler)
 
 
 @app.exception_handler(Exception)

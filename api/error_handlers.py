@@ -3,12 +3,13 @@ import logging
 from fastapi import Request
 from fastapi.responses import RedirectResponse
 
-from core import logger
 from domain.exceptions import (AlreadyExistsError, ForeignKeyViolationError,
-                               NotFoundError)
+                               NotFoundError, RefreshTokenNotExistsError, CredentialsValidateError)
+from fastapi.templating import Jinja2Templates
+from infrastructure.user_agent import CookieManager
 
 log = logging.getLogger(__name__)
-
+templates = Jinja2Templates("templates")
 
 async def not_found_handler(request: Request, exc: NotFoundError):
     log.error("Ошибка поиска в базе данных: %s", exc)
@@ -33,3 +34,19 @@ async def admin_global_error_handler(request: Request, exc: Exception):
 async def global_error_handler(request: Request, exc: Exception):
     log.error("Глобальная ошибка: %s", exc)
     return RedirectResponse("/", status_code=303)
+
+
+async def invalid_tokens_or_not_exists_handler(request: Request, exc: RefreshTokenNotExistsError):
+    log.debug('tokens error: %s', exc)
+    response =  templates.TemplateResponse("admin_login.html", {"request": request})
+    cookie_manager = CookieManager(request, response)
+    cookie_manager.clear_tokens()
+    return response
+
+
+async def invalid_credentials_error_handler(request: Request, exc: CredentialsValidateError):
+    log.error("invalid credentials: %s", exc)
+    response = templates.TemplateResponse("admin_login.html", {"request": request, "error": str(exc)})
+    cookie_manager = CookieManager(request, response)
+    cookie_manager.clear_tokens()
+    return response

@@ -28,7 +28,7 @@ async def get_tile_page(
     category_name = (await manager.read(Slug, slug=category))[0]["name"]
     tile = await manager.read(
         Tile,
-        to_join=["images", "size", "box"],
+        loaded=["images", "size", "box"],
         category_name=category_name,
         id=tile_id,
     )

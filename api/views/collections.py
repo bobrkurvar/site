@@ -34,7 +34,7 @@ async def get_collections_page(
         category_name=category_name,
         offset=offset,
         limit=limit,
-        to_join=["collection"],
+        loaded=["collection"],
     )
     collections = []
     collection_manager = CollectionImagesManager()

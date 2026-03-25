@@ -5,8 +5,7 @@ from fastapi import APIRouter, Depends, File, Form, UploadFile
 from fastapi.responses import RedirectResponse
 
 from infrastructure.crud import Crud, get_db_manager
-from infrastructure.images import (CollectionImagesManager,
-                                   generate_image_collections_catalog)
+from infrastructure.images import (CollectionImagesManager, ImageGenerator)
 from services.collections import add_collection, delete_collection
 
 router = APIRouter(prefix="/admin/tiles/collections")
@@ -29,7 +28,7 @@ async def admin_create_tile_collection(
         image,
         category_name,
         manager,
-        generate_images=generate_image_collections_catalog,
+        images_generator=ImageGenerator,
         file_manager=CollectionImagesManager(),
     )
     return RedirectResponse("/admin", status_code=303)

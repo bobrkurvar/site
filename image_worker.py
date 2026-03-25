@@ -10,8 +10,6 @@ from pydantic import BaseModel
 
 from core.logger import setup_logging
 
-# from contextlib import asynccontextmanager
-
 
 setup_logging()
 

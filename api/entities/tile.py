@@ -5,8 +5,7 @@ from fastapi import APIRouter, Depends, File, Form, UploadFile
 from fastapi.responses import RedirectResponse
 
 from infrastructure.crud import Crud, get_db_manager
-from infrastructure.images import (ProductImagesManager,
-                                   generate_image_products_catalog_and_details)
+from infrastructure.images import (ProductImagesManager, ImageGenerator)
 from domain import *
 from services.tile import add_tile, delete_tile, update_tile
 from api.utils import api_input_to_params, strip_input_params
@@ -81,7 +80,7 @@ async def admin_create_tile(
         category_name,
         manager,
         bytes_images,
-        generate_images=generate_image_products_catalog_and_details,
+        images_generator=ImageGenerator,
         file_manager=ProductImagesManager(),
         color_feature=feature_name,
         surface=surface_name,

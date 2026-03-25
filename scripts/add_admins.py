@@ -13,6 +13,7 @@ async def add_admins():
     initial_admins = conf.initial_admins_list
     log.debug("ADMINS: %s", initial_admins)
     manager = get_db_manager()
+    manager.connect()
     for admin in initial_admins:
         log.debug("ADMIN: %s", admin)
         password = get_hash(admin["password"])

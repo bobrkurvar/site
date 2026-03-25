@@ -8,14 +8,15 @@ from fastapi_csrf_protect.flexible import CsrfProtect
 from starlette.responses import RedirectResponse
 
 from infrastructure.crud import Crud, get_db_manager
-from infrastructure.user_agent import CookieManager, fingerPrintDep
+from infrastructure.user_agent import CookieManager, fingerPrintDep, require_admin_for_dep
+from services.auth import create_tokens_from_login, set_tokens
 from domain import *
-from domain.exceptions import NotFoundError, UnauthorizedError
-from services.auth import create_token_from_refresh, create_tokens_from_login
+from services.security import get_hash
 
 router = APIRouter(tags=["admin"], prefix="/admin")
 dbManagerDep = Annotated[Crud, Depends(get_db_manager)]
 csrfProtectDep = Annotated[CsrfProtect, Depends()]
+requireAdminDep = Annotated[dict | None, Depends(require_admin_for_dep)]
 
 templates = Jinja2Templates("templates")
 log = logging.getLogger(__name__)
@@ -23,17 +24,10 @@ log = logging.getLogger(__name__)
 
 @router.get("")
 async def admin_page(
-    request: Request, manager: dbManagerDep, csrf_token: csrfProtectDep
+    request: Request, manager: dbManagerDep, csrf_token: csrfProtectDep, tokens: requireAdminDep
 ):
-    cookies = request.cookies
-    access_token = request.cookies.get("access_token")
-    log.debug("cookies: %s", cookies)
-    if access_token is None:
-        return RedirectResponse("/admin/refresh", status_code=303)
-
     plain_token, signed_token = csrf_token.generate_csrf_tokens()
-
-    tiles = await manager.read(Tile, to_join=["images", "size", "box"])
+    tiles = await manager.read(Tile, loaded=["images", "size", "box"])
     tile_sizes = await manager.read(TileSize)
     tile_sizes = [
         TileSize(
@@ -44,29 +38,14 @@ async def admin_page(
         )
         for size in tile_sizes
     ]
-    tile_colors = await manager.read(TileColor)
+    colors_names = await manager.read(TileColor, distinct="color_name")
+    colors_features = await manager.read(TileColor, distinct="feature_name")
     surfaces = await manager.read(TileSurface)
-    boxes = await manager.read(Box)
+    boxes_weights = await manager.read(Box, distinct="weight")
+    boxes_areas = await manager.read(Box, distinct="area")
     producers = await manager.read(Producer)
-
-    unique_colors = set()
-    unique_features = set()
-
-    for tile_color in tile_colors:
-        unique_colors.add(tile_color["color_name"])
-        if tile_color["feature_name"] != "":
-            unique_features.add(tile_color["feature_name"])
-
-    boxes_unique_weight = set()
-    boxes_unique_area = set()
-
-    for box in boxes:
-        boxes_unique_weight.add(box["weight"])
-        boxes_unique_area.add(box["area"])
-
+    boxes_count = await manager.read(Tile, distinct="boxes_count")
     tiles = [map_to_tile_domain(**t) for t in tiles]
-    boxes_unique_count = set(q.boxes_count for q in tiles)
-
     categories = await manager.read(Categories)
 
     response = templates.TemplateResponse(
@@ -75,32 +54,20 @@ async def admin_page(
             "request": request,
             "tiles": tiles,
             "tile_sizes": tile_sizes,
-            "tile_colors": tile_colors,
+            "colors_names": colors_names,
+            "colors_features": colors_features,
             "tile_surfaces": surfaces,
-            "boxes": boxes,
+            "boxes_weights": boxes_weights,
+            "boxes_areas": boxes_areas,
             "producers": producers,
-            "unique_colors": unique_colors,
-            "unique_features": unique_features,
-            "boxes_unique_weight": boxes_unique_weight,
-            "boxes_unique_area": boxes_unique_area,
             "categories": categories,
-            "boxes_unique_count": boxes_unique_count,
+            "boxes_count": boxes_count,
             "csrf_token": plain_token,
         },
     )
+    if tokens:
+        set_tokens(CookieManager(request, response), access_token=tokens["access_token"], refresh_token=tokens["refresh_token"])
     csrf_token.set_csrf_cookie(signed_token, response)
-    return response
-
-
-@router.get("/refresh")
-async def refresh_access_token(request: Request, fingerprint: fingerPrintDep):
-    log.debug("/admin/refresh")
-    try:
-        response = RedirectResponse("/admin", 303)
-        cookie_manager = CookieManager(request=request, response=response)
-        create_token_from_refresh(tokens_manager=cookie_manager, fp=fingerprint)
-    except RefreshTokenNotExistsError:
-        response = templates.TemplateResponse("admin_login.html", {"request": request})
     return response
 
 
@@ -112,17 +79,14 @@ async def admin_login_submit(
     password: Annotated[str, Form()],
     fingerprint: fingerPrintDep,
 ):
-    try:
-        response = RedirectResponse("/admin", status_code=303)
-        cookie_manager = CookieManager(request=request, response=response)
-        await create_tokens_from_login(
-            manager,
-            username=username,
-            password=password,
-            tokens_manager=cookie_manager,
-            fp=fingerprint,
-        )
-    except UnauthorizedError:
-        return RedirectResponse("/admin/login?err=401", status_code=303)
-    except NotFoundError:
-        return RedirectResponse("/admin/login?err=409", status_code=303)
+    fp = get_hash(fingerprint)
+    response = RedirectResponse("/admin", status_code=303)
+    cookie_manager = CookieManager(request=request, response=response)
+    await create_tokens_from_login(
+        manager,
+        username=username,
+        password=password,
+        tokens_manager=cookie_manager,
+        fp=fp,
+    )
+    return response
