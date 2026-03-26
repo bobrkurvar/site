@@ -55,6 +55,7 @@ async def catch_all(full_path: str):
     return RedirectResponse("/", status_code=303)
 
 
+app.add_exception_handler(UserLoginNotFoundError, user_login_not_found_error_handler)
 app.add_exception_handler(NotFoundError, not_found_handler)
 app.add_exception_handler(AlreadyExistsError, already_exists_handler)
 app.add_exception_handler(ForeignKeyViolationError, foreign_key_handler)

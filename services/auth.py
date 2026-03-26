@@ -104,7 +104,7 @@ async def check_user(manager, username: str, password: str):
             raise CredentialsValidateError
     except IndexError:
         log.debug("user with username: %s not found", username)
-        raise NotFoundError
+        raise UserLoginNotFoundError(username)
 
 
 async def create_tokens_from_login(

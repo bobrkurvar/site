@@ -71,7 +71,7 @@ async def admin_page(
     return response
 
 
-@router.post("/login")
+@router.post("/login/submit")
 async def admin_login_submit(
     request: Request,
     manager: dbManagerDep,

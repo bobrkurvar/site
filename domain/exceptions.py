@@ -1,3 +1,5 @@
+from .user import Admin
+
 class RepositoryError(Exception):
     """Базовое исключение репозитория"""
 
@@ -76,3 +78,8 @@ class CredentialsValidateError(UnauthorizedError):
     def __init__(self):
         self.detail = "Не правильные учётные данные"
         super().__init__(self.detail)
+
+
+class UserLoginNotFoundError(NotFoundError):
+    def __init__(self, username: str):
+        super().__init__(Admin, username=username)

@@ -4,7 +4,7 @@ from fastapi import Request
 from fastapi.responses import RedirectResponse
 
 from domain.exceptions import (AlreadyExistsError, ForeignKeyViolationError,
-                               NotFoundError, RefreshTokenNotExistsError, CredentialsValidateError)
+                               NotFoundError, RefreshTokenNotExistsError, CredentialsValidateError, UserLoginNotFoundError)
 from fastapi.templating import Jinja2Templates
 from infrastructure.user_agent import CookieManager
 
@@ -39,6 +39,14 @@ async def global_error_handler(request: Request, exc: Exception):
 async def invalid_tokens_or_not_exists_handler(request: Request, exc: RefreshTokenNotExistsError):
     log.debug('tokens error: %s', exc)
     response =  templates.TemplateResponse("admin_login.html", {"request": request})
+    cookie_manager = CookieManager(request, response)
+    cookie_manager.clear_tokens()
+    return response
+
+
+async def user_login_not_found_error_handler(request: Request, exc: UserLoginNotFoundError):
+    log.error("user not found: %s", exc)
+    response = templates.TemplateResponse("admin_login.html", {"request": request, "error": str(exc)})
     cookie_manager = CookieManager(request, response)
     cookie_manager.clear_tokens()
     return response
