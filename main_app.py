@@ -38,7 +38,7 @@ app.include_router(main_router)
 
 
 class CsrfSettings(BaseSettings):
-    secret_key: str = conf.cookie_sercre_key
+    secret_key: str = conf.cookie_secret
     cookie_samesite: str = "strict"
     cookie_secure: bool = True
     cookie_httponly: bool = True
@@ -54,6 +54,7 @@ def get_csrf_config():
 @app.get("/health")
 async def health():
     return {"status": "ok"}
+
 
 @app.get("/{full_path:path}")
 async def catch_all(full_path: str):
