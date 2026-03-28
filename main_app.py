@@ -12,6 +12,7 @@ from infrastructure.http_client import get_http_client
 from api import main_router
 from api.error_handlers import *
 from core.logger import setup_logging
+from core import conf
 
 setup_logging()
 
@@ -37,7 +38,7 @@ app.include_router(main_router)
 
 
 class CsrfSettings(BaseSettings):
-    secret_key: str = "ваш-секретный-ключ-обязательно-измените"
+    secret_key: str = conf.cookie_sercre_key
     cookie_samesite: str = "strict"
     cookie_secure: bool = True
     cookie_httponly: bool = True
@@ -59,8 +60,12 @@ app.add_exception_handler(UserLoginNotFoundError, user_login_not_found_error_han
 app.add_exception_handler(NotFoundError, not_found_handler)
 app.add_exception_handler(AlreadyExistsError, already_exists_handler)
 app.add_exception_handler(ForeignKeyViolationError, foreign_key_handler)
-app.add_exception_handler(RefreshTokenNotExistsError, invalid_tokens_or_not_exists_handler)
-app.add_exception_handler(InvalidRefreshTokenError, invalid_tokens_or_not_exists_handler)
+app.add_exception_handler(
+    RefreshTokenNotExistsError, invalid_tokens_or_not_exists_handler
+)
+app.add_exception_handler(
+    InvalidRefreshTokenError, invalid_tokens_or_not_exists_handler
+)
 app.add_exception_handler(InvalidAccessTokenError, invalid_tokens_or_not_exists_handler)
 app.add_exception_handler(CredentialsValidateError, invalid_credentials_error_handler)
 

@@ -4,8 +4,7 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
-from sqlalchemy.ext.asyncio import (async_engine_from_config,
-                                    create_async_engine)
+from sqlalchemy.ext.asyncio import async_engine_from_config, create_async_engine
 
 from core import conf
 from db.models import Base
@@ -30,6 +29,7 @@ db_url = config.get_main_option("sqlalchemy.url")
 if not db_url:
     db_url = conf.db_url
     config.set_main_option("sqlalchemy.url", db_url)
+    print("db url in env:", db_url)
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

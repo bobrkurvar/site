@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     algorithm: str
     initial_admins: str
     pepper: str
+    cookie_secret: str
 
     @property
     def db_url(self):
