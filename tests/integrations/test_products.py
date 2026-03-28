@@ -8,7 +8,7 @@ from services.exceptions import ImageProcessingError
 from services.tile import delete_tile, update_tile
 from tests.conftest import domain_handbooks_models_for_products
 
-from .conftest import products_env_with_handbooks, products_env
+#from .conftest import products_env_with_handbooks, products_env
 from .helpers import product_files_count
 from tests.helpers import add_tile_helper, assert_handbooks_count, assert_size, assert_box, assert_tile_fields, update_filters
 

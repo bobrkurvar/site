@@ -51,6 +51,10 @@ def get_csrf_config():
     return CsrfSettings()
 
 
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
+
 @app.get("/{full_path:path}")
 async def catch_all(full_path: str):
     return RedirectResponse("/", status_code=303)

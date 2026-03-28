@@ -1,3 +1,4 @@
+
 import logging
 import shutil
 from pathlib import Path
@@ -12,11 +13,7 @@ from core import conf
 from domain import *
 from infrastructure.images import ProductImagesManager, CollectionImagesManager
 from tests.fakes import FakeStorage, FakeImageGenerator
-from tests.helpers import (
-    add_tile_helper,
-    add_collection_helper,
-    add_tile_helper_with_control_filters,
-)
+from tests.helpers import add_collection_helper, add_tile_helper_with_control_filters
 
 
 log = logging.getLogger(__name__)
@@ -82,12 +79,14 @@ def migrate_test_db(request):
     Автоматически применяет все миграции к тестовой БД
     только если тест помечен как интеграционный.
     """
-    print("INTERGRATION MIGRATIONS TO %s", conf.test_db_url)
-    # if not any(
-    #     "integration" in marker.name
-    #     for item in request.session.items
-    #     for marker in item.iter_markers()
-    # ):
+    log.debug("INTERGRATION MIGRATIONS TO %s", conf.test_db_url)
+    if not any(
+        "integration" in marker.name
+        for item in request.session.items
+        for marker in item.iter_markers()
+    ):
+        yield
+        return
     alembic_cfg = Config("alembic.ini")
     alembic_cfg.set_main_option("sqlalchemy.url", conf.test_db_url)
     command.upgrade(alembic_cfg, "head")
@@ -108,7 +107,7 @@ async def collections_env(crud):
 
 @pytest.fixture
 async def collections_env_with_categories(collections_env):
-    async def wrapper(categories_cnt: int = 1):
+    async def wrapper(categories_cnt: int=1):
         manager, file_manager = collections_env
         categories = []
         for i in range(categories_cnt):
@@ -117,16 +116,13 @@ async def collections_env_with_categories(collections_env):
             categories.append(category_name)
             await manager.create(Categories, name=category_name)
         return manager, file_manager, categories
-
     return wrapper
 
 
 @pytest.fixture
 async def products_env_with_handbooks(products_env):
     manager, file_manager = products_env
-    await manager.create(
-        TileSize, length=Decimal(300), width=Decimal(200), height=Decimal(10)
-    )
+    await manager.create(TileSize, length=Decimal(300), width=Decimal(200), height=Decimal(10))
     await manager.create(TileColor, color_name="color", feature_name="feature")
     await manager.create(Producer, name="producer")
     await manager.create(Box, weight=Decimal(30), area=Decimal(1))
@@ -139,37 +135,14 @@ async def products_env_with_handbooks(products_env):
 @pytest.fixture
 async def products_env_with_tiles(crud):
     async def wrapper(categories: dict, category_with_collection: dict = None):
-        manager, product_file_manager, collection_file_manager = (
-            crud,
-            ProductImagesManager(root="tests/images", storage=FakeStorage()),
-            CollectionImagesManager(root="tests/images", storage=FakeStorage()),
-        )
-        category_with_collection = (
-            category_with_collection if category_with_collection else {}
-        )
+        manager, product_file_manager, collection_file_manager = crud, ProductImagesManager(root="tests/images", storage=FakeStorage()), CollectionImagesManager(root="tests/images", storage=FakeStorage())
+        category_with_collection = category_with_collection if category_with_collection else {}
         for category_name, tiles_count in categories.items():
             collection_name = category_with_collection.get(category_name, False)
             for i in range(tiles_count):
                 size, color_name, producer = f"{i} {i} {i}", f"color{i}", f"producer{i}"
-                await add_tile_helper_with_control_filters(
-                    manager,
-                    product_file_manager,
-                    FakeImageGenerator(),
-                    False,
-                    category_name=category_name,
-                    size=size,
-                    color_name=color_name,
-                    producer=producer,
-                )
+                await add_tile_helper_with_control_filters(manager, product_file_manager, FakeImageGenerator(), False, category_name=category_name, size=size, color_name=color_name, producer=producer)
             if category_with_collection.get(category_name, False):
-                await add_collection_helper(
-                    manager,
-                    collection_file_manager,
-                    FakeImageGenerator(),
-                    collection_name=collection_name,
-                    category_name=category_name,
-                    test_uow_class=False,
-                )
+                await add_collection_helper(manager, collection_file_manager, FakeImageGenerator(), collection_name=collection_name, category_name=category_name, test_uow_class=False)
         return manager
-
     return wrapper
