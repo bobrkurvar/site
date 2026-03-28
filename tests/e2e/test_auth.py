@@ -2,7 +2,7 @@ from playwright.sync_api import expect
 import logging
 import re
 from services.security import compute_user_fingerprint, get_hash
-from services.auth import create_access_token
+from services.auth import create_access_token, create_refresh_token
 
 log = logging.getLogger(__name__)
 
@@ -19,6 +19,12 @@ def test_admin_login_success(page):
     # страница со вводом логина и пароля, которая содержит эти поля для ввода
     expect(page.get_by_label("Username")).to_have_count(0)
     expect(page.get_by_label("Password")).to_have_count(0)
+
+    cookies = page.context.cookies("http://127.0.0.1:8000")
+    for cookie in cookies:
+        if cookie["name"] == "access_token":
+            log.debug(cookie["expires"])
+            assert cookie["expires"] == 900
 
 
 def test_admin_login_user_not_found(page):
@@ -64,9 +70,8 @@ def test_admin_with_access_token_with_valid_fingerprint(browser):
 
 
 def test_admin_with_access_token_with_invalid_fingerprint(browser):
-    user_agent = "agent"
+    user_agent, wrong_user_agent = "agent", "wrong_agent"
     context = browser.new_context(user_agent=user_agent)
-    wrong_user_agent = "wrong_agent"
     custom_page = context.new_page()
     fp = compute_user_fingerprint(wrong_user_agent, "127.0.0.1")
     fp = get_hash(fp)
@@ -85,4 +90,62 @@ def test_admin_with_access_token_with_invalid_fingerprint(browser):
     expect(custom_page).to_have_url(re.compile(r".*/admin"))
     expect(custom_page.get_by_label("Username")).to_be_visible()
     expect(custom_page.get_by_label("Password")).to_be_visible()
+
+    cookies = custom_page.context.cookies("http://127.0.0.1:8000")
+    for cookie in cookies:
+        if cookie["name"] in {"access_token", "refresh_token"}:
+            assert not cookie["value"]
+    context.close()
+
+
+def test_admin_with_refresh_token_with_valid_fingerprint(browser):
+    user_agent = "agent"
+    context = browser.new_context(user_agent=user_agent)
+    custom_page = context.new_page()
+    fp = compute_user_fingerprint(user_agent, "127.0.0.1")
+    fp = get_hash(fp)
+    refresh_token = create_refresh_token(data={"fp": fp})
+    custom_page.context.add_cookies(
+        [
+            {
+                "name": "refresh_token",
+                "value": refresh_token,
+                "domain": "127.0.0.1",
+                "path": "/admin",
+            }
+        ]
+    )
+    custom_page.goto("http://127.0.0.1:8000/admin")
+    expect(custom_page).to_have_url(re.compile(r".*/admin"))
+    expect(custom_page.get_by_label("Username")).to_have_count(0)
+    expect(custom_page.get_by_label("Password")).to_have_count(0)
+    context.close()
+
+
+def test_admin_with_refresh_token_with_invalid_fingerprint(browser):
+    user_agent, wrong_user_agent = "agent", "wrong_agent"
+    context = browser.new_context(user_agent=user_agent)
+    custom_page = context.new_page()
+    fp = compute_user_fingerprint(wrong_user_agent, "127.0.0.1")
+    fp = get_hash(fp)
+    refresh_token = create_refresh_token(data={"fp": fp})
+    custom_page.context.add_cookies(
+        [
+            {
+                "name": "refresh_token",
+                "value": refresh_token,
+                "domain": "127.0.0.1",
+                "path": "/admin",
+            }
+        ]
+    )
+    custom_page.goto("http://127.0.0.1:8000/admin")
+    expect(custom_page).to_have_url(re.compile(r".*/admin"))
+    expect(custom_page.get_by_label("Username")).to_be_visible()
+    expect(custom_page.get_by_label("Password")).to_be_visible()
+
+    cookies = custom_page.context.cookies("http://127.0.0.1:8000")
+    for cookie in cookies:
+        if cookie["name"] in {"access_token", "refresh_token"}:
+            assert not cookie["value"]
     context.close()
