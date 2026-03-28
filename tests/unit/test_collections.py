@@ -6,7 +6,7 @@ from domain import CollectionCategory, Collections, NotFoundError, Slug
 from services.collections import delete_collection
 from tests.fakes import FakeUoW, FakeImageGenerator
 from .helpers import collection_catalog_path
-from .conftest import collection_env
+#from .conftest import collection_env
 from tests.helpers import add_collection_helper
 
 log = logging.getLogger(__name__)

@@ -16,6 +16,10 @@ def verify(string: str, hashed: str) -> bool:
     normalized = normalize_input(string)
     return bcrypt.checkpw(normalized, hashed.encode())
 
+def compute_user_fingerprint(user_agent, client_ip):
+    combined = user_agent + str(client_ip)
+    return combined
+
 # def get_hash(string: str) -> str:
 #     salt = bcrypt.gensalt()
 #     combined = (string + conf.pepper).encode()[:72]

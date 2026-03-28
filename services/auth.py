@@ -25,6 +25,7 @@ def create_token(data: dict, expire: datetime, toke_type: str):
     to_encode.update({"exp": expire, "type": toke_type})
     return data_encode_to_jwt(to_encode)
 
+
 def create_access_token(data: dict, expires_delta: timedelta = None) -> str:
     expires_delta = expires_delta if expires_delta else timedelta(minutes=15)
     expire, data = datetime.now(timezone.utc) + expires_delta, data.copy()

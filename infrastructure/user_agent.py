@@ -2,6 +2,7 @@ from typing import Annotated
 
 from fastapi import Depends, Request, Response
 from services.auth import require_admin
+from services.security import compute_user_fingerprint
 import logging
 
 log = logging.getLogger(__name__)
@@ -60,15 +61,15 @@ class CookieManager:
             )
 
 
-def compute_fingerprint(request: Request) -> str:
+def compute_fingerprint_from_request(request: Request) -> str:
     user_agent = request.headers.get("user-agent", "")
     client_ip = request.client.host
     log.debug("user agent: %s", user_agent)
     log.debug("client ip: %s", client_ip)
-    combined = user_agent + str(client_ip)
-    return combined
+    return compute_user_fingerprint(user_agent, client_ip)
 
-fingerPrintDep = Annotated[str, Depends(compute_fingerprint)]
+
+fingerPrintDep = Annotated[str, Depends(compute_fingerprint_from_request)]
 
 def get_cookie_manager(
     request: Request,

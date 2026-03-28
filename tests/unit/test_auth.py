@@ -7,7 +7,6 @@ from services.auth import (create_access_token, create_refresh_token,
                            get_data_from_token)
 from services.security import get_hash
 from domain import Admin, CredentialsValidateError
-from .conftest import crud
 from tests.fakes.user_agen_fakes import FakeCookieManager
 
 log = logging.getLogger(__name__)

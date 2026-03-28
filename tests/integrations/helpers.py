@@ -1,13 +1,3 @@
-import io
-from decimal import Decimal
-
-from PIL import Image
-
-from domain import Box, Categories, Producer, TileColor, TileSize, TileSurface
-from services.exceptions import ImageProcessingError
-from services.UoW import UnitOfWork
-
-
 
 def _iter_files(file_manager, layer: str):
     path = file_manager.resolve_path(layer=layer)

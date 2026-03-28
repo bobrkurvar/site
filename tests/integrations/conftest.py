@@ -13,7 +13,7 @@ from core import conf
 from domain import *
 from infrastructure.images import ProductImagesManager, CollectionImagesManager
 from tests.fakes import FakeStorage, FakeImageGenerator
-from tests.helpers import add_tile_helper, add_collection_helper, add_tile_helper_with_control_filters
+from tests.helpers import add_collection_helper, add_tile_helper_with_control_filters
 
 
 log = logging.getLogger(__name__)

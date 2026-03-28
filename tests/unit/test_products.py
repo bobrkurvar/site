@@ -6,7 +6,7 @@ from domain import *
 from services.tile import delete_tile, update_tile
 from tests.conftest import domain_handbooks_models_for_products
 from tests.fakes import FakeUoW, FakeImageGenerator
-from .conftest import products_env, products_env_with_handbooks
+#from .conftest import products_env, products_env_with_handbooks
 from .helpers import product_catalog_path, product_details_path
 from tests.helpers import add_tile_helper, assert_size, assert_box, assert_tile_fields, assert_handbooks_count, update_filters
 

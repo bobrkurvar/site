@@ -2,7 +2,7 @@ import pytest
 from services.views import build_data_for_filters
 from slugify import slugify
 from domain import Slug
-from .conftest import products_env_with_tiles, products_env
+#from .conftest import products_env_with_tiles, products_env
 
 @pytest.mark.asyncio
 async def test_build_data_for_filters_catalog_with_categories_when_exists_handbooks_not_exists_items(

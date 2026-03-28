@@ -1,12 +1,11 @@
 import logging
 import pytest
 
-from infrastructure.images import CollectionImagesManager
 from domain import (AlreadyExistsError, CollectionCategory, Collections,
                     NotFoundError, Slug)
 from services.collections import delete_collection
 
-from .conftest import collections_env_with_categories
+#from .conftest import collections_env_with_categories
 from .helpers import collection_files_count
 from tests.helpers import add_collection_helper
 from tests.fakes import FakeImageGenerator
