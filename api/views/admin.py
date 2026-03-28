@@ -8,8 +8,12 @@ from fastapi_csrf_protect.flexible import CsrfProtect
 from starlette.responses import RedirectResponse
 
 from infrastructure.crud import Crud, get_db_manager
-from infrastructure.user_agent import CookieManager, fingerPrintDep, require_admin_for_dep
-from services.auth import create_tokens_from_login, set_tokens
+from infrastructure.user_agent import (
+    CookieManager,
+    fingerPrintDep,
+    require_admin_for_dep,
+)
+from services.auth import create_tokens_from_login_and_set, set_tokens
 from domain import *
 from services.security import get_hash
 
@@ -24,7 +28,10 @@ log = logging.getLogger(__name__)
 
 @router.get("")
 async def admin_page(
-    request: Request, manager: dbManagerDep, csrf_token: csrfProtectDep, tokens: requireAdminDep
+    request: Request,
+    manager: dbManagerDep,
+    csrf_token: csrfProtectDep,
+    tokens: requireAdminDep,
 ):
     plain_token, signed_token = csrf_token.generate_csrf_tokens()
     tiles = await manager.read(Tile, loaded=["images", "size", "box"])
@@ -66,7 +73,11 @@ async def admin_page(
         },
     )
     if tokens:
-        set_tokens(CookieManager(request, response), access_token=tokens["access_token"], refresh_token=tokens["refresh_token"])
+        set_tokens(
+            CookieManager(request, response),
+            access_token=tokens["access_token"],
+            refresh_token=tokens["refresh_token"],
+        )
     csrf_token.set_csrf_cookie(signed_token, response)
     return response
 
@@ -82,7 +93,7 @@ async def admin_login_submit(
     fp = get_hash(fingerprint)
     response = RedirectResponse("/admin", status_code=303)
     cookie_manager = CookieManager(request=request, response=response)
-    await create_tokens_from_login(
+    await create_tokens_from_login_and_set(
         manager,
         username=username,
         password=password,

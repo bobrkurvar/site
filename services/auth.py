@@ -20,6 +20,7 @@ def get_data_from_token(encoded: str):
 def data_encode_to_jwt(decoded: dict):
     return jwt.encode(decoded, secret_key, algorithm)
 
+
 def create_token(data: dict, expire: datetime, toke_type: str):
     to_encode = data.copy()
     to_encode.update({"exp": expire, "type": toke_type})
@@ -61,7 +62,7 @@ def check_access_token(token: str, fp: str):
     try:
         payload = get_data_from_token(token)
     except jwt.ExpiredSignatureError:
-        raise RefreshTokenNotExistsError
+        raise AccessTokenNotExistsError
     except jwt.InvalidTokenError as exc:
         log.exception(f"ошибка декодирования access токена")
         raise InvalidAccessTokenError from exc
@@ -92,7 +93,6 @@ def create_token_from_refresh(tokens_manager, fp: str):
     raise RefreshTokenNotExistsError
 
 
-
 def set_tokens(tokens_manager, access_token, refresh_token):
     tokens_manager.set_access_token(access_token)
     tokens_manager.set_refresh_token(refresh_token)
@@ -108,9 +108,7 @@ async def check_user(manager, username: str, password: str):
         raise UserLoginNotFoundError(username)
 
 
-async def create_tokens_from_login(
-    manager, username: str, password: str, tokens_manager, **data
-):
+async def create_tokens_from_login(manager, username: str, password: str, **data):
     log.debug("check user")
     await check_user(manager, username, password)
     log.debug("user approve")
@@ -121,8 +119,15 @@ async def create_tokens_from_login(
     access_token, refresh_token = create_access_token(
         data, access_token_ttl
     ), create_refresh_token(data, refresh_token_ttl)
-    tokens_manager.set_access_token(access_token)
-    tokens_manager.set_refresh_token(refresh_token)
+    return {"access_token": access_token, "refresh_token": refresh_token}
+
+
+async def create_tokens_from_login_and_set(
+    manager, username: str, password: str, tokens_manager, **data
+):
+    tokens = await create_tokens_from_login(manager, username, password, **data)
+    tokens_manager.set_access_token(tokens["access_token"])
+    tokens_manager.set_refresh_token(tokens["refresh_token"])
 
 
 def require_admin(tokens_manager, fp):
