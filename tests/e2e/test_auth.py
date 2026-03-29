@@ -25,6 +25,9 @@ def test_admin_login_success(page):
         if cookie["name"] == "access_token":
             log.debug(cookie["expires"])
             assert cookie["expires"] == 900
+        if cookie["name"] == "refresh_token":
+            log.debug(cookie["expires"])
+            assert cookie["expires"] == 86400 * 7
 
 
 def test_admin_login_user_not_found(page):
