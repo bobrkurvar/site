@@ -6,7 +6,7 @@ from fastapi.responses import RedirectResponse
 from domain.exceptions import (AlreadyExistsError, ForeignKeyViolationError,
                                NotFoundError, RefreshTokenNotExistsError, CredentialsValidateError, UserLoginNotFoundError)
 from fastapi.templating import Jinja2Templates
-from infrastructure.user_agent import CookieManager
+from infrastructure.user_agent import TokensManager
 
 log = logging.getLogger(__name__)
 templates = Jinja2Templates("templates")
@@ -39,7 +39,7 @@ async def global_error_handler(request: Request, exc: Exception):
 async def invalid_tokens_or_not_exists_handler(request: Request, exc: RefreshTokenNotExistsError):
     log.debug('tokens error: %s', exc)
     response =  templates.TemplateResponse("admin_login.html", {"request": request})
-    cookie_manager = CookieManager(request, response)
+    cookie_manager = TokensManager(request, response)
     cookie_manager.clear_tokens()
     return response
 
@@ -47,7 +47,7 @@ async def invalid_tokens_or_not_exists_handler(request: Request, exc: RefreshTok
 async def user_login_not_found_error_handler(request: Request, exc: UserLoginNotFoundError):
     log.error("user not found: %s", exc)
     response = templates.TemplateResponse("admin_login.html", {"request": request, "error": str(exc)})
-    cookie_manager = CookieManager(request, response)
+    cookie_manager = TokensManager(request, response)
     cookie_manager.clear_tokens()
     return response
 
@@ -55,6 +55,6 @@ async def user_login_not_found_error_handler(request: Request, exc: UserLoginNot
 async def invalid_credentials_error_handler(request: Request, exc: CredentialsValidateError):
     log.error("invalid credentials: %s", exc)
     response = templates.TemplateResponse("admin_login.html", {"request": request, "error": str(exc)})
-    cookie_manager = CookieManager(request, response)
+    cookie_manager = TokensManager(request, response)
     cookie_manager.clear_tokens()
     return response

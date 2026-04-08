@@ -1,7 +1,7 @@
 import logging
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, File, Form, UploadFile
+from fastapi import APIRouter, Depends, File, Form, UploadFile, Request
 from fastapi.responses import RedirectResponse
 
 from infrastructure.crud import Crud, get_db_manager
@@ -28,7 +28,7 @@ async def admin_create_tile_collection(
         image,
         category_name,
         manager,
-        images_generator=ImageGenerator,
+        images_generator=ImageGenerator(),
         file_manager=CollectionImagesManager(),
     )
     return RedirectResponse("/admin", status_code=303)

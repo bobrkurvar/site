@@ -1,0 +1,99 @@
+services:
+  test:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      target: test
+    env_file:
+      - .env
+    environment:
+      API_HOST: app
+    depends_on:
+      app:
+        condition: service_started
+      migrate:
+        condition: service_completed_successfully
+      runner:
+        condition: service_completed_successfully
+
+  app:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      target: main_app
+    env_file:
+      - .env
+    environment:
+      IS_TEST: True
+      DB_HOST: postgres
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${TEST_DB_NAME}
+      DB_USER: postgres
+      DB_PASSWORD: ${DB_PASSWORD}
+      API_HOST: image_service
+    depends_on:
+      postgres:
+        condition: service_healthy
+#      image_service:
+#        condition: service_started
+
+#  image_service:
+#    build:
+#      context: .
+#      dockerfile: ./Dockerfile
+#      target: image
+#    env_file:
+#      - .env
+#    environment:
+#      PORT: ${IMAGE_PORT}
+
+  postgres:
+    image: postgres:16-alpine
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${TEST_DB_NAME}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ${TEST_DB_NAME}"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+      start_period: 5s
+
+  migrate:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      target: migrate
+    env_file:
+      - .env
+    environment:
+      DB_HOST: postgres
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${TEST_DB_NAME}
+      DB_USER: postgres
+      DB_PASSWORD: ${DB_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  runner:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      target: runner
+    env_file:
+      - .env
+    environment:
+      DB_HOST: postgres
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${TEST_DB_NAME}
+      DB_USER: postgres
+      DB_PASSWORD: ${DB_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully

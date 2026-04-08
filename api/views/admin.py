@@ -4,12 +4,12 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Form, Request, Response
 from fastapi.templating import Jinja2Templates
-from fastapi_csrf_protect.flexible import CsrfProtect
+#from fastapi_csrf_protect.flexible import CsrfProtect
 from starlette.responses import RedirectResponse
 
 from infrastructure.crud import Crud, get_db_manager
 from infrastructure.user_agent import (
-    CookieManager,
+    TokensManager,
     fingerPrintDep,
     require_admin_for_dep,
 )
@@ -19,7 +19,7 @@ from services.security import get_hash
 
 router = APIRouter(tags=["admin"], prefix="/admin")
 dbManagerDep = Annotated[Crud, Depends(get_db_manager)]
-csrfProtectDep = Annotated[CsrfProtect, Depends()]
+#csrfProtectDep = Annotated[CsrfProtect, Depends()]
 requireAdminDep = Annotated[dict | None, Depends(require_admin_for_dep)]
 
 templates = Jinja2Templates("templates")
@@ -30,10 +30,11 @@ log = logging.getLogger(__name__)
 async def admin_page(
     request: Request,
     manager: dbManagerDep,
-    csrf_token: csrfProtectDep,
+    #csrf_token: csrfProtectDep,
     tokens: requireAdminDep,
 ):
-    plain_token, signed_token = csrf_token.generate_csrf_tokens()
+    #plain_token, signed_token = csrf_token.generate_csrf_tokens()
+    token_manager = TokensManager()
     tiles = await manager.read(Tile, loaded=["images", "size", "box"])
     tile_sizes = await manager.read(TileSize)
     tile_sizes = [
@@ -69,16 +70,20 @@ async def admin_page(
             "producers": producers,
             "categories": categories,
             "boxes_count": boxes_count,
-            "csrf_token": plain_token,
+            #"csrf_token": csrf_token,
+
         },
     )
     if tokens:
+        token_manager.set_request(request)
+        token_manager.set_response(response)
         set_tokens(
-            CookieManager(request, response),
+            token_manager,
             access_token=tokens["access_token"],
             refresh_token=tokens["refresh_token"],
         )
-    csrf_token.set_csrf_cookie(signed_token, response)
+    #csrf_token.set_csrf_cookie(signed_token, response)
+    #cookie_manager.set_csrf_cookie(response, csrf_token)
     return response
 
 
@@ -92,12 +97,11 @@ async def admin_login_submit(
 ):
     fp = get_hash(fingerprint)
     response = RedirectResponse("/admin", status_code=303)
-    cookie_manager = CookieManager(request=request, response=response)
     await create_tokens_from_login_and_set(
         manager,
         username=username,
         password=password,
-        tokens_manager=cookie_manager,
+        tokens_manager=TokensManager(request=request, response=response),
         fp=fp,
     )
     return response

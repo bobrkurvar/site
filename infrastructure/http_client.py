@@ -32,32 +32,6 @@ def add_exception_handler(cls):
     return cls
 
 
-# @add_exception_handler
-# class MyExternalApiForBot:
-#     def __init__(self, url):
-#         self._url = url
-#         self._session = None
-#
-#     async def generate_images(self, **data):
-#         async with self._session.post(self._url + "generate-images", json=data) as resp:
-#             try:
-#                 resp.raise_for_status()
-#                 return await resp.json()
-#             except ClientResponseError as exc:
-#                 log.exception(exc)
-#                 return None
-#
-#     def connect(self):
-#         if not self._session:
-#             self._session = ClientSession()
-#
-#     async def close(self):
-#         if self._session:
-#             log.warning(f"закрываю сессию {self.__class__.__name__}")
-#             await self._session.close()
-#             self._session = None
-
-
 class MyExternalApiForBot:
     def __init__(self, url=None, app=None):
         self._url = url

@@ -102,6 +102,7 @@ async def check_user(manager, username: str, password: str):
     try:
         user = (await manager.read(Admin, username=username))[0]
         if not verify(password, user["password"]):
+            log.debug("wrong password")
             raise CredentialsValidateError
     except IndexError:
         log.debug("user with username: %s not found", username)

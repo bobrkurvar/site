@@ -18,8 +18,10 @@ async def add_admins():
         log.debug("ADMIN: %s", admin)
         password = get_hash(admin["password"])
         log.debug("HASH PASWORD: %s,", password)
-        await manager.create(Admin, username=admin["username"], password=password)
-
+        try:
+            await manager.create(Admin, username=admin["username"], password=password)
+        except:
+            pass
 
 async def main():
     await add_admins()

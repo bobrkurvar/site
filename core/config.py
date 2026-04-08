@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     initial_admins: str
     pepper: str
     cookie_secret: str
+    is_test: bool
 
     @property
     def db_url(self):

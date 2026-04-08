@@ -15,7 +15,7 @@ log = logging.getLogger(__name__)
 async def insert_slide_image(images: Annotated[list[UploadFile], File()]):
     images_bytes = [await image.read() for image in images]
     await add_slides(
-        images_bytes, images_generator=ImageGenerator, file_manager=SlideImagesManager()
+        images_bytes, images_generator=ImageGenerator(), file_manager=SlideImagesManager()
     )
     return RedirectResponse("/admin", status_code=303)
 

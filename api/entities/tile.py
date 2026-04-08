@@ -80,7 +80,7 @@ async def admin_create_tile(
         category_name,
         manager,
         bytes_images,
-        images_generator=ImageGenerator,
+        images_generator=ImageGenerator(),
         file_manager=ProductImagesManager(),
         color_feature=feature_name,
         surface=surface_name,

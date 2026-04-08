@@ -14,27 +14,27 @@ setup_logging()
 log = logging.getLogger(__name__)
 
 
-@pytest.fixture(scope="session", autouse=True)
-def site_api():
-    # Запуск Uvicorn в subprocess
-    process = subprocess.Popen(
-        ["uvicorn", "main_app:app", "--host", "127.0.0.1", "--port", "8000"],
-    )
-    for _ in range(5):
-        try:
-            r = requests.get("http://127.0.0.1:8000/health")
-            if r.status_code == 200:
-                break
-        except requests.ConnectionError:
-            time.sleep(0.1)
-    else:
-        process.terminate()
-        raise RuntimeError("Не удалось поднять API для тестов")
-
-    yield
-
-    process.terminate()
-    process.wait()
+# @pytest.fixture(scope="session", autouse=True)
+# def site_api():
+#     # Запуск Uvicorn в subprocess
+#     process = subprocess.Popen(
+#         ["uvicorn", "main_app:app", "--host", "127.0.0.1", "--port", "8000"],
+#     )
+#     for _ in range(5):
+#         try:
+#             r = requests.get("http://127.0.0.1:8000/health")
+#             if r.status_code == 200:
+#                 break
+#         except requests.ConnectionError:
+#             time.sleep(0.1)
+#     else:
+#         process.terminate()
+#         raise RuntimeError("Не удалось поднять API для тестов")
+#
+#     yield
+#
+#     process.terminate()
+#     process.wait()
 
 
 @pytest.fixture(scope="session")

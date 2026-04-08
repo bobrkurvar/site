@@ -83,3 +83,15 @@ class CredentialsValidateError(UnauthorizedError):
 class UserLoginNotFoundError(NotFoundError):
     def __init__(self, username: str):
         super().__init__(Admin, username=username)
+
+
+class CSRFCookiesTokenNotExistsError(Exception):
+    def __init__(self):
+        self.detail = "Нет токена в куках"
+        super().__init__(self.detail)
+
+
+class CSRFFormTokenNotExistsError(Exception):
+    def __init__(self):
+        self.detail = "Нет токена в форме"
+        super().__init__(self.detail)

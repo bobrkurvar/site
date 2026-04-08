@@ -3,8 +3,8 @@ from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from fastapi_csrf_protect.flexible import CsrfProtect
-from pydantic_settings import BaseSettings
+# from fastapi_csrf_protect.flexible import CsrfProtect
+# from pydantic_settings import BaseSettings
 
 from domain import InvalidAccessTokenError, InvalidRefreshTokenError
 from infrastructure.crud import get_db_manager
@@ -15,7 +15,6 @@ from core.logger import setup_logging
 from core import conf
 
 setup_logging()
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -37,18 +36,20 @@ app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 app.include_router(main_router)
 
 
-class CsrfSettings(BaseSettings):
-    secret_key: str = conf.cookie_secret
-    cookie_samesite: str = "strict"
-    cookie_secure: bool = True
-    cookie_httponly: bool = True
-    max_age: int = 7200
-    refresh_age: int = 1800
-
-
-@CsrfProtect.load_config
-def get_csrf_config():
-    return CsrfSettings()
+# class CsrfSettings(BaseSettings):
+#     name: str = "token_key"
+#     secret_key: str = conf.cookie_secret
+#     cookie_samesite: str = "strict"
+#     #cookie_secure: bool = True
+#     cookie_secure: bool = False
+#     cookie_httponly: bool = True
+#     max_age: int = 7200
+#     refresh_age: int = 1800
+#
+#
+# @CsrfProtect.load_config
+# def get_csrf_config():
+#     return CsrfSettings()
 
 
 @app.get("/health")

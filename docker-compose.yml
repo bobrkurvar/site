@@ -1,0 +1,85 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      target: main_app
+    env_file:
+      - .env
+    environment:
+      DB_HOST: postgres
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${DB_NAME}
+      DB_USER: postgres
+      DB_PASSWORD: ${DB_PASSWORD}
+      API_HOST: image_service
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      - postgres
+    volumes:
+      - ./static/images:/pysite/static/images # bind mount docker compose down -v не удалит этот том
+    restart: unless-stopped
+
+  image_service:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      target: image
+    env_file:
+      - .env
+    environment:
+      PORT: ${IMAGE_PORT}
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/init/backup.sql:/docker-entrypoint-initdb.d/01-backup.sql:ro # при пустой базе выполнит всё что в этой папке
+    restart: unless-stopped
+
+  migrate:
+    profiles: ["tools"]
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      target: migrate
+    env_file:
+      - .env
+    environment:
+      DB_HOST: postgres
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${DB_NAME}
+      DB_USER: postgres
+      DB_PASSWORD: ${DB_PASSWORD}
+    depends_on:
+      - postgres
+    restart: "no"
+
+  runner:
+    profiles: ["tools"]
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      target: runner
+    env_file:
+      - .env
+    environment:
+      DB_HOST: postgres
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${DB_NAME}
+      DB_USER: postgres
+      DB_PASSWORD: ${DB_PASSWORD}
+    depends_on:
+      - postgres
+    restart: "no"
+
+volumes:
+  pgdata:
