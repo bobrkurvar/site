@@ -38,7 +38,18 @@ COPY scripts/add_admins.py ./add_admins.py
 CMD ["python", "-m", "add_admins"]
 
 
-FROM mcr.microsoft.com/playwright/python:v1.58.0-noble AS test
+FROM base AS int_tests
+COPY core ./core
+COPY tests ./tests
+COPY db ./db
+COPY services ./services
+COPY infrastructure ./infrastructure
+COPY domain ./domain
+COPY pytest.ini ./pytest.ini
+CMD ["pytest", "tests/integrations"]
+
+
+FROM mcr.microsoft.com/playwright/python:v1.58.0-noble AS e2e_tests
 WORKDIR /pysite
 COPY req.txt .
 RUN pip install --no-cache-dir -r req.txt
@@ -47,4 +58,19 @@ COPY tests ./tests
 COPY services ./services
 COPY infrastructure ./infrastructure
 COPY domain ./domain
+COPY pytest.ini ./pytest.ini
 CMD ["pytest", "tests/e2e"]
+
+
+# FROM mcr.microsoft.com/playwright/python:v1.58.0-noble AS tests
+# WORKDIR /pysite
+# COPY req.txt .
+# RUN pip install --no-cache-dir -r req.txt
+# COPY core ./core
+# COPY tests ./tests
+# COPY services ./services
+# COPY infrastructure ./infrastructure
+# COPY domain ./domain
+# COPY pytest.ini ./pytest.ini
+# COPY db ./db
+# CMD ["pytest", "tests/e2e", "tests/integrations"]

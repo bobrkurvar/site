@@ -1,9 +1,9 @@
 services:
-  test:
+  e2e_tests:
     build:
       context: .
       dockerfile: ./Dockerfile
-      target: test
+      target: e2e_tests
     env_file:
       - .env
     environment:
@@ -15,6 +15,39 @@ services:
         condition: service_completed_successfully
       runner:
         condition: service_completed_successfully
+
+  int_tests:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      target: int_tests
+    env_file:
+      - .env
+    environment:
+      DB_HOST: postgres
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      runner:
+        condition: service_completed_successfully
+
+#  tests:
+#    build:
+#      context: .
+#      dockerfile: ./Dockerfile
+#      target: tests
+#    env_file:
+#      - .env
+#    environment:
+#      API_HOST: app
+#      DB_HOST: postgres
+#    depends_on:
+#      app:
+#        condition: service_started
+#      migrate:
+#        condition: service_completed_successfully
+#      runner:
+#        condition: service_completed_successfully
 
   app:
     build:

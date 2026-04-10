@@ -73,24 +73,24 @@ def clean_fs_after_test(request):
         shutil.rmtree(images_path)
 
 
-@pytest.fixture(scope="session", autouse=True)
-def migrate_test_db(request):
-    """
-    Автоматически применяет все миграции к тестовой БД
-    только если тест помечен как интеграционный.
-    """
-    log.debug("INTERGRATION MIGRATIONS TO %s", conf.test_db_url)
-    if not any(
-        "integration" in marker.name
-        for item in request.session.items
-        for marker in item.iter_markers()
-    ):
-        yield
-        return
-    alembic_cfg = Config("alembic.ini")
-    alembic_cfg.set_main_option("sqlalchemy.url", conf.test_db_url)
-    command.upgrade(alembic_cfg, "head")
-    yield
+# @pytest.fixture(scope="session", autouse=True)
+# def migrate_test_db(request):
+#     """
+#     Автоматически применяет все миграции к тестовой БД
+#     только если тест помечен как интеграционный.
+#     """
+#     log.debug("INTERGRATION MIGRATIONS TO %s", conf.test_db_url)
+#     if not any(
+#         "integration" in marker.name
+#         for item in request.session.items
+#         for marker in item.iter_markers()
+#     ):
+#         yield
+#         return
+#     alembic_cfg = Config("alembic.ini")
+#     alembic_cfg.set_main_option("sqlalchemy.url", conf.test_db_url)
+#     command.upgrade(alembic_cfg, "head")
+#     yield
 
 
 @pytest.fixture

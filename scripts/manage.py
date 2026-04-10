@@ -9,8 +9,6 @@ def test() -> int:
     project = "tests"
     compose = "docker-compose.test.yml"
 
-    #run(["docker", "compose", "-p", project, "-f", compose, "down", "-v", "--remove-orphans"])
-
     code = run([
         "docker", "compose", "-p", project, "-f", compose,
         "up", "--build", "-d", "postgres", "migrate", "runner", "app"
@@ -20,7 +18,26 @@ def test() -> int:
 
     code = run([
         "docker", "compose", "-p", project, "-f", compose,
-        "run", "--rm", "--no-deps", "test"
+        "build", "e2e_tests"
+    ])
+    if code != 0:
+        return code
+
+    run([
+        "docker", "compose", "-p", project, "-f", compose,
+        "run", "--rm", "--no-deps", "e2e_tests"
+    ])
+
+    code = run([
+        "docker", "compose", "-p", project, "-f", compose,
+        "build", "int_tests"
+    ])
+    if code != 0:
+        return code
+
+    code = run([
+        "docker", "compose", "-p", project, "-f", compose,
+        "run", "--rm", "--no-deps", "int_tests"
     ])
 
     run(["docker", "compose", "-p", project, "-f", compose, "down", "-v", "--remove-orphans"])
