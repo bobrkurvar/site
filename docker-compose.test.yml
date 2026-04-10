@@ -34,18 +34,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-#      image_service:
-#        condition: service_started
-
-#  image_service:
-#    build:
-#      context: .
-#      dockerfile: ./Dockerfile
-#      target: image
-#    env_file:
-#      - .env
-#    environment:
-#      PORT: ${IMAGE_PORT}
 
   postgres:
     image: postgres:16-alpine

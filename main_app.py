@@ -30,8 +30,8 @@ async def lifespan(app: FastAPI):
 log = logging.getLogger(__name__)
 app = FastAPI(lifespan=lifespan)
 
-BASE_DIR = Path(__file__).resolve().parent
-app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
+# BASE_DIR = Path(__file__).resolve().parent
+# app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
 app.include_router(main_router)
 

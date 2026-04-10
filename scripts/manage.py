@@ -1,4 +1,3 @@
-# manage.py
 import subprocess
 import sys
 
