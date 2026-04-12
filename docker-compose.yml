@@ -14,6 +14,8 @@ services:
       DB_USER: postgres
       DB_PASSWORD: ${DB_PASSWORD}
       API_HOST: image_service
+    networks:
+      - internal
     depends_on:
       - postgres
     volumes:
@@ -30,6 +32,8 @@ services:
       - .env
     environment:
       PORT: ${IMAGE_PORT}
+    networks:
+      - internal
     restart: unless-stopped
 
   postgres:
@@ -41,6 +45,8 @@ services:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${DB_PASSWORD}
+    networks:
+      - internal
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./db/init/backup.sql:/docker-entrypoint-initdb.d/01-backup.sql:ro # при пустой базе выполнит всё что в этой папке
@@ -61,6 +67,8 @@ services:
       DB_NAME: ${DB_NAME}
       DB_USER: postgres
       DB_PASSWORD: ${DB_PASSWORD}
+    networks:
+      - internal
     depends_on:
       - postgres
     restart: "no"
@@ -80,6 +88,8 @@ services:
       DB_NAME: ${DB_NAME}
       DB_USER: postgres
       DB_PASSWORD: ${DB_PASSWORD}
+    networks:
+      - internal
     depends_on:
       - postgres
     restart: "no"
