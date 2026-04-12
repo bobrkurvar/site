@@ -59,6 +59,7 @@ async def health():
 
 @app.get("/{full_path:path}")
 async def catch_all(full_path: str):
+    log.debug("ТАКОЙ URL НЕ ОБСЛУЖИВАЕТСЯ")
     return RedirectResponse("/", status_code=303)
 
 
