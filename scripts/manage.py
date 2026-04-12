@@ -45,7 +45,26 @@ def test() -> int:
     run(["docker", "compose", "-p", TEST_PROJECT, "-f", TEST_COMPOSE, "down", "-v", "--remove-orphans"])
     return code
 
+def scripts_run():
+    code = run([
+        "docker", "compose", "-p", PROD_PROJECT, "-f", PROD_COMPOSE,
+        "build", "runner"
+    ])
+    if code != 0:
+        return code
+    code = run([
+        "docker", "compose", "-p", PROD_PROJECT, "-f", PROD_COMPOSE,
+        "run", "--rm", "runner"
+    ])
+    return code
+
+
 def prod() -> int:
+    scripts = input("run the init scripts (y/n): ")
+    if scripts.strip().lower() == "y":
+        if (code := scripts_run()) != 0:
+            return code
+
     return run([
         "docker", "compose", "-p", PROD_PROJECT, "-f", PROD_COMPOSE,
         "up", "--build"
