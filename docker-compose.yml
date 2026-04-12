@@ -103,7 +103,7 @@ services:
       - traefik.enable=true
 
       # домен проекта
-      - traefik.http.routers.project1.rule=Host(`keramovibor.ru`, `www.keramovibor.ru`)
+      - traefik.http.routers.project1.rule=Host(`keramovibor.ru`) || Host(`www.keramovibor.ru`)
       - traefik.http.routers.project1.entrypoints=websecure
       - traefik.http.routers.project1.tls.certresolver=le
 

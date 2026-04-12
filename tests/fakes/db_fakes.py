@@ -1,7 +1,7 @@
 import logging
 
-from domain import Box, Collections, NotFoundError, TileImages, TileSize
-from infrastructure.orm_mapper import DomainToOrmMapper
+from domain import NotFoundError
+from db.mapper import DomainToOrmMapper
 
 
 log = logging.getLogger(__name__)
@@ -23,10 +23,8 @@ class Table:
 
     def add_row(self, **row):
         for i in self.columns - row.keys():
-            #log.debug("III: %s = %s", i, self.default_num)
             row[i] = self.default_num
             self.default_num += 1
-        #log.debug("row after default: %s", row)
         self.rows.append(row)
         return row
 

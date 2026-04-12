@@ -5,59 +5,61 @@ def run(cmd: list[str]) -> int:
     print(">", " ".join(cmd))
     return subprocess.call(cmd)
 
-def test() -> int:
-    project = "tests"
-    compose = "docker-compose.test.yml"
+PROD_PROJECT = "site"
+PROD_COMPOSE = "docker-compose.yml"
+TEST_PROJECT = "tests"
+TEST_COMPOSE = "docker-compose.test.yml"
 
+def test() -> int:
     code = run([
-        "docker", "compose", "-p", project, "-f", compose,
+        "docker", "compose", "-p", TEST_PROJECT, "-f", TEST_COMPOSE,
         "up", "--build", "-d", "postgres", "migrate", "runner", "app"
     ])
     if code != 0:
         return code
 
     code = run([
-        "docker", "compose", "-p", project, "-f", compose,
+        "docker", "compose", "-p", TEST_PROJECT, "-f", TEST_COMPOSE,
         "build", "e2e_tests"
     ])
     if code != 0:
         return code
 
     run([
-        "docker", "compose", "-p", project, "-f", compose,
+        "docker", "compose", "-p", TEST_PROJECT, "-f", TEST_COMPOSE,
         "run", "--rm", "--no-deps", "e2e_tests"
     ])
 
     code = run([
-        "docker", "compose", "-p", project, "-f", compose,
+        "docker", "compose", "-p", TEST_PROJECT, "-f", TEST_COMPOSE,
         "build", "int_tests"
     ])
     if code != 0:
         return code
 
     code = run([
-        "docker", "compose", "-p", project, "-f", compose,
+        "docker", "compose", "-p", TEST_PROJECT, "-f", TEST_COMPOSE,
         "run", "--rm", "--no-deps", "int_tests"
     ])
 
-    run(["docker", "compose", "-p", project, "-f", compose, "down", "-v", "--remove-orphans"])
+    run(["docker", "compose", "-p", TEST_PROJECT, "-f", TEST_COMPOSE, "down", "-v", "--remove-orphans"])
     return code
 
 def prod() -> int:
     return run([
-        "docker", "compose", "-p", "pysite", "-f", "docker-compose.yml",
+        "docker", "compose", "-p", PROD_PROJECT, "-f", PROD_COMPOSE,
         "up", "--build"
     ])
 
 def down() -> int:
     return run([
-        "docker", "compose", "-p", "pysite", "-f", "docker-compose.yml",
+        "docker", "compose", "-p", PROD_PROJECT, "-f", PROD_COMPOSE,
         "down", "--remove-orphans"
     ])
 
 def down_test() -> int:
     return run([
-        "docker", "compose", "-p", "tests", "-f", "docker-compose.test.yml",
+        "docker", "compose", "-p", TEST_COMPOSE, "-f",TEST_COMPOSE,
         "down", "-v", "--remove-orphans"
     ])
 
