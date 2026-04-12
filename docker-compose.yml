@@ -94,6 +94,20 @@ services:
       - postgres
     restart: "no"
 
+  resize-images-script:
+    container_name: resize-images-script
+    profiles: [ "tools" ]
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      target: resize-images-script
+    env_file:
+      - .env
+    volumes:
+      - ./static/images:/pysite/static/images # bind mount docker compose down -v не удалит этот том
+    restart: "no"
+
+
   nginx:
     container_name: site_nginx
     image: nginx:1.27-alpine

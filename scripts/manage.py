@@ -46,16 +46,31 @@ def test() -> int:
     return code
 
 def scripts_run():
-    code = run([
-        "docker", "compose", "-p", PROD_PROJECT, "-f", PROD_COMPOSE,
-        "build", "runner"
-    ])
-    if code != 0:
-        return code
-    code = run([
-        "docker", "compose", "-p", PROD_PROJECT, "-f", PROD_COMPOSE,
-        "run", "--rm", "runner"
-    ])
+    admins = input("Script add_admins(y/n): ")
+    if admins.strip().lower() == "y":
+        code = run([
+            "docker", "compose", "-p", PROD_PROJECT, "-f", PROD_COMPOSE,
+            "build", "runner"
+        ])
+        if code != 0:
+            return code
+        code = run([
+            "docker", "compose", "-p", PROD_PROJECT, "-f", PROD_COMPOSE,
+            "run", "--rm", "runner"
+        ])
+    resize_images = input("Script resize_images(y/n): ")
+    if resize_images.strip().lower() == "y":
+        code = run([
+            "docker", "compose", "-p", PROD_PROJECT, "-f", PROD_COMPOSE,
+            "build", "resize-images-script"
+        ])
+        if code != 0:
+            return code
+        code = run([
+            "docker", "compose", "-p", PROD_PROJECT, "-f", PROD_COMPOSE,
+            "run", "--rm", "resize-images-script"
+        ])
+
     return code
 
 

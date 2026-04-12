@@ -35,8 +35,12 @@ COPY domain ./domain
 COPY db ./db
 COPY services/security.py ./services/security.py
 COPY scripts/add_admins.py ./add_admins.py
+CMD ["python", "-m", "add_admins"]
+
+FROM base AS resize-images-script
+COPY image_worker.py .
 COPY scripts/resize_images.py ./resize_images.py
-CMD ["sh", "-c", "python -m add_admins && python -m resize_images"]
+CMD ["python", "-m", "resize_images"]
 
 
 FROM base AS int_tests
