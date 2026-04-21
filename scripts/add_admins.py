@@ -14,6 +14,7 @@ async def add_admins():
     log.debug("ADMINS: %s", initial_admins)
     manager = get_db_manager()
     manager.connect()
+    await manager.delete(Admin)
     for admin in initial_admins:
         log.debug("ADMIN: %s", admin)
         password = get_hash(admin["password"])

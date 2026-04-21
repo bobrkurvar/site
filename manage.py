@@ -59,9 +59,9 @@ def prod() -> int:
 def down() -> int:
     docker = ("down", "--remove-orphans")
     if input("With volumes(y/n): ").strip() in {"y", "yes"}:
-        cmd = compose_run(*docker)
-    else:
         cmd = compose_run(*docker, "-v")
+    else:
+        cmd = compose_run(*docker)
     return run(cmd)
 
 def down_test() -> int:
