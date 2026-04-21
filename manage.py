@@ -55,7 +55,7 @@ def prod() -> int:
     scripts = input("run the init scripts (y/n): ")
     if scripts.strip().lower() == "y":
         return scripts_run()
-    return run(compose_run("up", "--build"))
+    return run(compose_run("up", "--build", "--force-recreate"))
 
 def down() -> int:
     return run(compose_run("down", "--remove-orphans"))
