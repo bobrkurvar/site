@@ -57,7 +57,12 @@ def prod() -> int:
     return run(compose_run("up", "--build", "--force-recreate"))
 
 def down() -> int:
-    return run(compose_run("down", "--remove-orphans"))
+    docker = ("down", "--remove-orphans")
+    if input("With volumes(y/n): ").strip() in {"y", "yes"}:
+        cmd = compose_run(*docker)
+    else:
+        cmd = compose_run(*docker, "-v")
+    return run(cmd)
 
 def down_test() -> int:
     global IS_TEST
