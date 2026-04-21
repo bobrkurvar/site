@@ -48,13 +48,12 @@ def scripts_run():
     if resize_images.strip().lower() == "y":
         run_or_exit(compose_run("build", "resize-images-script"))
         run_or_exit(compose_run("run", "--rm", "resize-images-script"))
-    return 0
 
 
 def prod() -> int:
     scripts = input("run the init scripts (y/n): ")
     if scripts.strip().lower() == "y":
-        return scripts_run()
+        scripts_run()
     return run(compose_run("up", "--build", "--force-recreate"))
 
 def down() -> int:
