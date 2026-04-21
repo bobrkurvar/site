@@ -45,7 +45,7 @@ class FakeCRUD:
     async def create(self, model, **row):
         ignored = {"session", "seq_data"}
         row = {k: v for k, v in row.items() if k not in ignored}
-        log.debug("FAKE CREATE MODEL: %s", model)
+        #log.debug("FAKE CREATE MODEL: %s", model)
         table = self._get_table(model)
         res = table.add_row(**row)
         #log.debug("create res: %s", res)
