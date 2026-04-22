@@ -2,20 +2,19 @@ import logging
 from decimal import Decimal
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Form
+from fastapi import APIRouter, Form
 from fastapi.responses import RedirectResponse
 
-from infrastructure.crud import Crud, get_db_manager
+from adapters.deps import DbManagerDep
 from domain import TileSize
 
 router = APIRouter(prefix="/admin/tiles/sizes")
-dbManagerDep = Annotated[Crud, Depends(get_db_manager)]
 log = logging.getLogger(__name__)
 
 
 @router.post("/delete")
 async def admin_delete_tile_size(
-    manager: dbManagerDep,
+    manager: DbManagerDep,
     height: Annotated[Decimal, Form(gt=0)] = None,
     width: Annotated[Decimal, Form(gt=0)] = None,
     length: Annotated[Decimal, Form(gt=0)] = None,
@@ -27,11 +26,11 @@ async def admin_delete_tile_size(
     return RedirectResponse("/admin", status_code=303)
 
 
-# @router.post("/sizes/create")
-# async def admin_create_tile_size(
-#     manager: dbManagerDep,
-#     height: Annotated[float | None, Form(gt=0)],
-#     width: Annotated[float | None, Form(gt=0)],
-# ):
-#     await manager.create(TileSize, height=height, width=width)
-#     return RedirectResponse("/admin", status_code=303)
+@router.post("/sizes/create")
+async def admin_create_tile_size(
+    manager: DbManagerDep,
+    height: Annotated[float | None, Form(gt=0)],
+    width: Annotated[float | None, Form(gt=0)],
+):
+    await manager.create(TileSize, height=height, width=width)
+    return RedirectResponse("/admin", status_code=303)

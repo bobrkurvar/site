@@ -1,55 +1,35 @@
 from contextlib import asynccontextmanager
-from pathlib import Path
 
 from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
-# from fastapi_csrf_protect.flexible import CsrfProtect
-# from pydantic_settings import BaseSettings
 
 from domain import InvalidAccessTokenError, InvalidRefreshTokenError
-from infrastructure.crud import get_db_manager
-from infrastructure.http_client import get_http_client
 from api import main_router
 from api.error_handlers import *
 from core.logger import setup_logging
+from adapters.redis import RedisProvider
+from adapters.http_client import HttpClient
+from adapters.dbProvider import DbProvider
 from core import conf
+
 
 setup_logging()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    http_client = get_http_client()
-    http_client.connect()
-    manager = get_db_manager()
-    manager.connect()
-    yield
-    await manager.close_and_dispose()
-    await http_client.close()
-
+    app.state.redis = await RedisProvider.create(conf.redis_host)
+    app.state.image_api = HttpClient(url=f"http://{conf.image_service_url}/")
+    app.state.db_provider = DbProvider(conf.db_url)
+    try:
+        yield
+    finally:
+        await app.state.db_provider.close()
+        await app.state.image_api.close()
+        await app.state.redis_provider.close()
 
 log = logging.getLogger(__name__)
 app = FastAPI(lifespan=lifespan)
-
-# BASE_DIR = Path(__file__).resolve().parent
-# app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
-
 app.include_router(main_router)
 
-
-# class CsrfSettings(BaseSettings):
-#     name: str = "token_key"
-#     secret_key: str = conf.cookie_secret
-#     cookie_samesite: str = "strict"
-#     #cookie_secure: bool = True
-#     cookie_secure: bool = False
-#     cookie_httponly: bool = True
-#     max_age: int = 7200
-#     refresh_age: int = 1800
-#
-#
-# @CsrfProtect.load_config
-# def get_csrf_config():
-#     return CsrfSettings()
 
 
 @app.get("/health")

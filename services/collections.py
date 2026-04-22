@@ -42,7 +42,7 @@ async def add_collection(
             try:
                 async with file_manager.session() as files:
                     await files.save(image_path, image)
-                    miniatures = await images_generator.collections_catalog(image)
+                    miniatures = await images_generator.generate_collection_variants(image)
                     for layer, miniature in miniatures.items():
                         #await files.save_by_layer(image_path, miniature, layer)
                         await files.save_by_layer(file_name, miniature, layer)

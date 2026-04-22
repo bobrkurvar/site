@@ -9,6 +9,7 @@ from PIL import Image, ImageOps
 from pydantic import BaseModel
 
 from core.logger import setup_logging
+from shared import PRODUCTS, DETAILS, COLLECTIONS, SLIDES
 
 
 setup_logging()
@@ -23,10 +24,10 @@ MAX_RETRIES = 3
 executor = ProcessPoolExecutor(max_workers=NUM_WORKERS)
 
 IMAGE_PRESETS = {
-    "products": {"size": (640, 400), "mode": "cover"},  # каталог товаров
-    "collections": {"size": (960, 480), "mode": "cover"},  # карточки коллекций
-    "details": {"size": (2400, None), "mode": "fit"},  # детальная картинка
-    "slides": {"size": (1100, 825), "mode": "cover"},
+    PRODUCTS: {"size": (640, 400), "mode": "cover"},  # каталог товаров
+    COLLECTIONS: {"size": (960, 480), "mode": "cover"},  # карточки коллекций
+    DETAILS: {"size": (2400, None), "mode": "fit"},  # детальная картинка
+    SLIDES: {"size": (1100, 825), "mode": "cover"},
 }
 
 

@@ -1,14 +1,12 @@
 import logging
 from collections.abc import Collection
-from typing import Any
 
 from sqlalchemy import delete, select, update
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import async_sessionmaker
 from sqlalchemy.orm import selectinload, joinedload
 
 import domain
-from core import conf
 from db import models
 from domain.exceptions import (AlreadyExistsError, ForeignKeyViolationError,
                                NotFoundError)
@@ -16,31 +14,19 @@ from domain.exceptions import (AlreadyExistsError, ForeignKeyViolationError,
 log = logging.getLogger(__name__)
 
 
+
 class Crud:
 
-    def __init__(self, url, domain_with_orm: dict | None = None):
-        self.url = url
-        self._engine = None
-        self._session_factory: async_sessionmaker | None = None
-        self._mapper = domain_with_orm if domain_with_orm else {}
+    def __init__(self, session_factory, domain_with_orm):
+        self._session_factory = session_factory
+        self._mapper = domain_with_orm or {}
 
-    def connect(self):
-        if self._engine is None:
-            self._engine = create_async_engine(self.url)
-        if self._session_factory is None:
-            self._session_factory = async_sessionmaker(self._engine)
 
     @property
     def session_factory(self) -> async_sessionmaker:
         if self._session_factory is None:
             raise RuntimeError("Not connected")
         return self._session_factory
-
-    async def close_and_dispose(self):
-        log.debug("подключение к движку %s закрывается", self._engine)
-        await self._engine.dispose()
-        self._session_factory = None
-        self._engine = None
 
     def register(self, domain_cls, orm_cls):
         self._mapper[domain_cls] = orm_cls
@@ -196,7 +182,7 @@ class Crud:
             if order_by:
                 query = query.order_by(getattr(model, order_by))
 
-            if offset:
+            if offset is not None:
                 query = query.offset(offset)
 
             if limit:
@@ -211,28 +197,23 @@ class Crud:
                 return await _read_internal(session)
 
 
+DOMAIN_WITH_ORM = {
+    domain.Tile: models.Catalog,
+    domain.TileSize: models.TileSize,
+    domain.TileColor: models.TileColor,
+    domain.TileSurface: models.TileSurface,
+    domain.Producer: models.Producer,
+    domain.Box: models.Box,
+    domain.TileImages: models.TileImages,
+    domain.Categories: models.Categories,
+    domain.Collections: models.Collections,
+    domain.Admin: models.Admins,
+    domain.Slug: models.Slug,
+    domain.CollectionCategory: models.CollectionCategory,
+}
 
-_db_manager: Crud | None = None
-
-
-def get_db_manager(test=False) -> Crud:
-    db_host = conf.db_url if not test else conf.test_db_url
-    domain_with_orm = {
-        domain.Tile: models.Catalog,
-        domain.TileSize: models.TileSize,
-        domain.TileColor: models.TileColor,
-        domain.TileSurface: models.TileSurface,
-        domain.Producer: models.Producer,
-        domain.Box: models.Box,
-        domain.TileImages: models.TileImages,
-        domain.Categories: models.Categories,
-        domain.Collections: models.Collections,
-        domain.Admin: models.Admins,
-        domain.Slug: models.Slug,
-        domain.CollectionCategory: models.CollectionCategory,
-    }
-    global _db_manager
-    if _db_manager is None:
-        _db_manager = Crud(db_host, domain_with_orm)
-
-    return _db_manager
+def build_crud(session_factory) -> Crud:
+    return Crud(
+        session_factory=session_factory,
+        domain_with_orm=DOMAIN_WITH_ORM,
+    )

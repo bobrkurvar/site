@@ -1,6 +1,6 @@
 import pytest
 from tests.fakes import FakeStorage
-from infrastructure.images import ProductImagesManager
+from adapters.images import ProductImagesManager
 
 
 @pytest.mark.asyncio

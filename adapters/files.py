@@ -28,19 +28,7 @@ class FileManager:
     ):
         self._root = Path(root)
         self._storage = storage if storage else FileSystemStorage()
-        self._layers = (
-            layers
-            if layers
-            else {
-                "original_product": "base/products",
-                "original_collection": "base/collections",
-                "original_slide": "base/slides",
-                "products": "products/catalog",
-                "details": "products/details",
-                "collections": "collections/catalog",
-                "slides": "slides",
-            }
-        )
+        self._layers = (layers if layers else {})
 
     def session(self):
         return FileSession(self)
@@ -53,11 +41,6 @@ class FileManager:
 
 
     async def save(self, image_path: Path | str, img):
-        # upload_dir = Path(image_path).parent
-        # if upload_dir:
-        #     upload_dir.mkdir(parents=True, exist_ok=True)
-        #     async with self._fs.open(image_path, "xb") as fw:
-        #         await fw.write(img)
         await self._storage.save(image_path, img)
         return image_path
 
@@ -87,20 +70,6 @@ class FileManager:
             deleted += 1
         return deleted
 
-
-    # async def delete_async(self, paths):
-    #     return await asyncio.to_thread(self._delete, paths)
-
-    # @staticmethod
-    # def _delete(paths: list[Path]) -> int:
-    #     deleted = 0
-    #     for path in paths:
-    #         if isinstance(path, str):
-    #             path = Path(path)
-    #         path.unlink(missing_ok=True)
-    #         deleted += 1
-    #     return deleted
-
     @staticmethod
     def get_directory(main_path: Path, other_path: str | Path) -> str:
         if main_path.exists():
@@ -117,23 +86,23 @@ class FileSession:
         return self  # ← возвращаем proxy, а не fm
 
     async def __aexit__(self, exc_type, exc, tb):
-        if exc:
-            await self.rollback()
-        else:
+        try:
+            if exc:
+                await self.rollback()
+        finally:
             self._saved_files.clear()
-
 
     async def save(self, image_path: Path, img: bytes):
         image_path = await self._fm.save(image_path, img)
         self._saved_files.append(image_path)
 
-    async def save_by_layer(self, image_path: Path, img: bytes, layer: str):
-        image_path = await self._fm.save_by_layer(image_path, img, layer)
+    async def save_by_layer(self, file_name: str, img: bytes, layer: str):
+        image_path = await self._fm.save_by_layer(file_name, img, layer)
         self._saved_files.append(image_path)
 
     async def rollback(self):
         log.debug("paths to rollback: %s", self._saved_files)
         await self._fm.delete(self._saved_files)
 
-    def __getattr__(self, name):
-        return getattr(self._fm, name)
+    # def __getattr__(self, name):
+    #     return getattr(self._fm, name)

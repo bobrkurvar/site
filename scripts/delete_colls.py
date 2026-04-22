@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-from infrastructure.crud import get_db_manager
+from adapters.db import get_db_manager
 from domain import CollectionCategory, Collections, Slug
 from services.UoW import UnitOfWork
 

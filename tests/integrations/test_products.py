@@ -7,8 +7,6 @@ from domain import Tile, TileImages, TileSize, Box
 from services.exceptions import ImageProcessingError
 from services.tile import delete_tile, update_tile
 from tests.conftest import domain_handbooks_models_for_products
-
-#from .conftest import products_env_with_handbooks, products_env
 from .helpers import product_files_count
 from tests.helpers import add_tile_helper, assert_handbooks_count, assert_size, assert_box, assert_tile_fields, update_filters
 
@@ -37,7 +35,7 @@ async def test_create_tile_success_when_handbooks_not_exists(
 async def test_create_tile_failure(products_env, domain_handbooks_models_for_products):
     manager, file_manager = products_env
     class FakeGenerator:
-        async def products_catalog_and_details(*args, **kwargs):
+        async def generate_product_variants(*args, **kwargs):
             raise ImageProcessingError
 
     with pytest.raises(ImageProcessingError):

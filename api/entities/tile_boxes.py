@@ -2,20 +2,19 @@ import logging
 from decimal import Decimal
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Form
+from fastapi import APIRouter, Form
 from fastapi.responses import RedirectResponse
 
-from infrastructure.crud import Crud, get_db_manager
+from adapters.deps import DbManagerDep
 from domain import Box
 
 router = APIRouter(prefix="/admin/tiles/boxes")
-dbManagerDep = Annotated[Crud, Depends(get_db_manager)]
 log = logging.getLogger(__name__)
 
 
 @router.post("/delete")
 async def admin_create_tile_box(
-    manager: dbManagerDep,
+    manager: DbManagerDep,
     weight: Annotated[Decimal, Form()] = None,
     area: Annotated[Decimal, Form()] = None,
 ):

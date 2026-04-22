@@ -1,21 +1,21 @@
 import logging
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, File, Form, UploadFile, Request
+from fastapi import APIRouter, File, Form, UploadFile
 from fastapi.responses import RedirectResponse
 
-from infrastructure.crud import Crud, get_db_manager
-from infrastructure.images import (CollectionImagesManager, ImageGenerator)
+from adapters.deps import DbManagerDep, HttpClientDep
+from adapters.images import (CollectionImagesManager, ImageGenerator)
 from services.collections import add_collection, delete_collection
 
 router = APIRouter(prefix="/admin/tiles/collections")
-dbManagerDep = Annotated[Crud, Depends(get_db_manager)]
 log = logging.getLogger(__name__)
 
 
 @router.post("/create")
 async def admin_create_tile_collection(
-    manager: dbManagerDep,
+    manager: DbManagerDep,
+    http_client: HttpClientDep,
     collection_name: Annotated[str, Form()],
     category_name: Annotated[str, Form()],
     image: Annotated[UploadFile, File()],
@@ -28,7 +28,7 @@ async def admin_create_tile_collection(
         image,
         category_name,
         manager,
-        images_generator=ImageGenerator(),
+        images_generator=ImageGenerator(http_client),
         file_manager=CollectionImagesManager(),
     )
     return RedirectResponse("/admin", status_code=303)
@@ -36,16 +36,13 @@ async def admin_create_tile_collection(
 
 @router.post("/delete")
 async def admin_delete_tile_collections(
-    manager: dbManagerDep,
+    manager: DbManagerDep,
     collection_name: Annotated[str, Form()],
-    # category_name: Annotated[str, Form()],
 ):
     collection_name = collection_name.strip()
-    # category_name = category_name.strip()
     await delete_collection(
         collection_name=collection_name,
         manager=manager,
-        # category_name=category_name,
         file_manager=CollectionImagesManager(),
     )
     return RedirectResponse("/admin", status_code=303)

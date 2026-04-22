@@ -1,28 +1,24 @@
 import logging
-from typing import Annotated
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Request
 from fastapi.templating import Jinja2Templates
 
-from infrastructure.crud import Crud, get_db_manager
-from infrastructure.images import ProductImagesManager
-#from infrastructure.repo import get_special_repo, SpecialRepository
+from adapters.deps import DbManagerDep
+from adapters.images import ProductImagesManager
 from core.config import ITEMS_PER_PAGE
-from domain import Producer, Slug, Tile, map_to_tile_domain
+from domain import Slug, Tile, map_to_tile_domain
 from services.views import (build_data_for_filters, build_main_images,
                             build_tile_filters, fetch_items,
                             get_categories_for_items)
 
 router = APIRouter(tags=["presentation"], prefix="/catalog")
-dbManagerDep = Annotated[Crud, Depends(get_db_manager)]
-#specialRepoDep = Annotated[SpecialRepository, Depends(get_special_repo)]
 templates = Jinja2Templates("templates")
 log = logging.getLogger(__name__)
 
 
 @router.get("/{category}/products/{tile_id:int}")
 async def get_tile_page(
-    request: Request, category: str, tile_id: int, manager: dbManagerDep
+    request: Request, category: str, tile_id: int, manager: DbManagerDep
 ):
     product_manager = ProductImagesManager()
     category_name = (await manager.read(Slug, slug=category))[0]["name"]
@@ -57,7 +53,7 @@ async def get_tile_page(
 async def get_catalog_tiles_page(
     request: Request,
     category_name: str,
-    manager: dbManagerDep,
+    manager: DbManagerDep,
     producer: str | None = None,
     size: str | None = None,
     color: str | None = None,

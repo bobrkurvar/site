@@ -22,19 +22,34 @@ def compose_run(*args):
     return ["docker", "compose", "-p", TEST_PROJECT if IS_TEST else PROD_PROJECT, "-f", TEST_COMPOSE if IS_TEST else PROD_COMPOSE, *args]
 
 
+def logs():
+    services = ["app", "postgres", "nginx"]
+    outs = "|".join(services)
+    out = ""
+    while out not in services:
+        out = input(f"[{outs}]: ").strip()
+    return run(compose_run("logs", out))
+
+
 def test():
     global IS_TEST
     IS_TEST = True
-
+    run(compose_run("down", "-v", "--remove-orphans"))
     e2e_code = 0
     int_code = 0
     try:
-        run_or_exit(compose_run("up", "--build", "-d", "postgres", "migrate", "runner", "app"))
-        run_or_exit(compose_run("build", "e2e_tests"))
-        e2e_code = run(compose_run("run", "--rm", "--no-deps", "e2e_tests"))
-        run_or_exit(compose_run("build", "int_tests"))
-        int_code = run(compose_run("run", "--rm", "--no-deps", "int_tests"))
+        tests = ""
+        while tests not in {"int", "e2e", "all"}:
+            tests = input("[int|e2e|all]: ").strip()
+        run_or_exit(compose_run("up", "--build", "-d", "postgres", "migrate", "runner", "app", "nginx", "redis"))
+        if tests in {"e2e", "all"}:
+            run_or_exit(compose_run("build", "e2e_tests"))
+            e2e_code = run(compose_run("run", "--rm", "--no-deps", "e2e_tests"))
+        if tests in {"int", "all"}:
+            run_or_exit(compose_run("build", "int_tests"))
+            int_code = run(compose_run("run", "--rm", "--no-deps", "int_tests"))
     finally:
+        logs()
         run(compose_run("down", "-v", "--remove-orphans"))
         return e2e_code or int_code
 
@@ -68,14 +83,6 @@ def down_test() -> int:
     global IS_TEST
     IS_TEST = True
     return run(compose_run("down", "--remove-orphans"))
-
-def logs():
-    services = ["app", "image_service"]
-    outs = "|".join(services)
-    out = input(f"[{outs}]: ")
-    if out in services:
-        return run(compose_run("logs", "-f", out))
-
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:

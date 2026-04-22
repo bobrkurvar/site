@@ -87,7 +87,7 @@ async def add_tile(
             try:
                 async with file_manager.session() as files:
                     await files.save(image_path, img)
-                    miniatures = await images_generator.products_catalog_and_details(img)
+                    miniatures = await images_generator.generate_product_variants(img)
                     for layer, miniature in miniatures.items():
                         await files.save_by_layer(file_name, miniature, layer)
             except FileExistsError as exc:

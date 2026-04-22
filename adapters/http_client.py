@@ -5,8 +5,6 @@ from httpx import ASGITransport, AsyncClient, ConnectError, HTTPStatusError
 
 from core import conf
 
-# from aiohttp import ClientResponseError, ClientSession
-# from aiohttp.client_exceptions import ClientConnectorError
 
 
 log = logging.getLogger(__name__)
@@ -32,23 +30,26 @@ def add_exception_handler(cls):
     return cls
 
 
-class MyExternalApiForBot:
+class HttpClient:
+
     def __init__(self, url=None, app=None):
         self._url = url
         self._app = app
-        self._client = None
+        self._client = (
+            AsyncClient(transport=ASGITransport(app=self._app), base_url=self._url)
+            if self._app
+            else AsyncClient(base_url=self._url)
+        )
 
-    def connect(self):
-        if not self._client:
-            self._client = (
-                AsyncClient(transport=ASGITransport(app=self._app), base_url=self._url)
-                if self._app
-                else AsyncClient(base_url=self._url)
-            )
+    @property
+    def client(self):
+        if self._client is None:
+            raise RuntimeError("HTTP client is not initialized")
+        return self._client
 
     async def generate_images(self, **data):
         try:
-            resp = await self._client.post("/generate-images", json=data)
+            resp = await self.client.post("/generate-images", json=data)
             resp.raise_for_status()
             return resp.json()
         except HTTPStatusError as exc:
@@ -57,16 +58,5 @@ class MyExternalApiForBot:
 
     async def close(self):
         if self._client:
-            await self._client.aclose()
+            await self.client.aclose()
             self._client = None
-
-
-# url = conf.image_service_url
-_http_client: MyExternalApiForBot | None = None
-
-
-def get_http_client(app=None):
-    global _http_client
-    if _http_client is None:
-        _http_client = MyExternalApiForBot(f"http://{conf.image_service_url}/", app)
-    return _http_client

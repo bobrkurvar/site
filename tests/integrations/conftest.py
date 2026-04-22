@@ -4,16 +4,15 @@ import shutil
 from pathlib import Path
 
 import pytest
-from alembic import command
-from alembic.config import Config
 from sqlalchemy import text
 
-from infrastructure.crud import get_db_manager
-from core import conf
+from adapters.db import build_crud
+from adapters.dbProvider import DbProvider
 from domain import *
-from infrastructure.images import ProductImagesManager, CollectionImagesManager
+from adapters.images import ProductImagesManager, CollectionImagesManager
 from tests.fakes import FakeStorage, FakeImageGenerator
 from tests.helpers import add_collection_helper, add_tile_helper_with_control_filters
+from core import conf
 
 
 log = logging.getLogger(__name__)
@@ -21,11 +20,10 @@ log = logging.getLogger(__name__)
 
 @pytest.fixture
 async def crud(request):
-    manager = get_db_manager(test=True)
-    manager.connect()
+    db_provider = DbProvider(conf.test_db_url)
+    manager = build_crud(db_provider.session_factory)
     yield manager
-    engine = manager._engine
-    async with engine.begin() as conn:
+    async with db_provider.engine.begin() as conn:
         await conn.execute(
             text(
                 """
@@ -46,7 +44,7 @@ async def crud(request):
         """
             )
         )
-    await manager.close_and_dispose()
+    await db_provider.close()
 
 
 @pytest.fixture
@@ -72,25 +70,6 @@ def clean_fs_after_test(request):
     if images_path.exists() and images_path.is_dir():
         shutil.rmtree(images_path)
 
-
-# @pytest.fixture(scope="session", autouse=True)
-# def migrate_test_db(request):
-#     """
-#     Автоматически применяет все миграции к тестовой БД
-#     только если тест помечен как интеграционный.
-#     """
-#     log.debug("INTERGRATION MIGRATIONS TO %s", conf.test_db_url)
-#     if not any(
-#         "integration" in marker.name
-#         for item in request.session.items
-#         for marker in item.iter_markers()
-#     ):
-#         yield
-#         return
-#     alembic_cfg = Config("alembic.ini")
-#     alembic_cfg.set_main_option("sqlalchemy.url", conf.test_db_url)
-#     command.upgrade(alembic_cfg, "head")
-#     yield
 
 
 @pytest.fixture

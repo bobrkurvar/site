@@ -14,9 +14,11 @@ services:
       DB_USER: postgres
       DB_PASSWORD: ${DB_PASSWORD}
       API_HOST: image_service
+      REDIS_HOST: redis
     networks:
       - internal
     depends_on:
+      - redis
       - postgres
     volumes:
       - ./static/images:/pysite/static/images # bind mount docker compose down -v не удалит этот том
@@ -136,7 +138,9 @@ services:
 
       # в какой docker-сети traefik должен найти контейнер
       - traefik.docker.network=traefik-public
-
+      -
+  redis:
+    image: redis:7-alpine
 
 networks:
   internal:

@@ -1,10 +1,10 @@
 import asyncio
 import logging
 
-from infrastructure.crud import get_db_manager
+from adapters.db import get_db_manager
 from core import conf
 from domain.user import Admin
-from services.security import get_hash
+from infra.security import get_hash
 
 log = logging.getLogger(__name__)
 
@@ -14,7 +14,10 @@ async def add_admins():
     log.debug("ADMINS: %s", initial_admins)
     manager = get_db_manager()
     manager.connect()
-    await manager.delete(Admin)
+    try:
+        await manager.delete(Admin)
+    except:
+        pass
     for admin in initial_admins:
         log.debug("ADMIN: %s", admin)
         password = get_hash(admin["password"])

@@ -2,12 +2,10 @@ from decimal import Decimal
 
 import pytest
 
-from domain import (Box, Categories, CollectionCategory, Collections, Producer,
-                    Slug, Tile, TileColor, TileImages, TileSize, TileSurface)
-from services.tile import add_tile
-from tests.fakes import FakeCRUD, FakeUoW, FakeStorage
-from infrastructure.images import ProductImagesManager, CollectionImagesManager, SlideImagesManager
-
+from domain import (Box, Categories, Producer,
+                    Tile, TileColor, TileSize, TileSurface)
+from tests.fakes import FakeCRUD, FakeStorage
+from adapters.images import ProductImagesManager, CollectionImagesManager
 
 
 async def noop(*args, **kwargs):
