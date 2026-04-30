@@ -45,9 +45,9 @@ class Producer:
     def __str__(self):
         return f"{self.name}"
 
-    @staticmethod
-    def fields():
-        return "name"
+    # @staticmethod
+    # def fields():
+    #     return "name"
 
 
 class Box:
@@ -70,9 +70,9 @@ class Categories:
     def __str__(self):
         return self.name
 
-    @staticmethod
-    def fields():
-        return "name", "slug"
+    # @staticmethod
+    # def fields():
+    #     return "name", "slug"
 
 
 class Tile:
