@@ -1,24 +1,35 @@
 import asyncio
 import logging
 
-from infrastructure.crud import get_db_manager
+from adapters.db import build_crud
+from adapters.db_provider import DbProvider
 from core import conf
-from domain.user import Admin
-from services.security import get_hash
+from domain import Admin, AlreadyExistsError
+from infra.security import get_hash
 
 log = logging.getLogger(__name__)
 
 
 async def add_admins():
-    initial_admins = conf.initial_admins_list
-    log.debug("ADMINS: %s", initial_admins)
-    manager = get_db_manager()
-    manager.connect()
-    for admin in initial_admins:
-        log.debug("ADMIN: %s", admin)
-        password = get_hash(admin["password"])
-        log.debug("HASH PASWORD: %s,", password)
-        await manager.create(Admin, username=admin["username"], password=password)
+    db_provider = DbProvider(conf.db_url)
+    try:
+        initial_admins = conf.initial_admins_list
+        log.debug("ADMINS: %s", initial_admins)
+        manager = build_crud(db_provider.session_factory)
+        try:
+            await manager.delete(Admin)
+        except:
+            pass
+        for admin in initial_admins:
+            log.debug("ADMIN: %s", admin)
+            password = get_hash(admin["password"])
+            log.debug("HASH PASWORD: %s,", password)
+            try:
+                await manager.create(Admin, username=admin["username"], password=password)
+            except AlreadyExistsError:
+                pass
+    finally:
+        await db_provider.close()
 
 
 async def main():

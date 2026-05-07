@@ -1,4 +1,3 @@
-
 def _iter_files(file_manager, layer: str):
     path = file_manager.resolve_path(layer=layer)
     if not path.exists():
@@ -28,5 +27,3 @@ def product_files_count(file_manager) -> int:
         + count_by_layer(file_manager, layer="products")
         + count_by_layer(file_manager, layer="details")
     )
-
-

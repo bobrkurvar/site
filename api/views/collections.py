@@ -1,19 +1,20 @@
 import logging
-from typing import Annotated
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Request
 from fastapi.templating import Jinja2Templates
-
-from infrastructure.crud import Crud, get_db_manager
-from infrastructure.images import CollectionImagesManager, ProductImagesManager
+from adapters.deps import DbManagerDep
+from adapters.images import CollectionImagesManager, ProductImagesManager
 from core.config import COLLECTIONS_PER_PAGE
 from domain import CollectionCategory, Slug, map_to_tile_domain
-from services.views import (build_data_for_filters, build_main_images,
-                            build_tile_filters, fetch_collections_items,
-                            get_categories_for_items)
+from services.views import (
+    build_data_for_filters,
+    build_main_images,
+    build_tile_filters,
+    fetch_collections_items,
+    get_categories_for_items,
+)
 
 router = APIRouter(tags=["presentation"], prefix="/catalog")
-dbManagerDep = Annotated[Crud, Depends(get_db_manager)]
 templates = Jinja2Templates("templates")
 log = logging.getLogger(__name__)
 
@@ -21,7 +22,7 @@ log = logging.getLogger(__name__)
 @router.get("/{category}/collections")
 async def get_collections_page(
     request: Request,
-    manager: dbManagerDep,
+    manager: DbManagerDep,
     category: str,
     page: int = 1,
 ):
@@ -69,7 +70,7 @@ async def get_collections_page(
 @router.get("/{category}/collections/{collection}")
 async def get_catalog_tiles_page(
     request: Request,
-    manager: dbManagerDep,
+    manager: DbManagerDep,
     collection: str,
     category: str,
     name: str | None = None,

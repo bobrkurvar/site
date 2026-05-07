@@ -1,24 +1,23 @@
 import logging
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, File, Form, UploadFile
+from fastapi import APIRouter, File, Form, UploadFile
 from fastapi.responses import RedirectResponse
 
-from infrastructure.crud import Crud, get_db_manager
-from infrastructure.images import (ProductImagesManager, ImageGenerator)
+from adapters.deps import DbManagerDep, HttpClientDep
+from adapters.images import ProductImagesManager, ImageGenerator
 from domain import *
 from services.tile import add_tile, delete_tile, update_tile
 from api.utils import api_input_to_params, strip_input_params
 
 router = APIRouter(prefix="/admin/tiles")
-dbManagerDep = Annotated[Crud, Depends(get_db_manager)]
 
 log = logging.getLogger(__name__)
 
 
 @router.post("/delete")
 async def delete_tile_by_id_or_all(
-    manager: dbManagerDep,
+    manager: DbManagerDep,
     tile_id: Annotated[int, Form()] = None,
 ):
     params = {}
@@ -41,7 +40,8 @@ async def admin_create_tile(
     boxes_count: Annotated[int, Form()],
     main_image: Annotated[UploadFile, File()],
     category_name: Annotated[str, Form()],
-    manager: dbManagerDep,
+    manager: DbManagerDep,
+    http_client: HttpClientDep,
     feature_name: Annotated[str, Form()],
     surface_name: Annotated[str, Form()],
     images: Annotated[list[UploadFile], File()],
@@ -80,7 +80,7 @@ async def admin_create_tile(
         category_name,
         manager,
         bytes_images,
-        images_generator=ImageGenerator,
+        images_generator=ImageGenerator(http_client),
         file_manager=ProductImagesManager(),
         color_feature=feature_name,
         surface=surface_name,
@@ -90,7 +90,7 @@ async def admin_create_tile(
 
 @router.post("/update")
 async def admin_update_tile(
-    manager: dbManagerDep,
+    manager: DbManagerDep,
     article: Annotated[int, Form()],
     name: Annotated[str, Form()],
     size: Annotated[str, Form()],
@@ -109,18 +109,6 @@ async def admin_update_tile(
         if v not in (None, "") and k not in ("manager", "article")
     }
     params = strip_input_params(**params)
-    # name, size, color_name, producer_name, category_name, feature_name, surface_name = [
-    #     value.strip()
-    #     for value in (
-    #         name,
-    #         size,
-    #         color_name,
-    #         producer_name,
-    #         category_name,
-    #         feature_name,
-    #         surface_name,
-    #     )
-    # ]
     params = api_input_to_params(**params)
 
     log.debug("to update: %s", params)

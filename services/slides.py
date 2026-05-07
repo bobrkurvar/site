@@ -14,7 +14,7 @@ async def add_slides(images: list[bytes], images_generator, file_manager):
             image_path = base_slide_path / file_name
             async with file_manager.session() as files:
                 await files.save(image_path, image)
-                miniatures = await images_generator.slides(image)
+                miniatures = await images_generator.generate_slide_variants(image)
                 for layer, miniature in miniatures.items():
                     await files.save_by_layer(file_name, miniature, layer)
         except TypeError:

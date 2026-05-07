@@ -356,39 +356,39 @@
     </section>
 
     <!-- Массовое удаление -->
-    <section class="admin-section">
-        <h2>Управление</h2>
-        <div class="management-buttons">
-            <form method="post" action="/admin/tiles/delete">
-                <input type="hidden" name="token_key" value="{{ csrf_token }}">
-                <button type="submit" class="delete-all-btn"
-                        onclick="return confirm('Удалить ВСЕ товары?')">
-                    Удалить все товары
-                </button>
-            </form>
-            <form method="post" action="/admin/tiles/colors/delete">
-                <input type="hidden" name="token_key" value="{{ csrf_token }}">
-                <button type="submit" class="delete-all-btn"
-                        onclick="return confirm('Удалить ВСЕ цвета?')">
-                    Удалить все цвета
-                </button>
-            </form>
-            <form method="post" action="/admin/tiles/surfaces/delete">
-                <input type="hidden" name="token_key" value="{{ csrf_token }}">
-                <button type="submit" class="delete-all-btn"
-                        onclick="return confirm('Удалить ВСЕ поверхности?')">
-                    Удалить все поверхности
-                </button>
-            </form>
-            <form method="post" action="/admin/tiles/sizes/delete">
-                <input type="hidden" name="token_key" value="{{ csrf_token }}">
-                <button type="submit" class="delete-all-btn"
-                        onclick="return confirm('Удалить ВСЕ размеры?')">
-                    Удалить все размеры
-                </button>
-            </form>
-        </div>
-    </section>
+<!--    <section class="admin-section">-->
+<!--        <h2>Управление</h2>-->
+<!--        <div class="management-buttons">-->
+<!--            <form method="post" action="/admin/tiles/delete">-->
+<!--                <input type="hidden" name="token_key" value="{{ csrf_token }}">-->
+<!--                <button type="submit" class="delete-all-btn"-->
+<!--                        onclick="return confirm('Удалить ВСЕ товары?')">-->
+<!--                    Удалить все товары-->
+<!--                </button>-->
+<!--            </form>-->
+<!--            <form method="post" action="/admin/tiles/colors/delete">-->
+<!--                <input type="hidden" name="token_key" value="{{ csrf_token }}">-->
+<!--                <button type="submit" class="delete-all-btn"-->
+<!--                        onclick="return confirm('Удалить ВСЕ цвета?')">-->
+<!--                    Удалить все цвета-->
+<!--                </button>-->
+<!--            </form>-->
+<!--            <form method="post" action="/admin/tiles/surfaces/delete">-->
+<!--                <input type="hidden" name="token_key" value="{{ csrf_token }}">-->
+<!--                <button type="submit" class="delete-all-btn"-->
+<!--                        onclick="return confirm('Удалить ВСЕ поверхности?')">-->
+<!--                    Удалить все поверхности-->
+<!--                </button>-->
+<!--            </form>-->
+<!--            <form method="post" action="/admin/tiles/sizes/delete">-->
+<!--                <input type="hidden" name="token_key" value="{{ csrf_token }}">-->
+<!--                <button type="submit" class="delete-all-btn"-->
+<!--                        onclick="return confirm('Удалить ВСЕ размеры?')">-->
+<!--                    Удалить все размеры-->
+<!--                </button>-->
+<!--            </form>-->
+<!--        </div>-->
+<!--    </section>-->
     <!-- Управление слайдами -->
     <section class="admin-section">
         <div class="section-header">

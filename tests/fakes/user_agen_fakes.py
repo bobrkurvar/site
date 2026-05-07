@@ -1,6 +1,6 @@
 class FakeCookieManager:
 
-    def __init__(self, request = None, response = None):
+    def __init__(self, request=None, response=None):
         self.request = request
         self.response = response
         self.storage = {}

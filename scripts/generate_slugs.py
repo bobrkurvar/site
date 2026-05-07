@@ -3,7 +3,7 @@ import logging
 
 from slugify import slugify
 
-from infrastructure.crud import get_db_manager
+from adapters.db import get_db_manager
 from domain import Categories, Collections, Slug
 
 log = logging.getLogger(__name__)

@@ -2,8 +2,6 @@ import logging
 from pathlib import Path
 
 from PIL import Image, ImageOps
-
-from core import logger
 from image_worker import IMAGE_PRESETS  # твоя функция и пресеты
 
 log = logging.getLogger(__name__)

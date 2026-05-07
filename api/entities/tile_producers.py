@@ -1,20 +1,19 @@
 import logging
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Form
+from fastapi import APIRouter, Form
 from fastapi.responses import RedirectResponse
 
-from infrastructure.crud import Crud, get_db_manager
+from adapters.deps import DbManagerDep
 from domain import Producer
 
 router = APIRouter(prefix="/admin/tiles/producers")
-dbManagerDep = Annotated[Crud, Depends(get_db_manager)]
 log = logging.getLogger(__name__)
 
 
 @router.post("/delete")
 async def admin_create_tile_box(
-    manager: dbManagerDep,
+    manager: DbManagerDep,
     name: Annotated[str, Form()] = None,
 ):
     filters = {}

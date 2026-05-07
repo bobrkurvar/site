@@ -1,10 +1,7 @@
 import logging
-from typing import Any
-
-from slugify import slugify
 
 from domain import *
-from services.UoW import UnitOfWork
+from infra.UoW import UnitOfWork
 
 from .exceptions import FileStorageError
 
@@ -87,7 +84,7 @@ async def add_tile(
             try:
                 async with file_manager.session() as files:
                     await files.save(image_path, img)
-                    miniatures = await images_generator.products_catalog_and_details(img)
+                    miniatures = await images_generator.generate_product_variants(img)
                     for layer, miniature in miniatures.items():
                         await files.save_by_layer(file_name, miniature, layer)
             except FileExistsError as exc:
@@ -107,7 +104,6 @@ async def delete_tile(manager, file_manager, uow_class=UnitOfWork, **filters):
             for image in images_paths:
                 await file_manager.delete_product(image)
         return del_res
-
 
 
 def dict_for_update_model(tile_field: str, value):
@@ -150,7 +146,13 @@ async def create_composite(manager, article: int, values, columns, *to_join):
 
 
 def map_tile_param_to_model_param(tile_param: str):
-    if tile_param in ("size_length", "size_width", "size_height", "box_area", "box_weight"):
+    if tile_param in (
+        "size_length",
+        "size_width",
+        "size_height",
+        "box_area",
+        "box_weight",
+    ):
         return tile_param.split("_")[1]
     else:
         return tile_param
@@ -158,11 +160,21 @@ def map_tile_param_to_model_param(tile_param: str):
 
 async def create_new_model(manager, article: int, model, session, **values):
     if model is TileSize:
-        await create_composite(manager, article, values, ("size_length", "size_width", "size_height"), "size")
+        await create_composite(
+            manager,
+            article,
+            values,
+            ("size_length", "size_width", "size_height"),
+            "size",
+        )
     elif model is Box:
-        await create_composite(manager, article, values, ("box_area", "box_weight"),"box")
+        await create_composite(
+            manager, article, values, ("box_area", "box_weight"), "box"
+        )
     elif model is TileColor:
-        await create_composite(manager, article, values, ("color_name", "feature_name"),"color")
+        await create_composite(
+            manager, article, values, ("color_name", "feature_name"), "color"
+        )
     log.debug("model: %s values: %s", model, values)
     model_values = await add_items(model, manager, session, **values)
     return model_to_update_values(model, **model_values)
@@ -177,7 +189,7 @@ def map_param_to_domain_model(param_name: str):
         "producer_name": Producer,
         "box": Box,
         "category_name": Categories,
-        "surface_name": TileSurface
+        "surface_name": TileSurface,
     }
     return mapper[param_name]
 
@@ -193,7 +205,7 @@ async def update_tile(
     box: dict | None = None,
     boxes_count: int | None = None,
     category_name: str | None = None,
-    surface_name: str | None = None
+    surface_name: str | None = None,
 ):
     params = {
         k: v
@@ -208,6 +220,10 @@ async def update_tile(
                 to_update.update({k: v})
                 continue
             updated_in_model = dict_for_update_model(k, v)
-            updated_fields_in_tile = await create_new_model(manager, article, domain_model, uow.session, **updated_in_model)
+            updated_fields_in_tile = await create_new_model(
+                manager, article, domain_model, uow.session, **updated_in_model
+            )
             to_update.update(updated_fields_in_tile)
-        await manager.update(Tile, session=uow.session, filters=dict(id=article), **to_update)
+        await manager.update(
+            Tile, session=uow.session, filters=dict(id=article), **to_update
+        )

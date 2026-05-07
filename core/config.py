@@ -22,6 +22,8 @@ class Settings(BaseSettings):
     initial_admins: str
     pepper: str
     cookie_secret: str
+    is_test: bool
+    redis_host: str
 
     @property
     def db_url(self):

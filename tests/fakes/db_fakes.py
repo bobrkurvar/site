@@ -1,21 +1,16 @@
 import logging
 
-from domain import Box, Collections, NotFoundError, TileImages, TileSize
-from infrastructure.orm_mapper import DomainToOrmMapper
+from domain import NotFoundError
+from db.mapper import DomainToOrmMapper
 
 
 log = logging.getLogger(__name__)
 
 
-
-
 class Table:
 
     def __init__(
-        self,
-        columns: list[str],
-        rows: list[dict] | None = None,
-        default_num: int = 0
+        self, columns: list[str], rows: list[dict] | None = None, default_num: int = 0
     ):
         self.default_num = default_num
         self.columns = set(columns)
@@ -23,10 +18,8 @@ class Table:
 
     def add_row(self, **row):
         for i in self.columns - row.keys():
-            #log.debug("III: %s = %s", i, self.default_num)
             row[i] = self.default_num
             self.default_num += 1
-        #log.debug("row after default: %s", row)
         self.rows.append(row)
         return row
 
@@ -47,10 +40,10 @@ class FakeCRUD:
     async def create(self, model, **row):
         ignored = {"session", "seq_data"}
         row = {k: v for k, v in row.items() if k not in ignored}
-        log.debug("FAKE CREATE MODEL: %s", model)
+        # log.debug("FAKE CREATE MODEL: %s", model)
         table = self._get_table(model)
         res = table.add_row(**row)
-        #log.debug("create res: %s", res)
+        # log.debug("create res: %s", res)
         return res
 
     async def read(self, model, **kwargs):

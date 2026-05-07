@@ -1,6 +1,17 @@
-from domain import (Admin, Box, Categories, CollectionCategory, Collections,
-                    Producer, Slug, Tile, TileColor, TileImages, TileSize,
-                    TileSurface)
+from domain import (
+    Admin,
+    Box,
+    Categories,
+    CollectionCategory,
+    Collections,
+    Producer,
+    Slug,
+    Tile,
+    TileColor,
+    TileImages,
+    TileSize,
+    TileSurface,
+)
 
 
 class DomainToOrmMapper:

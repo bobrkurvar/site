@@ -2,8 +2,7 @@ import asyncio
 import logging
 from pathlib import Path
 
-import core.logger
-from infrastructure.crud import get_db_manager
+from adapters.db import get_db_manager
 from domain import CollectionCategory, Collections
 
 log = logging.getLogger(__name__)

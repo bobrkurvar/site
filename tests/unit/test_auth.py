@@ -9,7 +9,7 @@ from services.auth import (
     create_tokens_from_login_and_set,
     get_data_from_token,
 )
-from services.security import get_hash
+from infra.security import get_hash
 from domain import Admin, CredentialsValidateError
 from tests.fakes.user_agen_fakes import FakeCookieManager
 
