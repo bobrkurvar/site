@@ -5,7 +5,7 @@ from fastapi import APIRouter, File, Form, UploadFile
 from fastapi.responses import RedirectResponse
 
 from adapters.deps import DbManagerDep, HttpClientDep
-from adapters.images import (ProductImagesManager, ImageGenerator)
+from adapters.images import ProductImagesManager, ImageGenerator
 from domain import *
 from services.tile import add_tile, delete_tile, update_tile
 from api.utils import api_input_to_params, strip_input_params

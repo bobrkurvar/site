@@ -5,12 +5,16 @@ from slugify import slugify
 
 from core.config import ITEMS_PER_PAGE
 from domain import Categories, Slug
-from services.views import (build_main_images,
-                            build_tile_filters, extract_quoted_word,
-                            fetch_items)
+from services.views import (
+    build_main_images,
+    build_tile_filters,
+    extract_quoted_word,
+    fetch_items,
+)
 from tests.unit.conftest import manager_factory
 
 log = logging.getLogger(__name__)
+
 
 @pytest.mark.asyncio
 async def test_extract_quoted_word_collection_name():

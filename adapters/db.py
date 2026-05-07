@@ -4,15 +4,17 @@ from collections.abc import Collection
 from sqlalchemy import delete, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import async_sessionmaker
-from sqlalchemy.orm import selectinload, joinedload
+from sqlalchemy.orm import selectinload
 
 import domain
 from db import models
-from domain.exceptions import (AlreadyExistsError, ForeignKeyViolationError,
-                               NotFoundError)
+from domain.exceptions import (
+    AlreadyExistsError,
+    ForeignKeyViolationError,
+    NotFoundError,
+)
 
 log = logging.getLogger(__name__)
-
 
 
 class Crud:
@@ -20,7 +22,6 @@ class Crud:
     def __init__(self, session_factory, domain_with_orm):
         self._session_factory = session_factory
         self._mapper = domain_with_orm or {}
-
 
     @property
     def session_factory(self) -> async_sessionmaker:
@@ -136,7 +137,6 @@ class Crud:
             async with self.session_factory.begin() as session:
                 return await _update_internal(session)
 
-
     async def read(
         self,
         domain_model,
@@ -211,6 +211,7 @@ DOMAIN_WITH_ORM = {
     domain.Slug: models.Slug,
     domain.CollectionCategory: models.CollectionCategory,
 }
+
 
 def build_crud(session_factory) -> Crud:
     return Crud(

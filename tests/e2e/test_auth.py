@@ -20,7 +20,6 @@ def test_admin_login_success(page):
     expect(page.get_by_label("Password")).to_have_count(0)
 
 
-
 def test_admin_login_user_not_found(page):
     page.goto(f"http://{conf.api_host}/admin")
     page.get_by_label("Username").fill("invalid_username")
@@ -37,5 +36,3 @@ def test_admin_login_wrong_password(page):
     page.get_by_role("button", name="Login").click()
     log.debug(page.url)
     expect(page).to_have_url(re.compile(r".*/admin/login/submit"))
-
-

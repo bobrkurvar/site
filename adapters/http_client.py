@@ -3,9 +3,6 @@ from functools import wraps
 
 from httpx import ASGITransport, AsyncClient, ConnectError, HTTPStatusError
 
-from core import conf
-
-
 
 log = logging.getLogger(__name__)
 
@@ -29,7 +26,7 @@ def add_exception_handler(cls):
             setattr(cls, attr_name, handle_ext_api(attr))
     return cls
 
-
+@add_exception_handler
 class HttpClient:
 
     def __init__(self, url=None, app=None):

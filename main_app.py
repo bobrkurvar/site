@@ -8,11 +8,12 @@ from api.error_handlers import *
 from core.logger import setup_logging
 from adapters.redis import RedisProvider
 from adapters.http_client import HttpClient
-from adapters.dbProvider import DbProvider
+from adapters.db_provider import DbProvider
 from core import conf
 
 
 setup_logging()
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -26,10 +27,10 @@ async def lifespan(app: FastAPI):
         await app.state.image_api.close()
         await app.state.redis_provider.close()
 
+
 log = logging.getLogger(__name__)
 app = FastAPI(lifespan=lifespan)
 app.include_router(main_router)
-
 
 
 @app.get("/health")

@@ -17,5 +17,3 @@ def product_details_path(manager):
         return manager.resolve_path(file_name, "details")
 
     return wrapper
-
-

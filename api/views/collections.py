@@ -6,9 +6,13 @@ from adapters.deps import DbManagerDep
 from adapters.images import CollectionImagesManager, ProductImagesManager
 from core.config import COLLECTIONS_PER_PAGE
 from domain import CollectionCategory, Slug, map_to_tile_domain
-from services.views import (build_data_for_filters, build_main_images,
-                            build_tile_filters, fetch_collections_items,
-                            get_categories_for_items)
+from services.views import (
+    build_data_for_filters,
+    build_main_images,
+    build_tile_filters,
+    fetch_collections_items,
+    get_categories_for_items,
+)
 
 router = APIRouter(tags=["presentation"], prefix="/catalog")
 templates = Jinja2Templates("templates")

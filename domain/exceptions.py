@@ -1,5 +1,6 @@
 from .user import Admin
 
+
 class RepositoryError(Exception):
     """Базовое исключение репозитория"""
 

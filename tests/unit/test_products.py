@@ -6,9 +6,17 @@ from domain import *
 from services.tile import delete_tile, update_tile
 from tests.conftest import domain_handbooks_models_for_products
 from tests.fakes import FakeUoW, FakeImageGenerator
-#from .conftest import products_env, products_env_with_handbooks
+
+# from .conftest import products_env, products_env_with_handbooks
 from .helpers import product_catalog_path, product_details_path
-from tests.helpers import add_tile_helper, assert_size, assert_box, assert_tile_fields, assert_handbooks_count, update_filters
+from tests.helpers import (
+    add_tile_helper,
+    assert_size,
+    assert_box,
+    assert_tile_fields,
+    assert_handbooks_count,
+    update_filters,
+)
 
 log = logging.getLogger(__name__)
 
@@ -32,7 +40,9 @@ async def test_create_tile_success_when_all_handbooks_exists(
 
 
 @pytest.mark.asyncio
-async def test_expected_file_paths_exists_after_success_created(products_env_with_handbooks):
+async def test_expected_file_paths_exists_after_success_created(
+    products_env_with_handbooks,
+):
     manager, file_manager, fs = products_env_with_handbooks
     record = await add_tile_helper(manager, file_manager, FakeImageGenerator())
     paths_funcs = (
@@ -50,7 +60,6 @@ async def test_expected_file_paths_exists_after_success_created(products_env_wit
     assert fs[expected_paths[0]] == b"MAIN"
     assert fs[expected_paths[1]] == b"A"
     assert fs[expected_paths[2]] == b"B"
-
 
 
 @pytest.mark.asyncio
@@ -85,8 +94,15 @@ async def test_update_tile_success_when_new_attributes_in_handbooks(
     await update_tile(manager, article, uow_class=FakeUoW, **new_filters)
 
     new_tile = (await manager.read(Tile, id=article))[0]
-    expected_box, expected_size, color = new_filters.pop("box"), new_filters.pop("size"), new_filters.pop("color")
-    new_filters["color_name"], new_filters["feature_name"] = color["color_name"], color["feature_name"]
+    expected_box, expected_size, color = (
+        new_filters.pop("box"),
+        new_filters.pop("size"),
+        new_filters.pop("color"),
+    )
+    new_filters["color_name"], new_filters["feature_name"] = (
+        color["color_name"],
+        color["feature_name"],
+    )
     box = (await manager.read(Box, id=new_tile["box_id"]))[0]
     size = (await manager.read(TileSize, id=new_tile["size_id"]))[0]
 
@@ -99,9 +115,10 @@ async def test_update_tile_success_when_new_attributes_in_handbooks(
     await assert_handbooks_count(manager, domain_handbooks_models_for_products, 2)
 
 
-
 @pytest.mark.asyncio
-async def test_delete_tile_by_article(products_env, domain_handbooks_models_for_products):
+async def test_delete_tile_by_article(
+    products_env, domain_handbooks_models_for_products
+):
     manager, file_manager, fs = products_env
     record = await add_tile_helper(manager, file_manager, FakeImageGenerator())
     tile_id = record["id"]
@@ -117,4 +134,3 @@ async def test_delete_tile_by_article(products_env, domain_handbooks_models_for_
     new_records = await manager.read(Tile, id=tile_id)
     assert not new_records
     await assert_handbooks_count(manager, domain_handbooks_models_for_products, 1)
-

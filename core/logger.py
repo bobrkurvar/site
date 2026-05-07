@@ -4,7 +4,7 @@ import sys
 
 class IgnoreFilter(logging.Filter):
     def filter(self, record):
-        ignore = {"asyncio"}
+        ignore = {"asyncio", "python_multipart", "multipart"}
         if record.levelno >= logging.WARNING:
             return True
         pocket = record.name.split(".")[0]
@@ -30,6 +30,7 @@ def setup_logging():
     logging.getLogger("asyncio").setLevel(logging.WARNING)
 
     logger.addFilter(IgnoreFilter())
+
 
 def setup_test_logging():
     logger = logging.getLogger()

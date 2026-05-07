@@ -114,6 +114,7 @@ class ImageWithTarget(BaseModel):
 def health():
     return {"status": "ok"}
 
+
 @app.post("/generate-images")
 async def generate_image(image_data: ImageWithTarget):
     data = base64.b64decode(image_data.data)

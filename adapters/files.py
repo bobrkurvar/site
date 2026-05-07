@@ -24,21 +24,19 @@ class FileSystemStorage:
 
 class FileManager:
     def __init__(
-        self, root: str = "static/images", layers: dict | None = None, storage = None
+        self, root: str = "static/images", layers: dict | None = None, storage=None
     ):
         self._root = Path(root)
         self._storage = storage if storage else FileSystemStorage()
-        self._layers = (layers if layers else {})
+        self._layers = layers if layers else {}
 
     def session(self):
         return FileSession(self)
-
 
     def resolve_path(self, file_name: str = "", layer: str | None = None) -> Path:
         if layer not in self._layers:
             raise ValueError(f"Unknown layer: {layer}")
         return self._root / self._layers.get(layer, "") / file_name
-
 
     async def save(self, image_path: Path | str, img):
         await self._storage.save(image_path, img)
@@ -49,7 +47,9 @@ class FileManager:
         await self.save(path, img)
         return path
 
-    async def save_by_layer_from_path(self, base_path: Path | str, img: bytes, layer: str):
+    async def save_by_layer_from_path(
+        self, base_path: Path | str, img: bytes, layer: str
+    ):
         return await self.save_by_layer(Path(base_path).name, img, layer)
 
     async def delete_by_layers(self, base_path: str | Path, layers: list[str]) -> int:
@@ -57,9 +57,8 @@ class FileManager:
         file_name = Path(base_path).name
         paths = [self.resolve_path(file_name, layer) for layer in layers]
         paths.append(base_path)  # type: ignore
-        #return await self.delete_async(paths)
+        # return await self.delete_async(paths)
         return await self.delete(paths)
-
 
     async def delete(self, paths: list[Path]) -> int:
         deleted = 0

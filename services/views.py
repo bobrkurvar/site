@@ -15,10 +15,11 @@ async def build_tile_filters(
     category: str | None = None,
 ) -> dict:
     filters = {}
-    if producer: filters["producer_name"] = producer
-    if color: filters["color_name"] = color
+    if producer:
+        filters["producer_name"] = producer
+    if color:
+        filters["color_name"] = color
     if size:
-        #length, width, height = (Decimal(i) for i in size.split("×"))
         length, width, height = (Decimal(i) for i in size.split())
         tile_size_id = await manager.read(
             TileSize, length=length, width=width, height=height
@@ -34,7 +35,7 @@ async def build_tile_filters(
     return filters
 
 
-def tiles_from_ids_collection(tiles: Sequence, collection:str):
+def tiles_from_ids_collection(tiles: Sequence, collection: str):
     tiles_ids = []
     for tile in tiles:
         if extract_quoted_word(tile["name"]) == collection:
@@ -48,7 +49,7 @@ async def build_data_for_filters(
     category = (
         (await manager.read(Slug, slug=category))[0]["name"] if category else None
     )
-    tiles = await manager.read(Tile, loaded = ["size"], category_name=category)
+    tiles = await manager.read(Tile, loaded=["size"], category_name=category)
     log.debug("in category: %s, tiles: %s", category, len(tiles))
     tiles_ids = None
     if collection is not None:
@@ -57,10 +58,25 @@ async def build_data_for_filters(
         tiles_ids = tiles_from_ids_collection(tiles, collection)
 
     tile_ids_filter = dict(id=tiles_ids) if tiles_ids else {}
-    tile_sizes = await manager.read(Tile, loaded=["size"], distinct="size_id", category_name=category, **tile_ids_filter)
-    tile_colors = await manager.read(Tile, distinct="color_name", category_name=category, **tile_ids_filter)
-    producers = await manager.read(Tile, distinct="producer_name", category_name=category, **tile_ids_filter)
-    log.debug("size: %s, colors: %s, producers: %s", len(tile_sizes), len(tile_colors), len(producers))
+    tile_sizes = await manager.read(
+        Tile,
+        loaded=["size"],
+        distinct="size_id",
+        category_name=category,
+        **tile_ids_filter
+    )
+    tile_colors = await manager.read(
+        Tile, distinct="color_name", category_name=category, **tile_ids_filter
+    )
+    producers = await manager.read(
+        Tile, distinct="producer_name", category_name=category, **tile_ids_filter
+    )
+    log.debug(
+        "size: %s, colors: %s, producers: %s",
+        len(tile_sizes),
+        len(tile_colors),
+        len(producers),
+    )
     producers = tuple(producer["producer_name"] for producer in producers)
     sizes = [
         TileSize(

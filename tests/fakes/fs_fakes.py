@@ -15,17 +15,13 @@ class FakeStorage:
         del self.storage[str(path)]
 
 
-
 class FakeImageGenerator:
 
     async def generate_product_variants(self, img: bytes):
         return {"products": b"aaa", "details": b"bbb"}
 
-
     async def generate_collection_variants(self, img: bytes):
         return {"collections": b"aaa"}
 
-
     async def generate_slide_variant(self, img: bytes):
         return {"slides": b"aaa"}
-

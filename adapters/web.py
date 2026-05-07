@@ -52,6 +52,7 @@ class AuthCookies:
 
 authCookiesDep = Annotated[AuthCookies, Depends()]
 
+
 async def require_admin(request: Request, cookies: authCookiesDep, redis: RedisDep):
     access_token = cookies.get_access_token(request)
     if access_token:

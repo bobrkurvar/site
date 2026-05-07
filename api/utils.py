@@ -22,7 +22,7 @@ def api_input_to_params(**input_params):
             color[k] = v
             params.update(color)
         else:
-            params.update({k:v})
+            params.update({k: v})
 
     return params
 

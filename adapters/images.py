@@ -50,14 +50,14 @@ class ImageGenerator:
         response[DETAILS] = base64.b64decode(response[DETAILS])
         return response
 
-
     @generate_image_with_exc
     async def generate_collection_variants(self, img: bytes):
         img = base64.b64encode(img).decode("utf-8")
-        response = await self._api_client.generate_images(data=img, targets=(COLLECTIONS,))
+        response = await self._api_client.generate_images(
+            data=img, targets=(COLLECTIONS,)
+        )
         response[COLLECTIONS] = base64.b64decode(response[COLLECTIONS])
         return response
-
 
     @generate_image_with_exc
     async def generate_slide_variant(self, img: bytes):
@@ -89,7 +89,6 @@ class ProductImagesManager(FileManager):
         name = base_path.name
         path_details = self.resolve_path(name, DETAILS)
         return self.get_directory(path_details, base_path)
-
 
 
 class CollectionImagesManager(FileManager):

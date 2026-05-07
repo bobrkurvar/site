@@ -7,15 +7,10 @@ from db.mapper import DomainToOrmMapper
 log = logging.getLogger(__name__)
 
 
-
-
 class Table:
 
     def __init__(
-        self,
-        columns: list[str],
-        rows: list[dict] | None = None,
-        default_num: int = 0
+        self, columns: list[str], rows: list[dict] | None = None, default_num: int = 0
     ):
         self.default_num = default_num
         self.columns = set(columns)
@@ -45,10 +40,10 @@ class FakeCRUD:
     async def create(self, model, **row):
         ignored = {"session", "seq_data"}
         row = {k: v for k, v in row.items() if k not in ignored}
-        #log.debug("FAKE CREATE MODEL: %s", model)
+        # log.debug("FAKE CREATE MODEL: %s", model)
         table = self._get_table(model)
         res = table.add_row(**row)
-        #log.debug("create res: %s", res)
+        # log.debug("create res: %s", res)
         return res
 
     async def read(self, model, **kwargs):

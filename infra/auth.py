@@ -1,15 +1,20 @@
 import logging
 from core import conf
-from domain import AccessTokenNotExistsError, RefreshTokenNotExistsError, InvalidRefreshTokenError, InvalidAccessTokenError
+from domain import (
+    AccessTokenNotExistsError,
+    RefreshTokenNotExistsError,
+    InvalidRefreshTokenError,
+    InvalidAccessTokenError,
+)
 import jwt
 
 
 log = logging.getLogger(__name__)
 
 
-
 secret_key = conf.secret_key
 algorithm = conf.algorithm
+
 
 def get_data_from_token(encoded: str):
     return jwt.decode(encoded, secret_key, algorithms=[algorithm])
@@ -17,6 +22,7 @@ def get_data_from_token(encoded: str):
 
 def data_encode_to_jwt(decoded: dict):
     return jwt.encode(decoded, secret_key, algorithm)
+
 
 def check_refresh_token(token: str):
     try:
@@ -45,4 +51,3 @@ def check_access_token(token: str):
         raise InvalidAccessTokenError
 
     return payload
-

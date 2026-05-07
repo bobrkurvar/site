@@ -15,7 +15,6 @@ import logging
 log = logging.getLogger(__name__)
 
 
-
 admin_router = APIRouter(dependencies=[Depends(require_admin)])
 admin_router.include_router(tile_router)
 admin_router.include_router(tile_size_router)

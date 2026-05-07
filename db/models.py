@@ -1,7 +1,6 @@
 from decimal import Decimal
 
-from sqlalchemy import (ForeignKey, ForeignKeyConstraint, UniqueConstraint,
-                        inspect)
+from sqlalchemy import ForeignKey, ForeignKeyConstraint, UniqueConstraint, inspect
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.types import DECIMAL

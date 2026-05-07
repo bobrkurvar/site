@@ -5,7 +5,7 @@ from fastapi import APIRouter, File, Form, UploadFile
 from fastapi.responses import RedirectResponse
 
 from adapters.deps import DbManagerDep, HttpClientDep
-from adapters.images import (CollectionImagesManager, ImageGenerator)
+from adapters.images import CollectionImagesManager, ImageGenerator
 from services.collections import add_collection, delete_collection
 
 router = APIRouter(prefix="/admin/tiles/collections")

@@ -21,7 +21,7 @@ async def admin_page(
     request: Request,
     manager: DbManagerDep,
     refreshed_tokens: RequireForAdminDep,
-    cookies: authCookiesDep
+    cookies: authCookiesDep,
 ):
     tiles = await manager.read(Tile, loaded=["images", "size", "box"])
     tile_sizes = await manager.read(TileSize)
@@ -58,7 +58,6 @@ async def admin_page(
             "producers": producers,
             "categories": categories,
             "boxes_count": boxes_count,
-
         },
     )
     if refreshed_tokens is not None:
@@ -73,7 +72,7 @@ async def admin_login_submit(
     username: Annotated[str, Form()],
     password: Annotated[str, Form()],
     cookies: authCookiesDep,
-    redis: RedisDep
+    redis: RedisDep,
 ):
     response = RedirectResponse("/admin", status_code=303)
     tokens = await create_tokens_from_login(manager, redis, username, password)

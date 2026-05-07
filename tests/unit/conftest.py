@@ -2,8 +2,7 @@ from decimal import Decimal
 
 import pytest
 
-from domain import (Box, Categories, Producer,
-                    Tile, TileColor, TileSize, TileSurface)
+from domain import Box, Categories, Producer, Tile, TileColor, TileSize, TileSurface
 from tests.fakes import FakeCRUD, FakeStorage
 from adapters.images import ProductImagesManager, CollectionImagesManager
 
@@ -40,6 +39,7 @@ def generate_boxes(count):
         {"weight": Decimal(i * 10), "area": Decimal(i)} for i in range(1, count + 1)
     ]
 
+
 # Генератор категорий
 def generate_categories(count):
     return [{"name": f"category{i}"} for i in range(1, count + 1)]
@@ -51,12 +51,18 @@ def manager_factory(crud):
         manager = crud
         sizes = generate_tile_sizes(n)
         colors = generate_tile_colors(n, True) if color_fix else generate_tile_colors(n)
-        #boxes = generate_boxes(n)
+        # boxes = generate_boxes(n)
         for i in range(n):
             size = await manager.create(TileSize, **sizes[i])
-            #box = await manager.create(Box, **boxes[i])
+            # box = await manager.create(Box, **boxes[i])
             color = await manager.create(TileColor, **colors[i])
-            await manager.create(Tile, name=f"Tile{i}", size_id=size["id"], **color, producer_name=f"producer{i}")
+            await manager.create(
+                Tile,
+                name=f"Tile{i}",
+                size_id=size["id"],
+                **color,
+                producer_name=f"producer{i}",
+            )
         return manager
 
     return _manage_with_items
@@ -78,7 +84,9 @@ async def products_env(crud):
 async def products_env_with_handbooks(products_env):
     manager, file_manager, fs = products_env
 
-    await manager.create(TileSize, length=Decimal(300), width=Decimal(200), height=Decimal(10))
+    await manager.create(
+        TileSize, length=Decimal(300), width=Decimal(200), height=Decimal(10)
+    )
     await manager.create(TileColor, color_name="color", feature_name="feature")
     await manager.create(Producer, name="producer")
     await manager.create(Box, weight=Decimal(30), area=Decimal(1))
@@ -93,4 +101,3 @@ async def collection_env(crud):
     fs = {}
     file_manager = CollectionImagesManager(root="tests/images", storage=FakeStorage(fs))
     return crud, file_manager, fs
-
