@@ -42,7 +42,7 @@ async def admin_page(
     producers = await manager.read(Producer)
     boxes_count = await manager.read(Tile, distinct="boxes_count")
     tiles = [map_to_tile_domain(**t) for t in tiles]
-    categories = await manager.read(Categories)
+    categories = await manager.read(Category)
 
     response = templates.TemplateResponse(
         "admin.html",

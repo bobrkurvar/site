@@ -9,9 +9,9 @@ setup_test_logging()
 
 @pytest.fixture
 def domain_handbooks_models_for_products():
-    return TileSize, TileSurface, TileColor, Categories, Box, Producer
+    return TileSize, TileSurface, TileColor, Category, Box, Producer
 
 
 @pytest.fixture
 def domain_handbooks_models_for_collection():
-    return Collections, CollectionCategory
+    return Collection, CollectionCategory

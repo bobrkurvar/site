@@ -35,7 +35,7 @@ async def test_create_tile_success_when_all_handbooks_exists(
     # # проверка всех справочников
     await assert_handbooks_count(manager, domain_handbooks_models_for_products, 1)
 
-    images_table = await manager.read(TileImages, tile_id=tile_id)
+    images_table = await manager.read(TileImage, tile_id=tile_id)
     assert len(images_table) == 3
 
 
@@ -76,7 +76,7 @@ async def test_create_tile_success_when_all_handbooks_not_exists(
     # проверка всех справочников
     await assert_handbooks_count(manager, domain_handbooks_models_for_products, 1)
 
-    images_table = await manager.read(TileImages)
+    images_table = await manager.read(TileImage)
     assert len(images_table) == 3
 
 

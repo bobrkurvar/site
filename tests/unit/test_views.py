@@ -4,7 +4,7 @@ import pytest
 from slugify import slugify
 
 from core.config import ITEMS_PER_PAGE
-from domain import Categories, Slug
+from domain import Category, Slug
 from services.views import (
     build_main_images,
     build_tile_filters,

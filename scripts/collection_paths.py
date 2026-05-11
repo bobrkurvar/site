@@ -2,19 +2,19 @@ import asyncio
 from pathlib import Path
 
 from adapters.db import get_db_manager
-from domain import Collections
+from domain import Collection
 
 
 async def main():
     manager = get_db_manager()
     manager.connect()
-    collections = await manager.read(Collections)
+    collections = await manager.read(Collection)
     all_paths = "static/images/base/collections/"
     for col in collections:
         collection_id = str(col["id"])
         path = all_paths + collection_id
         collection_name = col["name"]
-        await manager.update(Collections, {"name": collection_name}, image_path=path)
+        await manager.update(Collection, {"name": collection_name}, image_path=path)
         old_paths = (
             Path("static/images/base/collections") / collection_name,
             Path("static/images/collections/catalog") / collection_name,

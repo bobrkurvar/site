@@ -50,7 +50,7 @@ async def add_tile(
             feature_name=color_feature,
         )
         await add_items(Producer, manager, uow.session, name=producer_name)
-        await add_items(Categories, manager, uow.session, name=category_name)
+        await add_items(Category, manager, uow.session, name=category_name)
         await add_items(
             Slug, manager, uow.session, name=category_name, slug=slugify(category_name)
         )
@@ -76,7 +76,7 @@ async def add_tile(
             file_name = str(tile_record["id"]) + "-" + str(n)  # type: ignore
             image_path = file_manager.base_product_path(file_name)
             await manager.create(
-                TileImages,
+                TileImage,
                 tile_id=tile_record["id"],  # type: ignore
                 image_path=str(image_path),
                 session=uow.session,
@@ -125,7 +125,7 @@ def model_to_update_values(model, **values):
         res = {"surface_name": values["name"]}
     elif model is Producer:
         res = {"producer_name": values["name"]}
-    elif model is Categories:
+    elif model is Category:
         res = {"category_name": values["name"]}
     else:
         res = values
@@ -188,7 +188,7 @@ def map_param_to_domain_model(param_name: str):
         "color": TileColor,
         "producer_name": Producer,
         "box": Box,
-        "category_name": Categories,
+        "category_name": Category,
         "surface_name": TileSurface,
     }
     return mapper[param_name]

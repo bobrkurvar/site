@@ -2,16 +2,14 @@ import logging
 
 from slugify import slugify
 
-from domain import CollectionCategory, Collections, Slug
+from domain import CollectionCategory, Collection, Slug
 from infra.UoW import UnitOfWork
 
 log = logging.getLogger(__name__)
 
 
 async def add_collection(
-    name: str,
-    image: bytes,
-    category_name: str,
+    collection: Collection,
     manager,
     images_generator,
     file_manager,
@@ -20,33 +18,29 @@ async def add_collection(
 
     async with uow_class(manager) as uow:
         collection_record = await manager.read(
-            Collections, name=name, session=uow.session
+            Collection, name=collection.name, session=uow.session
         )
         if not collection_record:
             collection_record = await manager.create(
-                Collections,
-                name=name,
-                # image_path=str(image_path),
+                collection,
                 session=uow.session,
-            )  # type: ignore
-            coll_id = collection_record["id"]
+            )
+            coll_id = collection_record.id
             file_name = str(coll_id)
             image_path = file_manager.base_collection_path(file_name)
             await manager.update(
-                Collections,
+                Collection,
                 {"id": coll_id},
                 image_path=str(image_path),
                 session=uow.session,
             )
-            await manager.create(Slug, name=name, slug=slugify(name))
+            slug = Slug(name=collection.name)
+            await manager.create(slug)
             try:
                 async with file_manager.session() as files:
-                    await files.save(image_path, image)
-                    miniatures = await images_generator.generate_collection_variants(
-                        image
-                    )
+                    await files.save(image_path, collection.image_bytes)
+                    miniatures = await images_generator.generate_collection_variants(collection.image_bytes)
                     for layer, miniature in miniatures.items():
-                        # await files.save_by_layer(image_path, miniature, layer)
                         await files.save_by_layer(file_name, miniature, layer)
             except TypeError:
                 log.debug(
@@ -63,12 +57,12 @@ async def add_collection(
         log.debug(
             "Create CollectionCategory with collection: %s, category: %s",
             coll_id,
-            category_name,
+            collection.categories,
         )
         await manager.create(
             CollectionCategory,
             collection_id=coll_id,
-            category_name=category_name,
+            categories=collection.categories,
             session=uow.session,
         )
         return collection_record
@@ -82,7 +76,7 @@ async def delete_collection(
 ):
     async with uow_class(manager) as uow:
         collection = await manager.delete(
-            Collections,
+            Collection,
             name=collection_name,
             session=uow.session,
         )

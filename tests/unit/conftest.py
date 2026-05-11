@@ -2,7 +2,7 @@ from decimal import Decimal
 
 import pytest
 
-from domain import Box, Categories, Producer, Tile, TileColor, TileSize, TileSurface
+from domain import Box, Category, Producer, Tile, TileColor, TileSize, TileSurface
 from tests.fakes import FakeCRUD, FakeStorage
 from adapters.images import ProductImagesManager, CollectionImagesManager
 
@@ -91,7 +91,7 @@ async def products_env_with_handbooks(products_env):
     await manager.create(Producer, name="producer")
     await manager.create(Box, weight=Decimal(30), area=Decimal(1))
     await manager.create(TileSurface, name="surface")
-    await manager.create(Categories, name="category")
+    await manager.create(Category, name="category")
 
     return manager, file_manager, fs
 

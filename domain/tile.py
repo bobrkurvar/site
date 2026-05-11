@@ -1,10 +1,8 @@
 from decimal import Decimal
 
-from slugify import slugify
-
 
 class TileSize:
-    def __init__(self, size_id: int, width: Decimal, length: Decimal, height: Decimal):
+    def __init__(self, width: Decimal, length: Decimal, height: Decimal, size_id: int | None = None):
         self.id = size_id
         self.height = height
         self.width = width
@@ -45,10 +43,6 @@ class Producer:
     def __str__(self):
         return f"{self.name}"
 
-    # @staticmethod
-    # def fields():
-    #     return "name"
-
 
 class Box:
 
@@ -61,18 +55,17 @@ class Box:
         return str(self.weight.normalize())
 
 
-class Categories:
+class Category:
 
     def __init__(self, name: str):
         self.name = name
-        self.slug = slugify(name)
 
     def __str__(self):
         return self.name
 
-    # @staticmethod
-    # def fields():
-    #     return "name", "slug"
+    def __repr__(self):
+        return self.name
+
 
 
 class Tile:
@@ -85,7 +78,7 @@ class Tile:
         boxes_count: int,
         producer: Producer,
         article: int,
-        category_name: Categories,
+        category_name: Category,
         surface: TileSurface | None = None,
     ):
         self.id = article
@@ -109,26 +102,39 @@ class Tile:
         return f"{self.article} {str(self.color)} {self.surface} {self.name}"
 
 
-class TileImages:
+class TileImage:
 
-    def __init__(self, images: list[bytes]):
-        self.images = images
+    def __init__(self, image: bytes, tile_id: int, image_id: int | None = None):
+        self.id = image_id
+        self.tile_id = tile_id
+        self.image = image
 
 
-class Collections:
-
-    def __init__(self, name: str, image_path: str, category_name: str):
-        self.name = name
+class Collection:
+    def __init__(
+        self,
+        name: str,
+        image_bytes: bytes,
+        image_path: str | None = None,
+        categories: list[Category] | Category | None = None,
+        collection_id: int | None = None
+    ):
+        self.id = collection_id
+        self.name = name.strip()
         self.image_path = image_path
+        self.image_bytes = image_bytes
 
-    def __str__(self):
-        return self.name
+        if isinstance(categories, list):
+            self.categories = categories
+        elif categories:
+            self.categories = [categories]
+        else:
+            self.categories = []
 
+    def add_category(self, category: Category):
+        if category not in self.categories:
+            self.categories.append(category)
 
-class CollectionCategory:
-    def __init__(self, collection_name: str, category_name: str):
-        self.collection_name = collection_name
-        self.category_name = category_name
 
 
 def map_to_tile_domain(**tile_dict) -> Tile:
@@ -152,7 +158,7 @@ def map_to_tile_domain(**tile_dict) -> Tile:
         weight=tile_dict["box_weight"],
         area=tile_dict["box_area"],
     )
-    category_name = Categories(name=tile_dict["category_name"])
+    category_name = Category(name=tile_dict["category_name"])
 
     return Tile(
         size=size,

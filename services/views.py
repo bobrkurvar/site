@@ -2,7 +2,7 @@ import logging
 from decimal import Decimal
 from collections.abc import Sequence
 
-from domain import Categories, Slug, Tile, TileColor, TileSize
+from domain import Category, Slug, Tile, TileColor, TileSize
 
 log = logging.getLogger(__name__)
 
@@ -133,6 +133,6 @@ async def fetch_collections_items(manager, collection, limit, offset, **filters)
 
 async def get_categories_for_items(manager):
     categories = {
-        cat["name"] for cat in await manager.read(Categories, order_by="name")
+        cat["name"] for cat in await manager.read(Category, order_by="name")
     }
     return await manager.read(Slug, name=categories)

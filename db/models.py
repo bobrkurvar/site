@@ -32,13 +32,13 @@ class Catalog(Base):
     surface: Mapped["TileSurface"] = relationship("TileSurface", back_populates="tiles")
     producer: Mapped["Producer"] = relationship("Producer", back_populates="tiles")
     box: Mapped["Box"] = relationship("Box", back_populates="tiles")
-    images: Mapped[list["TileImages"]] = relationship(
-        "TileImages",
+    images: Mapped[list["TileImage"]] = relationship(
+        "TileImage",
         back_populates="tile",
         cascade="all, delete-orphan",
         passive_deletes=True,
     )
-    category: Mapped["Categories"] = relationship("Categories", back_populates="tiles")
+    category: Mapped["Category"] = relationship("Category", back_populates="tiles")
 
     __table_args__ = (
         ForeignKeyConstraint(
@@ -73,7 +73,7 @@ class Catalog(Base):
         }
 
 
-class Categories(Base):
+class Category(Base):
     __tablename__ = "categories"
     name: Mapped[str] = mapped_column(primary_key=True)
     tiles: Mapped[list["Catalog"]] = relationship("Catalog", back_populates="category")
@@ -89,7 +89,7 @@ class Categories(Base):
         return {"name": self.name}
 
 
-class TileImages(Base):
+class TileImage(Base):
     __tablename__ = "tile_images"
     image_id: Mapped[int] = mapped_column(primary_key=True)
     tile_id: Mapped[int] = mapped_column(ForeignKey("catalog.id", ondelete="CASCADE"))
@@ -104,7 +104,7 @@ class TileImages(Base):
         }
 
 
-class Collections(Base):
+class Collection(Base):
     __tablename__ = "collections"
     id: Mapped[int] = mapped_column(primary_key=True)
     # name: Mapped[str] = mapped_column(primary_key=True)
@@ -130,11 +130,11 @@ class CollectionCategory(Base):
         ForeignKey("categories.name", ondelete="CASCADE"), primary_key=True
     )
 
-    category: Mapped["Categories"] = relationship(
+    category: Mapped["Category"] = relationship(
         "Categories", back_populates="collections"
     )
-    collection: Mapped["Collections"] = relationship(
-        "Collections", back_populates="categories"
+    collection: Mapped["Collection"] = relationship(
+        "Collection", back_populates="categories"
     )
 
     def model_dump(self) -> dict:
@@ -223,7 +223,7 @@ class Box(Base):
         return {"id": self.id, "weight": self.weight, "area": self.area}
 
 
-class Admins(Base):
+class Admin(Base):
     __tablename__ = "admins"
     username: Mapped[str] = mapped_column(primary_key=True)
     password: Mapped[str]

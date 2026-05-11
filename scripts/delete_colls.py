@@ -2,7 +2,7 @@ import asyncio
 import logging
 
 from adapters.db import get_db_manager
-from domain import CollectionCategory, Collections, Slug
+from domain import CollectionCategory, Collection, Slug
 from infra.UoW import UnitOfWork
 
 log = logging.getLogger(__name__)
@@ -12,7 +12,7 @@ async def delete_colls():
     manager = get_db_manager()
     manager.connect()
     async with UnitOfWork(manager._session_factory) as uow:
-        collections = await manager.read(Collections, session=uow.session)
+        collections = await manager.read(Collection, session=uow.session)
         coll_names = {coll["name"] for coll in collections}
         coll_ids = {coll["id"] for coll in collections}
         coll_category = await manager.read(CollectionCategory)

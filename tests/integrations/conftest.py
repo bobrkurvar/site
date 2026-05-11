@@ -49,8 +49,8 @@ async def crud(request):
 @pytest.fixture
 async def manager_with_categories(crud):
     category_name1, category_name2 = "category1", "category2"
-    await crud.create(Categories, name=category_name1)
-    await crud.create(Categories, name=category_name2)
+    await crud.create(Category, name=category_name1)
+    await crud.create(Category, name=category_name2)
     return crud
 
 
@@ -91,7 +91,7 @@ async def collections_env_with_categories(collections_env):
             category_name = f"category{i}"
             log.debug("category_name: %s", category_name)
             categories.append(category_name)
-            await manager.create(Categories, name=category_name)
+            await manager.create(Category, name=category_name)
         return manager, file_manager, categories
 
     return wrapper
@@ -107,7 +107,7 @@ async def products_env_with_handbooks(products_env):
     await manager.create(Producer, name="producer")
     await manager.create(Box, weight=Decimal(30), area=Decimal(1))
     await manager.create(TileSurface, name="surface")
-    await manager.create(Categories, name="category")
+    await manager.create(Category, name="category")
 
     return manager, file_manager
 
