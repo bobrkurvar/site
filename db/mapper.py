@@ -30,6 +30,18 @@ def map_collection_to_orm(d: domain.Collection) -> models.Collection:
     return models.Collection(id=d.id, name=d.name, image_path=d.image_path)
 
 
+def map_collection_category_to_orm(d: domain.CollectionCategory) -> models.CollectionCategory:
+    return models.CollectionCategory(
+        collection_id=d.collection_id,
+        category_name=d.category_name
+    )
+
+def map_collection_category_to_domain(o: models.CollectionCategory) -> domain.CollectionCategory:
+    return domain.CollectionCategory(
+        collection_id=o.collection_id,
+        category_name=o.category_name
+    )
+
 def map_size_to_orm(d: domain.TileSize) -> models.TileSize:
     return models.TileSize(id=d.id, length=d.length, height=d.height, width=d.width)
 
@@ -192,3 +204,4 @@ registry.register(domain.Box, models.Box, map_box_to_orm, map_box_to_domain)
 registry.register(domain.TileImage, models.TileImage, map_tile_image_to_orm, map_tile_image_to_domain)
 registry.register(domain.Admin, models.Admin, map_admin_to_orm, map_admin_to_domain)
 registry.register(domain.Slug, models.Slug, map_slug_to_orm, map_slug_to_domain)
+registry.register(domain.CollectionCategory, models.CollectionCategory, map_collection_category_to_orm, map_collection_category_to_domain)

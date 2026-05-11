@@ -1,8 +1,6 @@
 import logging
 
-from slugify import slugify
-
-from domain import CollectionCategory, Collection, Slug
+from domain import Collection, Slug, CollectionCategory, AlreadyExistsError
 from infra.UoW import UnitOfWork
 
 log = logging.getLogger(__name__)
@@ -17,8 +15,8 @@ async def add_collection(
 ):
 
     async with uow_class(manager) as uow:
-        collection_record = await manager.read(
-            Collection, name=collection.name, session=uow.session
+        collection_record = await manager.read_one(
+            Collection, name=collection.name, session=uow.session, loaded="categories"
         )
         if not collection_record:
             collection_record = await manager.create(
@@ -51,20 +49,22 @@ async def add_collection(
                 log.debug("путь %s уже занять", image_path)
                 raise
         else:
-            collection_record = collection_record[0]
-            coll_id = collection_record["id"]
+            coll_id = collection_record.id
 
-        log.debug(
-            "Create CollectionCategory with collection: %s, category: %s",
-            coll_id,
-            collection.categories,
-        )
-        await manager.create(
-            CollectionCategory,
-            collection_id=coll_id,
-            categories=collection.categories,
-            session=uow.session,
-        )
+        for category in collection.categories:
+            try:
+                await manager.create(
+                    CollectionCategory(
+                        collection_id=coll_id,
+                        category_name=category.name
+                    ),
+                    session=uow.session
+                )
+                log.debug("Явно создана связь: Collection %s -> Category %s", coll_id, category.name)
+            except AlreadyExistsError:
+                log.debug("Связь уже существует, пропускаем")
+                pass
+
         return collection_record
 
 
@@ -82,4 +82,4 @@ async def delete_collection(
         )
         await manager.delete(Slug, name=collection_name, session=uow.session)
         collection = collection[0]
-        await file_manager.delete_collection(collection["image_path"])
+        await file_manager.delete_collection(collection.image_path)

@@ -326,6 +326,25 @@ class Crud:
         async with self.session_factory.begin() as session_ctx:
             return await _update_internal(session_ctx)
 
+    async def read_one(
+        self,
+        domain_cls,
+        *,
+        session=None,
+        loaded=None,
+        **filters
+    ) -> object | None:
+        results = await self.read(
+            domain_cls,
+            session=session,
+            loaded=loaded,
+            limit=1,
+            **filters
+        )
+
+        return results[0] if results else None
+
+
     async def read(
             self,
             domain_cls,

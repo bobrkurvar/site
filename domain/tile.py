@@ -101,6 +101,26 @@ class Tile:
     def __str__(self):
         return f"{self.article} {str(self.color)} {self.surface} {self.name}"
 
+    def to_dict(self):
+        return {
+            "id": self.article,
+            "name": self.name,
+            "boxes_count": self.boxes_count,
+            "category_name": self.category.name,
+            "producer_name": self.producer.name,
+            "surface_name": self.surface.name if self.surface else None,
+            "size_length": self.size.length,
+            "size_width": self.size.width,
+            "size_height": self.size.height,
+            "size_id": self.size.id,
+            "box_area": self.box.area,
+            "box_weight": self.box.weight,
+            "box_id": self.box.id,
+            "color_name": self.color.color_name,
+            "feature_name": self.color.feature_name
+        }
+
+
 
 class TileImage:
 
@@ -135,6 +155,11 @@ class Collection:
         if category not in self.categories:
             self.categories.append(category)
 
+
+class CollectionCategory:
+    def __init__(self, collection_id: int, category_name: str):
+        self.collection_id = collection_id
+        self.category_name = category_name
 
 
 def map_to_tile_domain(**tile_dict) -> Tile:

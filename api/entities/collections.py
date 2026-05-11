@@ -22,11 +22,8 @@ async def admin_create_tile_collection(
     image: Annotated[UploadFile, File()],
 ):
     image = await image.read()
-    collection = Collection(name=collection_name, category=Category(category_name), image_bytes=image)
+    collection = Collection(name=collection_name, categories=Category(category_name), image_bytes=image)
     await add_collection(
-        # collection_name,
-        # image,
-        # category_name,
         collection,
         manager,
         images_generator=ImageGenerator(http_client),
