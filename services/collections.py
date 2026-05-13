@@ -33,7 +33,7 @@ async def add_collection(
                 session=uow.session,
             )
             slug = Slug(name=collection.name)
-            await manager.create(slug)
+            await manager.create(slug, session=uow.session)
             try:
                 async with file_manager.session() as files:
                     await files.save(image_path, collection.image_bytes)

@@ -107,7 +107,7 @@ def map_catalog_to_domain(o: models.Catalog) -> domain.Tile:
         box=box,
         boxes_count=o.boxes_count,
         producer=producer,
-        category_name=category,
+        category=category,
         article=o.id,
     )
 
@@ -120,16 +120,8 @@ def map_tile_image_to_domain(o: models.TileImage) -> domain.TileImage:
 
 
 def map_collection_to_domain(o: models.Collection) -> domain.Collection:
-    return domain.Collection(id=o.id, name=o.name, image_path=o.image_path)
+    return domain.Collection(collection_id=o.id, name=o.name, image_path=o.image_path)
 
-
-def map_collection_category_to_domain(o: models.CollectionCategory) -> domain.CollectionCategory:
-    insp = inspect(o)
-
-    return domain.CollectionCategory(
-        collection_id=o.collection_id,
-        category_name=o.category_name
-    )
 
 
 def map_size_to_domain(o: models.TileSize) -> domain.TileSize:

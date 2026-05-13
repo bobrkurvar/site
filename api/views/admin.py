@@ -27,10 +27,10 @@ async def admin_page(
     tile_sizes = await manager.read(TileSize)
     tile_sizes = [
         TileSize(
-            size_id=size["id"],
-            length=size["length"],
-            width=size["width"],
-            height=size["height"],
+            size_id=size.id,
+            length=size.length,
+            width=size.width,
+            height=size.height,
         )
         for size in tile_sizes
     ]
@@ -41,7 +41,6 @@ async def admin_page(
     boxes_areas = await manager.read(Box, distinct="area")
     producers = await manager.read(Producer)
     boxes_count = await manager.read(Tile, distinct="boxes_count")
-    tiles = [map_to_tile_domain(**t) for t in tiles]
     categories = await manager.read(Category)
 
     response = templates.TemplateResponse(

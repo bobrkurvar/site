@@ -21,7 +21,7 @@ class TileSize:
 
 class TileColor:
     def __init__(self, color_name: str, feature_name: str = ""):
-        self.color_name = color_name
+        self.color_name = color_name.strip()
         self.feature_name = feature_name
 
     def __str__(self):
@@ -46,7 +46,7 @@ class Producer:
 
 class Box:
 
-    def __init__(self, box_id: int, weight: Decimal, area: Decimal):
+    def __init__(self, weight: Decimal, area: Decimal, box_id: int | None = None):
         self.id = box_id
         self.weight = weight
         self.area = area
@@ -77,8 +77,9 @@ class Tile:
         box: Box,
         boxes_count: int,
         producer: Producer,
-        article: int,
-        category_name: Category,
+        category: Category,
+        images: list["TileImage"] | list[bytes] = None,
+        article: int | None = None,
         surface: TileSurface | None = None,
     ):
         self.id = article
@@ -90,7 +91,8 @@ class Tile:
         self.box = box
         self.boxes_count = boxes_count
         self.producer = producer
-        self.category = category_name
+        self.category = category
+        self.images = images
 
     @property
     def present(self):
@@ -124,17 +126,18 @@ class Tile:
 
 class TileImage:
 
-    def __init__(self, image: bytes, tile_id: int, image_id: int | None = None):
+    def __init__(self, image: bytes | None = None, image_path: str | None = None, tile_id: int | None = None, image_id: int | None = None):
         self.id = image_id
         self.tile_id = tile_id
         self.image = image
+        self.image_path = image_path
 
 
 class Collection:
     def __init__(
         self,
         name: str,
-        image_bytes: bytes,
+        image_bytes: bytes | None = None,
         image_path: str | None = None,
         categories: list[Category] | Category | None = None,
         collection_id: int | None = None
@@ -151,9 +154,6 @@ class Collection:
         else:
             self.categories = []
 
-    def add_category(self, category: Category):
-        if category not in self.categories:
-            self.categories.append(category)
 
 
 class CollectionCategory:
@@ -161,38 +161,3 @@ class CollectionCategory:
         self.collection_id = collection_id
         self.category_name = category_name
 
-
-def map_to_tile_domain(**tile_dict) -> Tile:
-    size = TileSize(
-        size_id=tile_dict["size_id"],
-        height=tile_dict["size_height"],
-        width=tile_dict["size_width"],
-        length=tile_dict["size_length"],
-    )
-    color = TileColor(
-        color_name=tile_dict["color_name"], feature_name=tile_dict["feature_name"]
-    )
-    surface = (
-        TileSurface(name=tile_dict["surface_name"])
-        if tile_dict["surface_name"]
-        else None
-    )
-    producer = Producer(name=tile_dict["producer_name"])
-    box = Box(
-        box_id=tile_dict["box_id"],
-        weight=tile_dict["box_weight"],
-        area=tile_dict["box_area"],
-    )
-    category_name = Category(name=tile_dict["category_name"])
-
-    return Tile(
-        size=size,
-        color=color,
-        name=tile_dict["name"],
-        surface=surface,
-        box=box,
-        boxes_count=tile_dict["boxes_count"],
-        producer=producer,
-        category_name=category_name,
-        article=tile_dict["id"],
-    )
