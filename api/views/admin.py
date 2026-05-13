@@ -25,15 +25,16 @@ async def admin_page(
 ):
     tiles = await manager.read(Tile, loaded=["images", "size", "box"])
     tile_sizes = await manager.read(TileSize)
-    tile_sizes = [
-        TileSize(
-            size_id=size.id,
-            length=size.length,
-            width=size.width,
-            height=size.height,
-        )
-        for size in tile_sizes
-    ]
+    # tile_sizes = [
+    #     TileSize(
+    #         size_id=size.id,
+    #         length=size.length,
+    #         width=size.width,
+    #         height=size.height,
+    #     )
+    #     for size in tile_sizes
+    # ]
+    tile_sizes = [tile.size for tile in tiles]
     colors_names = await manager.read(TileColor, distinct="color_name")
     colors_features = await manager.read(TileColor, distinct="feature_name")
     surfaces = await manager.read(TileSurface)

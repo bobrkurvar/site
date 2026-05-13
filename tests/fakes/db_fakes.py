@@ -1,7 +1,9 @@
 import logging
 
 from domain import NotFoundError
-from db.mapper import DomainToOrmMapper
+from .mapper import DomainToOrmMapper
+
+
 
 
 log = logging.getLogger(__name__)

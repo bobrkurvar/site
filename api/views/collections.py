@@ -45,14 +45,9 @@ async def get_collections_page(
         coll.image_path = collection_manager.get_collections_image_path(
             coll.image_path
         )
-        #coll.name = coll.collection_name
-        #slug = (await manager.read_one(Slug, name=coll.name)).slug
         coll.slug = slug_map.get(coll.name)
         collections.append(coll)
     total_count = await manager.count(CollectionCategory, category_name=category_name)
-    # total_count = len(
-    #     await manager.read(CollectionCategory, category_name=category_name)
-    # )
     total_pages = max((total_count + limit - 1) // limit, 1)
     categories = await get_categories_for_items(manager)
 
