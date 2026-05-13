@@ -6,7 +6,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import async_sessionmaker
 from sqlalchemy.orm import selectinload
 from db.mapper import registry as rg
-
+from sqlalchemy import func
 from domain import (AlreadyExistsError, ForeignKeyViolationError,
                                NotFoundError, DomainFilter)
 
@@ -228,6 +228,22 @@ class Crud:
             return await _read_internal(session)
         async with self.session_factory.begin() as session_ctx:
             return await _read_internal(session_ctx)
+
+    async def count(self, domain_cls, **filters) -> int:
+        base_orm_model = self._registry.get_model(domain_cls)
+        query = select(func.count()).select_from(base_orm_model)
+
+        conditions = []
+        for field, value in filters.items():
+            attr = getattr(base_orm_model, field)
+            conditions.append(attr == value)
+
+        if conditions:
+            query = query.where(*conditions)
+
+        async with self.session_factory.begin() as session:
+            result = await session.execute(query)
+            return result.scalar()
 
 def build_crud(session_factory) -> Crud:
     return Crud(

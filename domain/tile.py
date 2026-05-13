@@ -140,12 +140,14 @@ class Collection:
         image_bytes: bytes | None = None,
         image_path: str | None = None,
         categories: list[Category] | Category | None = None,
-        collection_id: int | None = None
+        collection_id: int | None = None,
+        slug: str | None = None
     ):
         self.id = collection_id
         self.name = name.strip()
         self.image_path = image_path
         self.image_bytes = image_bytes
+        self.slug = slug
 
         if isinstance(categories, list):
             self.categories = categories
