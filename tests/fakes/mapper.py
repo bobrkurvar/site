@@ -12,6 +12,7 @@ from domain import (
     TileSize,
     TileSurface,
 )
+
 #
 #
 # class DomainToOrmMapper:
@@ -68,7 +69,7 @@ def map_catalog_to_orm(d: domain.Tile) -> dict:
         surface_name=d.surface.name,
         producer_name=d.producer.name,
         category_name=d.category.name,
-        boxes_count=d.boxes_count
+        boxes_count=d.boxes_count,
     )
 
 
@@ -85,16 +86,14 @@ def map_collection_to_orm(d: domain.Collection) -> dict:
 
 
 def map_collection_category_to_orm(d: domain.CollectionCategory) -> dict:
-    return dict(
-        collection_id=d.collection_id,
-        category_name=d.category_name
-    )
+    return dict(collection_id=d.collection_id, category_name=d.category_name)
+
 
 def map_collection_category_to_domain(o: dict) -> domain.CollectionCategory:
     return domain.CollectionCategory(
-        collection_id=o["collection_id"],
-        category_name=o["category_name"]
+        collection_id=o["collection_id"], category_name=o["category_name"]
     )
+
 
 def map_size_to_orm(d: domain.TileSize) -> dict:
     return dict(id=d.id, length=d.length, height=d.height, width=d.width)
@@ -126,8 +125,7 @@ def map_slug_to_orm(d: domain.Slug) -> dict:
 
 def map_catalog_to_domain(o: dict) -> domain.Tile:
     color = domain.TileColor(
-        color_name=o.get("color_name"),
-        feature_name=o.get("feature_name")
+        color_name=o.get("color_name"), feature_name=o.get("feature_name")
     )
     category = domain.Category(name=o.get("category_name"))
     producer = domain.Producer(name=o.get("producer_name"))
@@ -155,40 +153,31 @@ def map_catalog_to_domain(o: dict) -> domain.Tile:
         category=category,
     )
 
+
 def map_category_to_domain(o: dict) -> domain.Category:
     return domain.Category(name=o["name"])
 
 
 def map_tile_image_to_domain(o: dict) -> domain.TileImage:
     return domain.TileImage(
-        image_id=o["image_id"],
-        tile_id=o["tile_id"],
-        image_path=o["image_path"]
+        image_id=o["image_id"], tile_id=o["tile_id"], image_path=o["image_path"]
     )
 
 
 def map_collection_to_domain(o: dict) -> domain.Collection:
     return domain.Collection(
-        collection_id=o["id"],
-        name=o["name"],
-        image_path=o["image_path"]
+        collection_id=o["id"], name=o["name"], image_path=o["image_path"]
     )
 
 
 def map_size_to_domain(o: dict) -> domain.TileSize:
     return domain.TileSize(
-        size_id=o["id"],
-        length=o["length"],
-        height=o["height"],
-        width=o["width"]
+        size_id=o["id"], length=o["length"], height=o["height"], width=o["width"]
     )
 
 
 def map_color_to_domain(o: dict) -> domain.TileColor:
-    return domain.TileColor(
-        color_name=o["color_name"],
-        feature_name=o["feature_name"]
-    )
+    return domain.TileColor(color_name=o["color_name"], feature_name=o["feature_name"])
 
 
 def map_surface_to_domain(o: dict) -> domain.TileSurface:
@@ -200,36 +189,25 @@ def map_producer_to_domain(o: dict) -> domain.Producer:
 
 
 def map_box_to_domain(o: dict) -> domain.Box:
-    return domain.Box(
-        box_id=o["id"],
-        weight=o["weight"],
-        area=o["area"]
-    )
+    return domain.Box(box_id=o["id"], weight=o["weight"], area=o["area"])
 
 
 def map_admin_to_domain(o: dict) -> domain.Admin:
-    return domain.Admin(
-        username=o["username"],
-        password=o["password"]
-    )
+    return domain.Admin(username=o["username"], password=o["password"])
 
 
 def map_slug_to_domain(o: dict) -> domain.Slug:
-    return domain.Slug(
-        name=o["name"],
-        slug=o["slug"]
-    )
+    return domain.Slug(name=o["name"], slug=o["slug"])
 
 
 class MapperRegistry:
     def __init__(self):
-        self._to_orm_funcs = {}    # domain_cls -> func
-        self._to_domain_funcs = {} # orm_model -> func (Внимание: ключ - ORM класс!)
+        self._to_orm_funcs = {}  # domain_cls -> func
+        self._to_domain_funcs = {}  # orm_model -> func (Внимание: ключ - ORM класс!)
 
     def register(self, domain_cls, to_orm, to_domain):
         self._to_orm_funcs[domain_cls] = to_orm
         self._to_domain_funcs[domain_cls] = to_domain
-
 
     def to_orm(self, domain_obj):
         domain_cls = type(domain_obj)
@@ -246,19 +224,25 @@ class MapperRegistry:
         return func(orm_dict)
 
 
-
-
 registry = MapperRegistry()
 registry.register(domain.Tile, map_catalog_to_orm, map_catalog_to_domain)
 registry.register(domain.Category, map_category_to_orm, map_category_to_domain)
 registry.register(domain.Collection, map_collection_to_orm, map_collection_to_domain)
-registry.register(domain.CollectionCategory, map_collection_category_to_orm, map_collection_category_to_domain)
+registry.register(
+    domain.CollectionCategory,
+    map_collection_category_to_orm,
+    map_collection_category_to_domain,
+)
 registry.register(domain.TileSize, map_size_to_orm, map_size_to_domain)
-registry.register(domain.TileColor,  map_color_to_orm, map_color_to_domain)
+registry.register(domain.TileColor, map_color_to_orm, map_color_to_domain)
 registry.register(domain.TileSurface, map_surface_to_orm, map_surface_to_domain)
 registry.register(domain.Producer, map_producer_to_orm, map_producer_to_domain)
 registry.register(domain.Box, map_box_to_orm, map_box_to_domain)
 registry.register(domain.TileImage, map_tile_image_to_orm, map_tile_image_to_domain)
 registry.register(domain.Admin, map_admin_to_orm, map_admin_to_domain)
 registry.register(domain.Slug, map_slug_to_orm, map_slug_to_domain)
-registry.register(domain.CollectionCategory, map_collection_category_to_orm, map_collection_category_to_domain)
+registry.register(
+    domain.CollectionCategory,
+    map_collection_category_to_orm,
+    map_collection_category_to_domain,
+)

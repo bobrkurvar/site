@@ -51,17 +51,21 @@ def manager_factory(crud):
         manager = crud
         sizes = generate_tile_sizes(n)
         colors = generate_tile_colors(n, True) if color_fix else generate_tile_colors(n)
-        # boxes = generate_boxes(n)
+        boxes = generate_boxes(n)
         for i in range(n):
-            size = await manager.create(TileSize, **sizes[i])
-            # box = await manager.create(Box, **boxes[i])
-            color = await manager.create(TileColor, **colors[i])
+            size = await manager.create(TileSize(**sizes[i]))
+            box = await manager.create(Box(**boxes[i]))
+            color = await manager.create(TileColor(**colors[i]))
             await manager.create(
-                Tile,
-                name=f"Tile{i}",
-                size_id=size["id"],
-                **color,
-                producer_name=f"producer{i}",
+                Tile(
+                    name=f"Tile{i}",
+                    size=size,
+                    color=color,
+                    producer=Producer(f"producer{i}"),
+                    box=box,
+                    boxes_count=1,
+                    category=Category("category"),
+                )
             )
         return manager
 
@@ -88,16 +92,21 @@ async def products_env(crud):
 @pytest.fixture
 async def products_env_with_handbooks(products_env):
     manager, file_manager, fs = products_env
-
     await manager.create(
-        TileSize, length=Decimal(300), width=Decimal(200), height=Decimal(10)
+        seq_data=[
+            TileSize(length=300, width=200, height=10),
+            TileColor(color_name="color", feature_name="feature"),
+            Producer(name="producer"),
+            Box(weight=30, area=1),
+            TileSurface(name="surface"),
+            Category(name="category"),
+        ]
     )
-    await manager.create(TileColor, color_name="color", feature_name="feature")
-    await manager.create(Producer, name="producer")
-    await manager.create(Box, weight=Decimal(30), area=Decimal(1))
-    await manager.create(TileSurface, name="surface")
-    await manager.create(Categories, name="category")
-
+    # await manager.create(TileColor(color_name="color", feature_name="feature"))
+    # await manager.create(Producer(name="producer"))
+    # await manager.create(Box(weight=30, area=1))
+    # await manager.create(TileSurface(name="surface"))
+    # await manager.create(Category(name="category"))
     return manager, file_manager, fs
 
 

@@ -2,7 +2,13 @@ from decimal import Decimal
 
 
 class TileSize:
-    def __init__(self, width: Decimal | int, length: Decimal | int, height: Decimal | int, size_id: int | None = None):
+    def __init__(
+        self,
+        width: Decimal | int,
+        length: Decimal | int,
+        height: Decimal | int,
+        size_id: int | None = None,
+    ):
         self.id = size_id
         self.height = Decimal(height)
         self.width = Decimal(width)
@@ -46,7 +52,9 @@ class Producer:
 
 class Box:
 
-    def __init__(self, weight: Decimal | int, area: Decimal | int, box_id: int | None = None):
+    def __init__(
+        self, weight: Decimal | int, area: Decimal | int, box_id: int | None = None
+    ):
         self.id = box_id
         self.weight = Decimal(weight)
         self.area = Decimal(area)
@@ -65,7 +73,6 @@ class Category:
 
     def __repr__(self):
         return self.name
-
 
 
 class Tile:
@@ -92,6 +99,7 @@ class Tile:
         self.boxes_count = boxes_count
         self.producer = producer
         self.category = category
+        # Первый элемент в images - main image
         self.images = images
 
     @property
@@ -119,14 +127,19 @@ class Tile:
             "box_weight": self.box.weight,
             "box_id": self.box.id,
             "color_name": self.color.color_name,
-            "feature_name": self.color.feature_name
+            "feature_name": self.color.feature_name,
         }
-
 
 
 class TileImage:
 
-    def __init__(self, image: bytes | None = None, image_path: str | None = None, tile_id: int | None = None, image_id: int | None = None):
+    def __init__(
+        self,
+        image: bytes | None = None,
+        image_path: str | None = None,
+        tile_id: int | None = None,
+        image_id: int | None = None,
+    ):
         self.id = image_id
         self.tile_id = tile_id
         self.image = image
@@ -141,7 +154,7 @@ class Collection:
         image_path: str | None = None,
         categories: list[Category] | Category | None = None,
         collection_id: int | None = None,
-        slug: str | None = None
+        slug: str | None = None,
     ):
         self.id = collection_id
         self.name = name.strip()
@@ -157,9 +170,7 @@ class Collection:
             self.categories = []
 
 
-
 class CollectionCategory:
     def __init__(self, collection_id: int, category_name: str):
         self.collection_id = collection_id
         self.category_name = category_name
-

@@ -1,7 +1,16 @@
 from decimal import Decimal
 from tests.fakes import FakeUoW
 from services.tile import add_tile
-from services.collections import add_collection
+from domain import (
+    Tile,
+    TileSize,
+    TileColor,
+    Producer,
+    Box,
+    TileSurface,
+    Category,
+    TileImage,
+)
 
 
 async def add_tile_helper_with_control_filters(
@@ -57,34 +66,26 @@ async def add_tile_helper(
     need_params: bool = False,
 ):
     # обёртка на сервисным методом add_tile, которая создана для многоразового использования одного и того же вызова функции
-    # для уменьшения объёма кода
-    # params = dict(
-    #     name = "Tile",
-    #     length = Decimal(300),
-    #     width = Decimal(200),
-    #     height = Decimal(10),
-    #     color_name = "color",
-    #     producer_name = "producer",
-    #     box_weight = Decimal(30),
-    #     box_area = Decimal(1),
-    #     boxes_count = 3,
-    #     main_image = b"MAIN",
-    #     category_name = "category",
-    #     manager = manager,
-    #     images = [b"A", b"B"],
-    #     color_feature = "feature",
-    #     surface = "surface",
-    #     file_manager = file_manager,
-    #     images_generator = images_generator,
-    # )
-    # if test_uow_class: params["uow_class"] = FakeUoW
-    # if need_params:
-    #     return await add_tile(**params), params
-    # else:
-    #     return await add_tile(**params)
-    return await add_tile_helper_with_control_filters(
-        manager, file_manager, images_generator, test_uow_class, need_params
+    tile = Tile(
+        name="Tile",
+        size=TileSize(length=300, width=200, height=10),
+        color=TileColor("color", "feature"),
+        producer=Producer("producer"),
+        box=Box(area=1, weight=30),
+        boxes_count=3,
+        images=[TileImage(b"MAIN"), TileImage(b"A"), TileImage(b"B")],
+        surface=TileSurface("surface"),
+        category=Category("category"),
     )
+    params = dict(
+        manager=manager, file_manager=file_manager, images_generator=images_generator
+    )
+    if test_uow_class:
+        params["uow_class"] = FakeUoW
+    if need_params:
+        return await add_tile(tile, **params), params
+    else:
+        return await add_tile(tile, **params)
 
 
 def assert_tile_fields(tile, expected):
@@ -108,31 +109,9 @@ def assert_box(box, expected):
 async def assert_handbooks_count(manager, models, expected_count):
     for model in models:
         rows = await manager.read(model)
-        assert len(rows) == expected_count, f"model: {model}"
-
-
-async def add_collection_helper(
-    manager,
-    file_manager,
-    images_generator,
-    collection_name: str | None = None,
-    category_name: str | None = None,
-    test_uow_class: bool = True,
-):
-    params = dict(
-        name="collection1",
-        image=b"MAIN",
-        category_name="category1",
-        manager=manager,
-        images_generator=images_generator,
-        file_manager=file_manager,
-    )
-    if test_uow_class:
-        params["uow_class"] = FakeUoW
-    if category_name:
-        params["category_name"] = category_name
-
-    return await add_collection(**params)
+        assert (
+            len(rows) == expected_count
+        ), f"model: {model} count != {expected_count} count = {len(rows)}"
 
 
 def update_filters(

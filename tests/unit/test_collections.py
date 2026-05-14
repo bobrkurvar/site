@@ -2,13 +2,12 @@ import logging
 
 import pytest
 
-from domain import CollectionCategory, Collection, NotFoundError, Slug
-from services.collections import delete_collection
+from domain import CollectionCategory, Collection, NotFoundError, Slug, Category
+from services.collections import delete_collection, add_collection
 from tests.fakes import FakeUoW, FakeImageGenerator
 from .helpers import collection_catalog_path
 
-# from .conftest import collection_env
-from tests.helpers import add_collection_helper
+# from tests.helpers import add_collection_helper
 
 log = logging.getLogger(__name__)
 
@@ -19,16 +18,27 @@ async def test_create_collection_category_when_collection_not_exists_success(
 ):
     # когда создаётся раздел коллекции-категории, но нет коллекции в таблице коллекций, создаётся коллекция
     manager, file_manager, fs = collection_env
-    collection = await add_collection_helper(
-        manager, file_manager, FakeImageGenerator()
-    )
+    # collection = await add_collection_helper(
+    #     manager, file_manager, FakeImageGenerator()
+    # )
     # сервисная функция должна вернуть запись
+    collection = await add_collection(
+        collection=Collection(
+            name="collection1",
+            # image_bytes=b"MAIN",
+            categories=Category("category1"),
+        ),
+        manager=manager,
+        images_generator=FakeImageGenerator(),
+        file_manager=file_manager,
+        uow_class=FakeUoW,
+    )
     assert collection is not None
     collection_in_db = await manager.read(Collection, name="collection1")
     collection_category = await manager.read(
-        CollectionCategory, collection_id=collection["id"]
+        CollectionCategory, collection_id=collection.id
     )
-    slug = await manager.read(Slug, name=collection["name"])
+    slug = await manager.read(Slug, name=collection.name)
     # действительно в базе есть запись коллекции
     assert len(collection_in_db) == 1
     # действительно в базе есть запись коллекции-категории
@@ -40,11 +50,22 @@ async def test_create_collection_category_when_collection_not_exists_success(
 @pytest.mark.asyncio
 async def test_file_exists_when_create_new_collection(collection_env):
     manager, file_manager, fs = collection_env
-    collection = await add_collection_helper(
-        manager, file_manager, FakeImageGenerator()
+    # collection = await add_collection_helper(
+    #     manager, file_manager, FakeImageGenerator()
+    # )
+    collection = await add_collection(
+        collection=Collection(
+            name="collection1",
+            image_bytes=b"MAIN",
+            categories=Category("category1"),
+        ),
+        manager=manager,
+        images_generator=FakeImageGenerator(),
+        file_manager=file_manager,
+        uow_class=FakeUoW,
     )
     collection_path_with_manager = collection_catalog_path(file_manager)
-    file_name = str(collection["id"])
+    file_name = str(collection.id)
     paths_funcs = (file_manager.base_collection_path, collection_path_with_manager)
     expected_paths = [str(func(file_name)) for func in paths_funcs]
     log.debug("expected_paths: %s, fs: %s", expected_paths, fs)
@@ -59,14 +80,36 @@ async def test_create_collection_category_when_collection_exists_success(
 ):
     # когда создаётся раздел коллекции-категории и коллекция в таблице коллекций есть, коллекция не создаётся
     manager, file_manager, fs = collection_env
-    collection = await add_collection_helper(
-        manager, file_manager, FakeImageGenerator()
+    # collection = await add_collection_helper(
+    #     manager, file_manager, FakeImageGenerator()
+    # )
+    collection = await add_collection(
+        collection=Collection(
+            name="collection1",
+            # image_bytes=b"MAIN",
+            categories=Category("category1"),
+        ),
+        manager=manager,
+        images_generator=FakeImageGenerator(),
+        file_manager=file_manager,
+        uow_class=FakeUoW,
     )
-    await add_collection_helper(manager, file_manager, FakeImageGenerator())
+    await add_collection(
+        collection=Collection(
+            name="collection1",
+            # image_bytes=b"MAIN",
+            categories=Category("category2"),
+        ),
+        manager=manager,
+        images_generator=FakeImageGenerator(),
+        file_manager=file_manager,
+        uow_class=FakeUoW,
+    )
+    # await add_collection_helper(manager, file_manager, FakeImageGenerator())
     collection_in_db = await manager.read(Collection, name="collection1")
-    slug = await manager.read(Slug, name=collection["name"])
+    slug = await manager.read(Slug, name=collection.name)
     collection_category = await manager.read(
-        CollectionCategory, collection_id=collection["id"]
+        CollectionCategory, collection_id=collection.id
     )
 
     # действительно в базе есть запись одной коллекции
@@ -82,18 +125,29 @@ async def test_create_collection_category_when_collection_exists_success(
 @pytest.mark.asyncio
 async def test_delete_collection_success(collection_env):
     manager, file_manager, fs = collection_env
-    collection = await add_collection_helper(
-        manager, file_manager, FakeImageGenerator()
+    # collection = await add_collection_helper(
+    #     manager, file_manager, FakeImageGenerator()
+    # )
+    collection = await add_collection(
+        collection=Collection(
+            name="collection1",
+            # image_bytes=b"MAIN",
+            categories=Category("category1"),
+        ),
+        manager=manager,
+        images_generator=FakeImageGenerator(),
+        file_manager=file_manager,
+        uow_class=FakeUoW,
     )
     await delete_collection(
-        collection_name=collection["name"],
+        collection_name=collection.name,
         manager=manager,
         uow_class=FakeUoW,
         file_manager=file_manager,
     )
 
-    collection_in_db = await manager.read(Collection, name=collection["name"])
-    slug = await manager.read(Slug, name=collection["name"])
+    collection_in_db = await manager.read(Collection, name=collection.name)
+    slug = await manager.read(Slug, name=collection.name)
     # так как в отличие от tile коллекция содержит одно изображение оно хранится вместе с ней, поэтому можно проверить её удаление без join
     assert len(collection_in_db) == 0
     assert len(slug) == 0

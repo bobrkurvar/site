@@ -14,6 +14,7 @@ log = logging.getLogger(__name__)
 #         return await manager.create(domain_model, **filters, session=session)
 #     return item[0]
 
+
 async def add_items(domain_obj, manager, session, **filters):
     item = await manager.read_one(type(domain_obj), **filters, session=session)
     if not item:
@@ -98,6 +99,7 @@ async def add_items(domain_obj, manager, session, **filters):
 #                 raise FileStorageError(f"путь {image_path} уже занять") from exc
 #         return tile_record
 
+
 async def add_tile(
     tile: Tile,
     manager,
@@ -107,7 +109,12 @@ async def add_tile(
 ):
     async with uow_class(manager) as uow:
         tile.size = await add_items(
-            tile.size, manager, uow.session, height=tile.size.height, width=tile.size.width, length=tile.size.length
+            tile.size,
+            manager,
+            uow.session,
+            height=tile.size.height,
+            width=tile.size.width,
+            length=tile.size.length,
         )
         if tile.surface:
             await add_items(tile.surface, manager, uow.session, name=tile.surface.name)
@@ -122,14 +129,21 @@ async def add_tile(
         await add_items(tile.category, manager, uow.session, name=tile.category.name)
         slug = Slug(name=tile.category.name)
         await add_items(slug, manager, uow.session, name=tile.category.name)
-        tile.box = await add_items(tile.box, manager, uow.session, weight=tile.box.weight, area=tile.box.area)
+        tile.box = await add_items(
+            tile.box, manager, uow.session, weight=tile.box.weight, area=tile.box.area
+        )
         tile = await manager.create(tile, session=uow.session)
         images = [img.image for img in tile.images if img]
         tile.images.clear()
         for i, img in enumerate(images):
-            file_name = str(tile["id"]) + "-" + str(i)
+            file_name = str(tile.id) + "-" + str(i)
             image_path = file_manager.base_product_path(file_name)
-            tile.images.append(await manager.create(TileImage(tile_id=tile.id, image_path=str(image_path)), session=uow.session))
+            tile.images.append(
+                await manager.create(
+                    TileImage(tile_id=tile.id, image_path=str(image_path)),
+                    session=uow.session,
+                )
+            )
             try:
                 async with file_manager.session() as files:
                     await files.save(image_path, img)
@@ -152,7 +166,7 @@ async def delete_tile(manager, file_manager, uow_class=UnitOfWork, **filters):
 
         del_res = await manager.delete(Tile, session=uow.session, **filters)
         for tile in tiles_to_delete:
-            images_paths = tile.images_paths
+            images_paths = [image.image_path for image in tile.images]
             for image in images_paths:
                 await file_manager.delete_product(image)
         return del_res
@@ -189,7 +203,9 @@ def set_values_from_db(values: dict, key: str, value_from_db):
         values[key] = value_from_db
 
 
-async def create_composite(manager, article: int, values: dict, columns: tuple, *to_join):
+async def create_composite(
+    manager, article: int, values: dict, columns: tuple, *to_join
+):
     tile = await manager.read_one(Tile, loaded=list(to_join), id=article)
     if not tile:
         return
@@ -282,4 +298,3 @@ async def update_tile(
         await manager.update(
             Tile, session=uow.session, filters=dict(id=article), **to_update
         )
-
