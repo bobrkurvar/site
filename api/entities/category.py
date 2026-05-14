@@ -5,7 +5,7 @@ from fastapi import APIRouter, Form
 from fastapi.responses import RedirectResponse
 
 from adapters.deps import DbManagerDep
-from domain import Categories
+from domain import Category
 
 router = APIRouter(prefix="/admin/tiles/categories")
 log = logging.getLogger(__name__)
@@ -17,5 +17,5 @@ async def admin_create_tile_box(manager: DbManagerDep, name: Annotated[str, Form
     if name is not None:
         filters["name"] = name
 
-    await manager.delete(Categories, **filters)
+    await manager.delete(Category, **filters)
     return RedirectResponse("/admin", status_code=303)

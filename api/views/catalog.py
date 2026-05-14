@@ -6,7 +6,7 @@ from fastapi.templating import Jinja2Templates
 from adapters.deps import DbManagerDep
 from adapters.images import ProductImagesManager
 from core.config import ITEMS_PER_PAGE
-from domain import Slug, Tile, map_to_tile_domain
+from domain import Slug, Tile
 from services.views import (
     build_data_for_filters,
     build_main_images,
@@ -25,22 +25,20 @@ async def get_tile_page(
     request: Request, category: str, tile_id: int, manager: DbManagerDep
 ):
     product_manager = ProductImagesManager()
-    category_name = (await manager.read(Slug, slug=category))[0]["name"]
-    tile = await manager.read(
+    category_name = (await manager.read_one(Slug, slug=category)).name
+    tile = await manager.read_one(
         Tile,
         loaded=["images", "size", "box"],
         category_name=category_name,
         id=tile_id,
     )
-    tile = tile[0] if tile else {}
     images = []
     if tile:
         images = [
-            product_manager.get_product_details_image_path(i)
-            for i in tile["images_paths"]
+            product_manager.get_product_details_image_path(i.image_path)
+            for i in tile.images
         ]
     log.debug("detail images: %s", images)
-    tile = map_to_tile_domain(**tile)
     categories = await get_categories_for_items(manager)
     return templates.TemplateResponse(
         "tile_detail.html",
@@ -74,8 +72,6 @@ async def get_catalog_tiles_page(
     for k in main_images:
         main_images[k] = product_manager.get_product_catalog_image_path(main_images[k])
 
-    tiles = [map_to_tile_domain(**tile) for tile in tiles]
-    # log.debug("main_images: %s", main_images)
     total_pages = max((total_count + limit - 1) // limit, 1)
     categories = await get_categories_for_items(manager)
 

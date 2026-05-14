@@ -7,6 +7,7 @@ from fastapi.responses import RedirectResponse
 from adapters.deps import DbManagerDep, HttpClientDep
 from adapters.images import CollectionImagesManager, ImageGenerator
 from services.collections import add_collection, delete_collection
+from domain import Collection, Category
 
 router = APIRouter(prefix="/admin/tiles/collections")
 log = logging.getLogger(__name__)
@@ -20,13 +21,10 @@ async def admin_create_tile_collection(
     category_name: Annotated[str, Form()],
     image: Annotated[UploadFile, File()],
 ):
-    collection_name = collection_name.strip()
-    category_name = category_name.strip()
     image = await image.read()
+    collection = Collection(name=collection_name, categories=Category(category_name), image_bytes=image)
     await add_collection(
-        collection_name,
-        image,
-        category_name,
+        collection,
         manager,
         images_generator=ImageGenerator(http_client),
         file_manager=CollectionImagesManager(),

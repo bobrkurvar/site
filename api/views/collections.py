@@ -5,7 +5,7 @@ from fastapi.templating import Jinja2Templates
 from adapters.deps import DbManagerDep
 from adapters.images import CollectionImagesManager, ProductImagesManager
 from core.config import COLLECTIONS_PER_PAGE
-from domain import CollectionCategory, Slug, map_to_tile_domain
+from domain import CollectionCategory, Slug, DomainFilter, Collection
 from services.views import (
     build_data_for_filters,
     build_main_images,
@@ -29,27 +29,25 @@ async def get_collections_page(
     limit = COLLECTIONS_PER_PAGE
     offset = (page - 1) * limit
     log.debug("category: %s", category)
-    category_name = (await manager.read(Slug, slug=category))[0]["name"]
+    category_name = (await manager.read_one(Slug, slug=category)).name
     category_collections = await manager.read(
-        CollectionCategory,
-        category_name=category_name,
+        Collection,
+        domain_filters=(DomainFilter(model=CollectionCategory, field="category_name", value=category_name)),
         offset=offset,
         limit=limit,
-        loaded=["collection"],
     )
     collections = []
+    collection_names = [coll.name for coll in category_collections]
+    slugs = await manager.read(Slug, name=collection_names)
+    slug_map = {s.name: s.slug for s in slugs}
     collection_manager = CollectionImagesManager()
     for coll in category_collections:
-        coll["image_path"] = collection_manager.get_collections_image_path(
-            coll["image_path"]
+        coll.image_path = collection_manager.get_collections_image_path(
+            coll.image_path
         )
-        coll["name"] = coll["collection_name"]
-        slug = (await manager.read(Slug, name=coll["name"]))[0]["slug"]
-        coll["slug"] = slug
+        coll.slug = slug_map.get(coll.name)
         collections.append(coll)
-    total_count = len(
-        await manager.read(CollectionCategory, category_name=category_name)
-    )
+    total_count = await manager.count(CollectionCategory, category_name=category_name)
     total_pages = max((total_count + limit - 1) // limit, 1)
     categories = await get_categories_for_items(manager)
 
@@ -94,7 +92,6 @@ async def get_catalog_tiles_page(
     for k in main_images:
         main_images[k] = product_manager.get_product_catalog_image_path(main_images[k])
 
-    tiles = [map_to_tile_domain(**tile) for tile in tiles]
     total_pages = max((total_count + limit - 1) // limit, 1)
     categories = await get_categories_for_items(manager)
     path_to_catalog = f"/catalog/{category}/products"

@@ -3,7 +3,7 @@ import logging
 import pytest
 
 from tests.fakes import FakeImageGenerator
-from domain import Tile, TileImages, TileSize, Box
+from domain import Tile, TileImage, TileSize, Box
 from services.exceptions import ImageProcessingError
 from services.tile import delete_tile, update_tile
 from tests.conftest import domain_handbooks_models_for_products
@@ -34,7 +34,7 @@ async def test_create_tile_success_when_handbooks_not_exists(
     tile_id = record["id"]
     # проверка всех справочников
     await assert_handbooks_count(manager, domain_handbooks_models_for_products, 1)
-    images = await manager.read(TileImages, tile_id=tile_id)
+    images = await manager.read(TileImage, tile_id=tile_id)
     assert len(images) == 3
     assert product_files_count(file_manager) == 9
 
@@ -53,7 +53,7 @@ async def test_create_tile_failure(products_env, domain_handbooks_models_for_pro
             manager, file_manager, FakeGenerator(), test_uow_class=False
         )
 
-    domain_handbooks_models_for_products += (Tile, TileImages)
+    domain_handbooks_models_for_products += (Tile, TileImage)
     await assert_handbooks_count(manager, domain_handbooks_models_for_products, 0)
     assert product_files_count(file_manager) == 0
 
@@ -202,7 +202,7 @@ async def test_delete_tile_by_article(
     # При удалении продукта записи в связанных справочника не должны удаляться
     await assert_handbooks_count(manager, domain_handbooks_models_for_products, 1)
     # изображение должно каскадно удалиться
-    images = await manager.read(TileImages)
+    images = await manager.read(TileImage)
     assert len(images) == 0
     # файлы изображений удалились
     assert product_files_count(file_manager) == 0

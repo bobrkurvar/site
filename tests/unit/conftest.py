@@ -2,7 +2,7 @@ from decimal import Decimal
 
 import pytest
 
-from domain import Box, Categories, Producer, Tile, TileColor, TileSize, TileSurface
+from domain import Box, Category, Producer, Tile, TileColor, TileSize, TileSurface
 from tests.fakes import FakeCRUD, FakeStorage, FakeRedisService
 from adapters.images import ProductImagesManager, CollectionImagesManager
 

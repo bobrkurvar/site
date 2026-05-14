@@ -24,16 +24,18 @@ async def admin_page(
     cookies: authCookiesDep,
 ):
     tiles = await manager.read(Tile, loaded=["images", "size", "box"])
+    #tile_sizes = await manager.read(TileSize)
+    # tile_sizes = [
+    #     TileSize(
+    #         size_id=size.id,
+    #         length=size.length,
+    #         width=size.width,
+    #         height=size.height,
+    #     )
+    #     for size in tile_sizes
+    # ]
+    #tile_sizes = [tile.size for tile in tiles]
     tile_sizes = await manager.read(TileSize)
-    tile_sizes = [
-        TileSize(
-            size_id=size["id"],
-            length=size["length"],
-            width=size["width"],
-            height=size["height"],
-        )
-        for size in tile_sizes
-    ]
     colors_names = await manager.read(TileColor, distinct="color_name")
     colors_features = await manager.read(TileColor, distinct="feature_name")
     surfaces = await manager.read(TileSurface)
@@ -41,8 +43,7 @@ async def admin_page(
     boxes_areas = await manager.read(Box, distinct="area")
     producers = await manager.read(Producer)
     boxes_count = await manager.read(Tile, distinct="boxes_count")
-    tiles = [map_to_tile_domain(**t) for t in tiles]
-    categories = await manager.read(Categories)
+    categories = await manager.read(Category)
 
     response = templates.TemplateResponse(
         "admin.html",

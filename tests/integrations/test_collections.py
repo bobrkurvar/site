@@ -4,7 +4,7 @@ import pytest
 from domain import (
     AlreadyExistsError,
     CollectionCategory,
-    Collections,
+    Collection,
     NotFoundError,
     Slug,
 )
@@ -35,7 +35,7 @@ async def test_create_collection_category_when_collection_not_exists_success(
     )
     # сервисная функция должна вернуть запись
     assert collection is not None
-    collection_in_db = await manager.read(Collections, name=collection["name"])
+    collection_in_db = await manager.read(Collection, name=collection["name"])
     collection_category = await manager.read(
         CollectionCategory, collection_id=collection["id"]
     )
@@ -64,7 +64,7 @@ async def test_create_collection_category_when_collection_exists_success(
             category_name=category_name,
             test_uow_class=False,
         )
-    collection_in_db = await manager.read(Collections, name=collection["name"])
+    collection_in_db = await manager.read(Collection, name=collection["name"])
     slug = await manager.read(Slug, name=collection["name"])
     collection_category = await manager.read(
         CollectionCategory, collection_id=collection["id"]
@@ -119,7 +119,7 @@ async def test_create_collection_category_when_collection_not_exists_failure(
             category_name=category_name,
             test_uow_class=False,
         )
-    collections = await manager.read(Collections)
+    collections = await manager.read(Collection)
     collection_category = await manager.read(CollectionCategory)
     assert collection_files_count(file_manager) == 0
     assert len(collections) == 0 and len(collection_category) == 0
@@ -142,7 +142,7 @@ async def test_delete_collection_success(collections_env_with_categories):
         manager=manager,
         file_manager=file_manager,
     )
-    collection_in_db = await manager.read(Collections, name=collection["name"])
+    collection_in_db = await manager.read(Collection, name=collection["name"])
     slug = await manager.read(Slug, name=collection["name"])
     collection_category = await manager.read(CollectionCategory)
     assert len(collection_in_db) == 0

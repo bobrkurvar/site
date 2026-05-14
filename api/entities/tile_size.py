@@ -25,12 +25,3 @@ async def admin_delete_tile_size(
         await manager.delete(TileSize)
     return RedirectResponse("/admin", status_code=303)
 
-
-@router.post("/sizes/create")
-async def admin_create_tile_size(
-    manager: DbManagerDep,
-    height: Annotated[float | None, Form(gt=0)],
-    width: Annotated[float | None, Form(gt=0)],
-):
-    await manager.create(TileSize, height=height, width=width)
-    return RedirectResponse("/admin", status_code=303)

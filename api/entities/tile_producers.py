@@ -12,7 +12,7 @@ log = logging.getLogger(__name__)
 
 
 @router.post("/delete")
-async def admin_create_tile_box(
+async def admin_delete_producer(
     manager: DbManagerDep,
     name: Annotated[str, Form()] = None,
 ):

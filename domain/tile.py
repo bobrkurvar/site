@@ -1,14 +1,12 @@
 from decimal import Decimal
 
-from slugify import slugify
-
 
 class TileSize:
-    def __init__(self, size_id: int, width: Decimal, length: Decimal, height: Decimal):
+    def __init__(self, width: Decimal | int, length: Decimal | int, height: Decimal | int, size_id: int | None = None):
         self.id = size_id
-        self.height = height
-        self.width = width
-        self.length = length
+        self.height = Decimal(height)
+        self.width = Decimal(width)
+        self.length = Decimal(length)
 
     def __str__(self):
         return f"{self.format_decimal(self.length)}×{self.format_decimal(self.width)}×{self.format_decimal(self.height)}"
@@ -23,7 +21,7 @@ class TileSize:
 
 class TileColor:
     def __init__(self, color_name: str, feature_name: str = ""):
-        self.color_name = color_name
+        self.color_name = color_name.strip()
         self.feature_name = feature_name
 
     def __str__(self):
@@ -45,34 +43,29 @@ class Producer:
     def __str__(self):
         return f"{self.name}"
 
-    # @staticmethod
-    # def fields():
-    #     return "name"
-
 
 class Box:
 
-    def __init__(self, box_id: int, weight: Decimal, area: Decimal):
+    def __init__(self, weight: Decimal | int, area: Decimal | int, box_id: int | None = None):
         self.id = box_id
-        self.weight = weight
-        self.area = area
+        self.weight = Decimal(weight)
+        self.area = Decimal(area)
 
     def __str__(self):
         return str(self.weight.normalize())
 
 
-class Categories:
+class Category:
 
     def __init__(self, name: str):
         self.name = name
-        self.slug = slugify(name)
 
     def __str__(self):
         return self.name
 
-    # @staticmethod
-    # def fields():
-    #     return "name", "slug"
+    def __repr__(self):
+        return self.name
+
 
 
 class Tile:
@@ -84,8 +77,9 @@ class Tile:
         box: Box,
         boxes_count: int,
         producer: Producer,
-        article: int,
-        category_name: Categories,
+        category: Category,
+        images: list["TileImage"] | list[bytes] = None,
+        article: int | None = None,
         surface: TileSurface | None = None,
     ):
         self.id = article
@@ -97,7 +91,8 @@ class Tile:
         self.box = box
         self.boxes_count = boxes_count
         self.producer = producer
-        self.category = category_name
+        self.category = category
+        self.images = images
 
     @property
     def present(self):
@@ -108,60 +103,63 @@ class Tile:
     def __str__(self):
         return f"{self.article} {str(self.color)} {self.surface} {self.name}"
 
+    def to_dict(self):
+        return {
+            "id": self.article,
+            "name": self.name,
+            "boxes_count": self.boxes_count,
+            "category_name": self.category.name,
+            "producer_name": self.producer.name,
+            "surface_name": self.surface.name if self.surface else None,
+            "size_length": self.size.length,
+            "size_width": self.size.width,
+            "size_height": self.size.height,
+            "size_id": self.size.id,
+            "box_area": self.box.area,
+            "box_weight": self.box.weight,
+            "box_id": self.box.id,
+            "color_name": self.color.color_name,
+            "feature_name": self.color.feature_name
+        }
 
-class TileImages:
-
-    def __init__(self, images: list[bytes]):
-        self.images = images
 
 
-class Collections:
+class TileImage:
 
-    def __init__(self, name: str, image_path: str, category_name: str):
-        self.name = name
+    def __init__(self, image: bytes | None = None, image_path: str | None = None, tile_id: int | None = None, image_id: int | None = None):
+        self.id = image_id
+        self.tile_id = tile_id
+        self.image = image
         self.image_path = image_path
 
-    def __str__(self):
-        return self.name
+
+class Collection:
+    def __init__(
+        self,
+        name: str,
+        image_bytes: bytes | None = None,
+        image_path: str | None = None,
+        categories: list[Category] | Category | None = None,
+        collection_id: int | None = None,
+        slug: str | None = None
+    ):
+        self.id = collection_id
+        self.name = name.strip()
+        self.image_path = image_path
+        self.image_bytes = image_bytes
+        self.slug = slug
+
+        if isinstance(categories, list):
+            self.categories = categories
+        elif categories:
+            self.categories = [categories]
+        else:
+            self.categories = []
+
 
 
 class CollectionCategory:
-    def __init__(self, collection_name: str, category_name: str):
-        self.collection_name = collection_name
+    def __init__(self, collection_id: int, category_name: str):
+        self.collection_id = collection_id
         self.category_name = category_name
 
-
-def map_to_tile_domain(**tile_dict) -> Tile:
-    size = TileSize(
-        size_id=tile_dict["size_id"],
-        height=tile_dict["size_height"],
-        width=tile_dict["size_width"],
-        length=tile_dict["size_length"],
-    )
-    color = TileColor(
-        color_name=tile_dict["color_name"], feature_name=tile_dict["feature_name"]
-    )
-    surface = (
-        TileSurface(name=tile_dict["surface_name"])
-        if tile_dict["surface_name"]
-        else None
-    )
-    producer = Producer(name=tile_dict["producer_name"])
-    box = Box(
-        box_id=tile_dict["box_id"],
-        weight=tile_dict["box_weight"],
-        area=tile_dict["box_area"],
-    )
-    category_name = Categories(name=tile_dict["category_name"])
-
-    return Tile(
-        size=size,
-        color=color,
-        name=tile_dict["name"],
-        surface=surface,
-        box=box,
-        boxes_count=tile_dict["boxes_count"],
-        producer=producer,
-        category_name=category_name,
-        article=tile_dict["id"],
-    )

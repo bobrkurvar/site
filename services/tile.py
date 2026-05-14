@@ -8,79 +8,128 @@ from .exceptions import FileStorageError
 log = logging.getLogger(__name__)
 
 
-async def add_items(domain_model, manager, session, **filters):
-    item = await manager.read(domain_model, **filters, session=session)
-    if not item:
-        return await manager.create(domain_model, **filters, session=session)
-    return item[0]
+# async def add_items(domain_model, manager, session, **filters):
+#     item = await manager.read(domain_model, **filters, session=session)
+#     if not item:
+#         return await manager.create(domain_model, **filters, session=session)
+#     return item[0]
 
+async def add_items(domain_obj, manager, session, **filters):
+    item = await manager.read_one(type(domain_obj), **filters, session=session)
+    if not item:
+        return await manager.create(domain_obj, session=session)
+    return item
+
+
+# async def add_tile(
+#     name: str,
+#     length: Decimal,
+#     width: Decimal,
+#     height: Decimal,
+#     color_name: str,
+#     producer_name: str,
+#     box_weight: Decimal,
+#     box_area: Decimal,
+#     boxes_count: int,
+#     main_image: bytes,
+#     category_name: str,
+#     manager,
+#     images: list[bytes] | list,
+#     images_generator,
+#     file_manager,
+#     color_feature: str = "",
+#     surface: str | None = None,
+#     uow_class=UnitOfWork,
+# ):
+#     async with uow_class(manager) as uow:
+#
+#         size = await add_items(
+#             TileSize, manager, uow.session, height=height, width=width, length=length
+#         )
+#         if surface:
+#             await add_items(TileSurface, manager, uow.session, name=surface)
+#         await add_items(
+#             TileColor,
+#             manager,
+#             uow.session,
+#             color_name=color_name,
+#             feature_name=color_feature,
+#         )
+#         await add_items(Producer, manager, uow.session, name=producer_name)
+#         await add_items(Category, manager, uow.session, name=category_name)
+#         await add_items(
+#             Slug, manager, uow.session, name=category_name, slug=slugify(category_name)
+#         )
+#         box = await add_items(
+#             Box, manager, uow.session, weight=box_weight, area=box_area
+#         )
+#         tile_record = await manager.create(
+#             Tile,
+#             name=name,
+#             size_id=size["id"],
+#             color_name=color_name,
+#             category_name=category_name,
+#             feature_name=color_feature,
+#             surface_name=surface,
+#             producer_name=producer_name,
+#             box_id=box["id"],
+#             boxes_count=boxes_count,
+#             session=uow.session,
+#         )
+#         images = [img for img in images if img]
+#         images.insert(0, main_image)
+#         for n, img in enumerate(images):
+#             file_name = str(tile_record["id"]) + "-" + str(n)  # type: ignore
+#             image_path = file_manager.base_product_path(file_name)
+#             await manager.create(
+#                 TileImage,
+#                 tile_id=tile_record["id"],  # type: ignore
+#                 image_path=str(image_path),
+#                 session=uow.session,
+#             )
+#             try:
+#                 async with file_manager.session() as files:
+#                     await files.save(image_path, img)
+#                     miniatures = await images_generator.generate_product_variants(img)
+#                     for layer, miniature in miniatures.items():
+#                         await files.save_by_layer(file_name, miniature, layer)
+#             except FileExistsError as exc:
+#                 log.debug("путь %s уже занять", image_path)
+#                 raise FileStorageError(f"путь {image_path} уже занять") from exc
+#         return tile_record
 
 async def add_tile(
-    name: str,
-    length: Decimal,
-    width: Decimal,
-    height: Decimal,
-    color_name: str,
-    producer_name: str,
-    box_weight: Decimal,
-    box_area: Decimal,
-    boxes_count: int,
-    main_image: bytes,
-    category_name: str,
+    tile: Tile,
     manager,
-    images: list[bytes] | list,
     images_generator,
     file_manager,
-    color_feature: str = "",
-    surface: str | None = None,
     uow_class=UnitOfWork,
 ):
     async with uow_class(manager) as uow:
-
-        size = await add_items(
-            TileSize, manager, uow.session, height=height, width=width, length=length
+        tile.size = await add_items(
+            tile.size, manager, uow.session, height=tile.size.height, width=tile.size.width, length=tile.size.length
         )
-        if surface:
-            await add_items(TileSurface, manager, uow.session, name=surface)
+        if tile.surface:
+            await add_items(tile.surface, manager, uow.session, name=tile.surface.name)
         await add_items(
-            TileColor,
+            tile.color,
             manager,
             uow.session,
-            color_name=color_name,
-            feature_name=color_feature,
+            color_name=tile.color.color_name,
+            feature_name=tile.color.feature_name,
         )
-        await add_items(Producer, manager, uow.session, name=producer_name)
-        await add_items(Categories, manager, uow.session, name=category_name)
-        await add_items(
-            Slug, manager, uow.session, name=category_name, slug=slugify(category_name)
-        )
-        box = await add_items(
-            Box, manager, uow.session, weight=box_weight, area=box_area
-        )
-        tile_record = await manager.create(
-            Tile,
-            name=name,
-            size_id=size["id"],
-            color_name=color_name,
-            category_name=category_name,
-            feature_name=color_feature,
-            surface_name=surface,
-            producer_name=producer_name,
-            box_id=box["id"],
-            boxes_count=boxes_count,
-            session=uow.session,
-        )
-        images = [img for img in images if img]
-        images.insert(0, main_image)
-        for n, img in enumerate(images):
-            file_name = str(tile_record["id"]) + "-" + str(n)  # type: ignore
+        await add_items(tile.producer, manager, uow.session, name=tile.producer.name)
+        await add_items(tile.category, manager, uow.session, name=tile.category.name)
+        slug = Slug(name=tile.category.name)
+        await add_items(slug, manager, uow.session, name=tile.category.name)
+        tile.box = await add_items(tile.box, manager, uow.session, weight=tile.box.weight, area=tile.box.area)
+        tile = await manager.create(tile, session=uow.session)
+        images = [img.image for img in tile.images if img]
+        tile.images.clear()
+        for i, img in enumerate(images):
+            file_name = str(tile["id"]) + "-" + str(i)
             image_path = file_manager.base_product_path(file_name)
-            await manager.create(
-                TileImages,
-                tile_id=tile_record["id"],  # type: ignore
-                image_path=str(image_path),
-                session=uow.session,
-            )
+            tile.images.append(await manager.create(TileImage(tile_id=tile.id, image_path=str(image_path)), session=uow.session))
             try:
                 async with file_manager.session() as files:
                     await files.save(image_path, img)
@@ -90,17 +139,20 @@ async def add_tile(
             except FileExistsError as exc:
                 log.debug("путь %s уже занять", image_path)
                 raise FileStorageError(f"путь {image_path} уже занять") from exc
-        return tile_record
+        return tile
 
 
 async def delete_tile(manager, file_manager, uow_class=UnitOfWork, **filters):
     async with uow_class(manager) as uow:
-        tiles = await manager.read(
+        tiles_to_delete = await manager.read(
             Tile, loaded=["images"], session=uow.session, **filters
         )
+        if not tiles_to_delete:
+            return []
+
         del_res = await manager.delete(Tile, session=uow.session, **filters)
-        for tile in tiles:
-            images_paths = tile.get("images_paths", [])
+        for tile in tiles_to_delete:
+            images_paths = tile.images_paths
             for image in images_paths:
                 await file_manager.delete_product(image)
         return del_res
@@ -125,7 +177,7 @@ def model_to_update_values(model, **values):
         res = {"surface_name": values["name"]}
     elif model is Producer:
         res = {"producer_name": values["name"]}
-    elif model is Categories:
+    elif model is Category:
         res = {"category_name": values["name"]}
     else:
         res = values
@@ -137,9 +189,12 @@ def set_values_from_db(values: dict, key: str, value_from_db):
         values[key] = value_from_db
 
 
-async def create_composite(manager, article: int, values, columns, *to_join):
-    model = (await manager.read(Tile, loaded=list(to_join), id=article))[0]
-    for k, v in model.items():
+async def create_composite(manager, article: int, values: dict, columns: tuple, *to_join):
+    tile = await manager.read_one(Tile, loaded=list(to_join), id=article)
+    if not tile:
+        return
+
+    for k, v in tile.to_dict().items():
         if k in columns:
             k = map_tile_param_to_model_param(k)
             set_values_from_db(values, k, v)
@@ -188,7 +243,7 @@ def map_param_to_domain_model(param_name: str):
         "color": TileColor,
         "producer_name": Producer,
         "box": Box,
-        "category_name": Categories,
+        "category_name": Category,
         "surface_name": TileSurface,
     }
     return mapper[param_name]
@@ -227,3 +282,4 @@ async def update_tile(
         await manager.update(
             Tile, session=uow.session, filters=dict(id=article), **to_update
         )
+

@@ -2,7 +2,7 @@ import logging
 
 import pytest
 
-from domain import CollectionCategory, Collections, NotFoundError, Slug
+from domain import CollectionCategory, Collection, NotFoundError, Slug
 from services.collections import delete_collection
 from tests.fakes import FakeUoW, FakeImageGenerator
 from .helpers import collection_catalog_path
@@ -24,7 +24,7 @@ async def test_create_collection_category_when_collection_not_exists_success(
     )
     # сервисная функция должна вернуть запись
     assert collection is not None
-    collection_in_db = await manager.read(Collections, name="collection1")
+    collection_in_db = await manager.read(Collection, name="collection1")
     collection_category = await manager.read(
         CollectionCategory, collection_id=collection["id"]
     )
@@ -63,7 +63,7 @@ async def test_create_collection_category_when_collection_exists_success(
         manager, file_manager, FakeImageGenerator()
     )
     await add_collection_helper(manager, file_manager, FakeImageGenerator())
-    collection_in_db = await manager.read(Collections, name="collection1")
+    collection_in_db = await manager.read(Collection, name="collection1")
     slug = await manager.read(Slug, name=collection["name"])
     collection_category = await manager.read(
         CollectionCategory, collection_id=collection["id"]
@@ -92,7 +92,7 @@ async def test_delete_collection_success(collection_env):
         file_manager=file_manager,
     )
 
-    collection_in_db = await manager.read(Collections, name=collection["name"])
+    collection_in_db = await manager.read(Collection, name=collection["name"])
     slug = await manager.read(Slug, name=collection["name"])
     # так как в отличие от tile коллекция содержит одно изображение оно хранится вместе с ней, поэтому можно проверить её удаление без join
     assert len(collection_in_db) == 0

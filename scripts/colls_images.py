@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 
 from adapters.db import get_db_manager
-from domain import CollectionCategory, Collections
+from domain import CollectionCategory, Collection
 
 log = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ async def new_images_paths_for_collections():
             except FileNotFoundError:
                 print(f"Папка {old} не найдена.")
             await manager.update(
-                Collections,
+                Collection,
                 filters={"name": collection["collection_name"]},
                 image_path=str(new),
             )

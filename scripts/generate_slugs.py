@@ -4,7 +4,7 @@ import logging
 from slugify import slugify
 
 from adapters.db import get_db_manager
-from domain import Categories, Collections, Slug
+from domain import Category, Collection, Slug
 
 log = logging.getLogger(__name__)
 
@@ -12,8 +12,8 @@ log = logging.getLogger(__name__)
 async def add_slugs():
     manager = get_db_manager()
     manager.connect()
-    collections = await manager.read(Collections)
-    categories = await manager.read(Categories)
+    collections = await manager.read(Collection)
+    categories = await manager.read(Category)
     full_list = {col["name"] for col in collections} | {
         category["name"] for category in categories
     }
