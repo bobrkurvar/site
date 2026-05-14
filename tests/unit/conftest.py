@@ -3,7 +3,7 @@ from decimal import Decimal
 import pytest
 
 from domain import Box, Categories, Producer, Tile, TileColor, TileSize, TileSurface
-from tests.fakes import FakeCRUD, FakeStorage
+from tests.fakes import FakeCRUD, FakeStorage, FakeRedisService
 from adapters.images import ProductImagesManager, CollectionImagesManager
 
 
@@ -71,6 +71,11 @@ def manager_factory(crud):
 @pytest.fixture
 def crud():
     return FakeCRUD()
+
+
+@pytest.fixture
+def redis():
+    return FakeRedisService()
 
 
 @pytest.fixture
