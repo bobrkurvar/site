@@ -24,7 +24,7 @@ async def admin_page(
     cookies: authCookiesDep,
 ):
     tiles = await manager.read(Tile, loaded=["images", "size", "box"])
-    tile_sizes = await manager.read(TileSize)
+    #tile_sizes = await manager.read(TileSize)
     # tile_sizes = [
     #     TileSize(
     #         size_id=size.id,
@@ -34,7 +34,8 @@ async def admin_page(
     #     )
     #     for size in tile_sizes
     # ]
-    tile_sizes = [tile.size for tile in tiles]
+    #tile_sizes = [tile.size for tile in tiles]
+    tile_sizes = await manager.read(TileSize)
     colors_names = await manager.read(TileColor, distinct="color_name")
     colors_features = await manager.read(TileColor, distinct="feature_name")
     surfaces = await manager.read(TileSurface)

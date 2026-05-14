@@ -2,11 +2,11 @@ from decimal import Decimal
 
 
 class TileSize:
-    def __init__(self, width: Decimal, length: Decimal, height: Decimal, size_id: int | None = None):
+    def __init__(self, width: Decimal | int, length: Decimal | int, height: Decimal | int, size_id: int | None = None):
         self.id = size_id
-        self.height = height
-        self.width = width
-        self.length = length
+        self.height = Decimal(height)
+        self.width = Decimal(width)
+        self.length = Decimal(length)
 
     def __str__(self):
         return f"{self.format_decimal(self.length)}×{self.format_decimal(self.width)}×{self.format_decimal(self.height)}"
@@ -46,10 +46,10 @@ class Producer:
 
 class Box:
 
-    def __init__(self, weight: Decimal, area: Decimal, box_id: int | None = None):
+    def __init__(self, weight: Decimal | int, area: Decimal | int, box_id: int | None = None):
         self.id = box_id
-        self.weight = weight
-        self.area = area
+        self.weight = Decimal(weight)
+        self.area = Decimal(area)
 
     def __str__(self):
         return str(self.weight.normalize())

@@ -1,84 +1,79 @@
 import logging
 
 from domain import NotFoundError
-from .mapper import DomainToOrmMapper
-
+from typing import Any
+from .mapper import MapperRegistry
 
 
 
 log = logging.getLogger(__name__)
 
 
-class Table:
-
-    def __init__(
-        self, columns: list[str], rows: list[dict] | None = None, default_num: int = 0
-    ):
-        self.default_num = default_num
-        self.columns = set(columns)
-        self.rows = rows if rows else []
-
-    def add_row(self, **row):
-        for i in self.columns - row.keys():
-            row[i] = self.default_num
-            self.default_num += 1
-        self.rows.append(row)
-        return row
 
 
 class FakeCRUD:
     def __init__(self):
         self.tables = {}
         self._session_factory = None
+        self._mapper = MapperRegistry()
 
     def _new_table(self, model):
-        self.tables[model] = Table(DomainToOrmMapper.fields(model))
+        self.tables[model] = []
 
     def _get_table(self, model):
         if model not in self.tables:
             self._new_table(model)
         return self.tables[model]
 
-    async def create(self, model, **row):
-        ignored = {"session", "seq_data"}
-        row = {k: v for k, v in row.items() if k not in ignored}
-        # log.debug("FAKE CREATE MODEL: %s", model)
-        table = self._get_table(model)
-        res = table.add_row(**row)
-        # log.debug("create res: %s", res)
-        return res
+    def _create_one(self, domain_obj):
+        table = self._get_table(type(domain_obj))
+        table.append(domain_obj)
+        return domain_obj
+
+    async def create(self, domain_obj, seq_data, **kwargs):
+        if seq_data:
+            for obj in seq_data:
+                self._create_one(obj)
+        return self._create_one(domain_obj)
 
     async def read(self, model, **kwargs):
         ignored = {"limit", "offset", "loaded", "distinct", "session"}
         table = self._get_table(model)
         filters = {k: v for k, v in kwargs.items() if k not in ignored}
         return tuple(
-            r for r in table.rows if all(r.get(k) == v for k, v in filters.items())
+            item for item in table if all(self._mapper.to_orm(item)[k] == v for k, v in filters.items())
         )
+
 
     async def update(self, model, filters, **values):
         ignored = {"session"}
-        log.debug("UPDATE FILTERS: %s", filters)
         values = {k: v for k, v in values.items() if k not in ignored}
         table = self._get_table(model)
-        for i in range(len(table.rows)):
-            if all(table.rows[i][f] == v for f, v in filters.items()):
+        for i in range(len(table)):
+            orm_obj = self._mapper.to_orm(table[i])
+            if all(orm_obj[f] == v for f, v in filters.items()):
                 for k, v in values.items():
-                    log.debug("column %s :: new value %s", k, v)
-                    table.rows[i][k] = v
+                    orm_obj[k] = v
+                    table[i] = self._mapper.to_domain(model, orm_obj)
 
-    async def delete(self, model, **filters) -> tuple[dict, ...]:
+
+    async def delete(self, model, **filters) -> tuple[Any, ...]:
         ignored = {"session"}
         filters = {k: v for k, v in filters.items() if k not in ignored}
 
         table = self._get_table(model)
+        new_list = []
         del_res = []
-        for i in range(len(table.rows)):
-            if all(table.rows[i][f] == v for f, v in filters.items()):
-                del_res.append(table.rows[i])
-                del table.rows[i]
+        for i in range(len(table)):
+            orm_obj = self._mapper.to_orm(table[i])
+            if all(orm_obj[f] == v for f, v in filters.items()):
+                del_res.append(self._mapper.to_domain(model, orm_obj))
+            else:
+                new_list.append(self._mapper.to_domain(model, orm_obj))
         if not del_res:
-            raise NotFoundError(model, **filters)
+            raise NotFoundError
+
+        table[:] = new_list
         return tuple(del_res)
 
 
