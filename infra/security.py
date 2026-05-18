@@ -7,7 +7,7 @@ from uuid import uuid4
 
 def normalize_input(string: str) -> bytes:
     combined = (string + conf.pepper).encode()
-    return hashlib.sha256(combined).digest()[:72]
+    return hashlib.sha256(combined).hexdigest().encode()
 
 
 def get_hash(string: str) -> str:
@@ -27,3 +27,7 @@ def create_token_family_id() -> str:
 
 def create_token_jti() -> str:
     return uuid4().hex
+
+
+def calculate_file_hash(file_bytes: bytes) -> str:
+    return hashlib.md5(file_bytes).hexdigest()

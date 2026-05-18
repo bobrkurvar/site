@@ -1,35 +1,79 @@
 import asyncio
+import logging
 from pathlib import Path
 
-from adapters.db import get_db_manager
-from domain import Collection
+from adapters.db import build_crud
+from adapters.db_provider import DbProvider
+from domain import Collection, Slug
+from core import conf
+
+
+log = logging.getLogger(__name__)
 
 
 async def main():
-    manager = get_db_manager()
-    manager.connect()
+    db_provider = DbProvider(url=conf.db_url)
+    manager = build_crud(db_provider.session_factory)
+
     collections = await manager.read(Collection)
-    all_paths = "static/images/base/collections/"
+    collection_names = [collection.name for collection in collections]
+
+    slugs = await manager.read(Slug, name=collection_names)
+    collection_slug = {slug.name: slug.slug for slug in slugs}
+
+    # Используем Path для базовых директорий
+    base_dir = Path("static/images/base/collections")
+    catalog_dir = Path("static/images/collections/catalog")
+
     for col in collections:
-        collection_id = str(col["id"])
-        path = all_paths + collection_id
-        collection_name = col["name"]
-        await manager.update(Collection, {"name": collection_name}, image_path=path)
-        old_paths = (
-            Path("static/images/base/collections") / collection_name,
-            Path("static/images/collections/catalog") / collection_name,
-        )
-        new_paths = [
-            Path("static/images/base/collections") / collection_id,
-            Path("static/images/collections/catalog") / collection_id,
+        # 1. Безопасно получаем slug (защита от KeyError)
+        col_slug = collection_slug.get(col.name)
+        if not col_slug:
+            log.warning(f"Пропуск: Для коллекции '{col.name}' не найден Slug.")
+            continue
+
+        # 2. Обязательно приводим col.id к строке!
+        old_id_str = str(col.id)
+
+        old_paths = [
+            base_dir / old_id_str,
+            catalog_dir / old_id_str,
         ]
-        for old, new in zip(old_paths, new_paths):
+        new_paths = [
+            base_dir / col_slug,
+            catalog_dir / col_slug,
+        ]
+
+        # Флаг успешного переноса файлов
+        files_moved_successfully = True
+
+        # 3. Сначала переименовываем файлы
+        for old_p, new_p in zip(old_paths, new_paths):
             try:
-                old.rename(new)
-            except FileExistsError:
-                print(f"Папка {new} уже существует. Пропускаем.")
+                if not old_p.exists() and new_p.exists():
+                    log.info(f"Уже переименовано: {new_p}")
+                    continue
+
+                old_p.rename(new_p)
+                log.info(f"Переименовано: {old_p.name} -> {new_p.name}")
             except FileNotFoundError:
-                print(f"Папка {old} не найдена.")
+                log.warning(f"Файл не найден, пропуск: {old_p}")
+                # Решай сам: считать ли это ошибкой. Скорее всего, путь в БД всё равно надо обновить
+            except Exception as e:
+                log.error(f"Ошибка при переименовании {old_p}: {e}")
+                files_moved_successfully = False
+                break  # Прерываем переименование для этой коллекции
+
+        # 4. И ТОЛЬКО ПОТОМ обновляем базу данных
+        if files_moved_successfully:
+            new_db_path = str(base_dir / col_slug)
+
+            await manager.update(
+                Collection,
+                {"name": col.name},
+                image_path=new_db_path
+            )
+            log.info(f"База обновлена для коллекции '{col.name}'")
 
 
 if __name__ == "__main__":

@@ -7,7 +7,7 @@ from domain.exceptions import (
     AlreadyExistsError,
     ForeignKeyViolationError,
     NotFoundError,
-    RefreshTokenNotExistsError,
+    UnauthorizedError,
     CredentialsValidateError,
     UserLoginNotFoundError,
 )
@@ -44,7 +44,7 @@ async def global_error_handler(request: Request, exc: Exception):
 
 
 async def invalid_tokens_or_not_exists_handler(
-    request: Request, exc: RefreshTokenNotExistsError
+    request: Request, exc: UnauthorizedError
 ):
     log.debug("tokens error: %s", exc)
     response = templates.TemplateResponse("admin_login.html", {"request": request})

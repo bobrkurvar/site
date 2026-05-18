@@ -19,7 +19,19 @@ class FileSystemStorage:
     @staticmethod
     async def delete(path: Path | str):
         path = Path(path)
-        await asyncio.to_thread(path.unlink, True)
+        await asyncio.to_thread(path.unlink, missing_ok=True)
+
+    # @staticmethod
+    # def get_directory(main_path: str | Path, other_path: str | Path) -> str:
+    #     if Path(main_path).exists():
+    #         return str(main_path)
+    #     return str(other_path)
+    @staticmethod
+    async def get_directory(main_path: str | Path, other_path: str | Path) -> str:
+        path_exists = await asyncio.to_thread(Path(main_path).exists)
+        if path_exists:
+            return Path(main_path).as_posix()
+        return Path(other_path).as_posix()
 
 
 class FileManager:
@@ -69,11 +81,11 @@ class FileManager:
             deleted += 1
         return deleted
 
-    @staticmethod
-    def get_directory(main_path: Path, other_path: str | Path) -> str:
-        if main_path.exists():
-            return str(main_path)
-        return str(other_path)
+    async def get_directory(self, main_path: str | Path, other_path: str | Path) -> str:
+        return await self._storage.get_directory(main_path, other_path)
+        # if main_path.exists():
+        #     return str(main_path)
+        # return str(other_path)
 
 
 class FileSession:
@@ -82,7 +94,7 @@ class FileSession:
         self._saved_files: list[Path] = []
 
     async def __aenter__(self):
-        return self  # ← возвращаем proxy, а не fm
+        return self
 
     async def __aexit__(self, exc_type, exc, tb):
         try:

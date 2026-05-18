@@ -52,10 +52,9 @@ def compose_run(*args):
 def logs():
     services = ["app", "postgres", "nginx"]
     outs = "|".join(services)
-    out = ""
-    while out not in services:
-        out = input(f"[{outs}]: ").strip()
-    return run(compose_run("logs", out))
+    out = input(f"[{outs}]: ").strip()
+    if out in services:
+        return run(compose_run("logs", "-f", out))
 
 
 def test():
@@ -98,6 +97,16 @@ def scripts_run():
     if admins.strip().lower() == "y":
         run_or_exit(compose_run("build", "runner"))
         run_or_exit(compose_run("run", "--rm", "runner"))
+
+    admins = input("Script migrate_collection_paths(y/n): ")
+    if admins.strip().lower() == "y":
+        run_or_exit(compose_run("build", "migrate-collection-paths"))
+        run_or_exit(compose_run("run", "--rm", "migrate-collection-paths"))
+
+    fix_ext = input("Script fix_image_extensions(y/n): ")
+    if fix_ext.strip().lower() == "y":
+        run_or_exit(compose_run("build", "fix-extensions-script"))
+        run_or_exit(compose_run("run", "--rm", "fix-extensions-script"))
     resize_images = input("Script resize_images(y/n): ")
     if resize_images.strip().lower() == "y":
         run_or_exit(compose_run("build", "resize-images-script"))

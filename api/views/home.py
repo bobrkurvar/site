@@ -17,7 +17,7 @@ log = logging.getLogger(__name__)
 @router.get("/")
 async def get_main_page(request: Request, manager: DbManagerDep):
     slide_manager = SlideImagesManager()
-    slide_images = slide_manager.get_all_slides_paths
+    slide_images = await slide_manager.get_all_slides_paths()
     categories = await get_categories_for_items(manager)
     return templates.TemplateResponse(
         "home.html",

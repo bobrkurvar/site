@@ -13,6 +13,7 @@ class FakeCRUD:
         self.tables = {}
         self._session_factory = None
         self._mapper = registry
+        self.counters = {}
 
     def _new_table(self, model):
         self.tables[model] = []
@@ -23,7 +24,12 @@ class FakeCRUD:
         return self.tables[model]
 
     def _create_one(self, domain_obj):
-        table = self._get_table(type(domain_obj))
+        model = type(domain_obj)
+        table = self._get_table(model)
+        if hasattr(domain_obj, "id") and getattr(domain_obj, "id") is None:
+            setattr(domain_obj, "id", self.counters.get(model, 0))
+            self.counters.setdefault(model, 1)
+
         table.append(domain_obj)
         return domain_obj
 

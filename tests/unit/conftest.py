@@ -77,6 +77,7 @@ def crud():
     return FakeCRUD()
 
 
+
 @pytest.fixture
 def redis():
     return FakeRedisService()
@@ -102,11 +103,6 @@ async def products_env_with_handbooks(products_env):
             Category(name="category"),
         ]
     )
-    # await manager.create(TileColor(color_name="color", feature_name="feature"))
-    # await manager.create(Producer(name="producer"))
-    # await manager.create(Box(weight=30, area=1))
-    # await manager.create(TileSurface(name="surface"))
-    # await manager.create(Category(name="category"))
     return manager, file_manager, fs
 
 
@@ -115,3 +111,14 @@ async def collection_env(crud):
     fs = {}
     file_manager = CollectionImagesManager(root="tests/images", storage=FakeStorage(fs))
     return crud, file_manager, fs
+
+@pytest.fixture
+def collection_images():
+    fs, root = {}, "tests/images"
+    return CollectionImagesManager(root=root, storage=FakeStorage(fs)), fs, root
+
+
+@pytest.fixture
+def product_images():
+    fs, root = {}, "tests/images"
+    return ProductImagesManager(root=root, storage=FakeStorage(fs)), fs, root

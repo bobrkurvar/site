@@ -1,6 +1,6 @@
-from decimal import Decimal
 from tests.fakes import FakeUoW
 from services.tile import add_tile
+from services.collections import add_collection
 from domain import (
     Tile,
     TileSize,
@@ -10,52 +10,31 @@ from domain import (
     TileSurface,
     Category,
     TileImage,
+    Collection
 )
 
-
-async def add_tile_helper_with_control_filters(
+async def add_collection_helper(
     manager,
     file_manager,
     images_generator,
-    test_uow_class: bool = True,
-    need_params: bool = False,
-    category_name=None,
-    size: str = None,
-    producer: str = None,
-    color_name: str = None,
+    collection_name = None,
+    category_name = None,
+    test_uow_class = True,
 ):
-    params = dict(
-        name="Tile",
-        length=Decimal(300),
-        width=Decimal(200),
-        height=Decimal(10),
-        color_name=color_name if color_name else "color",
-        producer_name=producer if producer else "producer",
-        box_weight=Decimal(30),
-        box_area=Decimal(1),
-        boxes_count=3,
-        main_image=b"MAIN",
-        category_name=category_name if category_name else "category",
+    collection = Collection(
+        name=collection_name if collection_name else "collection1",
+        categories=Category(name=category_name if category_name else "category1"),
+        image_bytes=b"COLLECTION"
+    )
+    params = {}
+    if test_uow_class: params["uow_class"] = FakeUoW
+    return await add_collection(
         manager=manager,
-        images=[b"A", b"B"],
-        color_feature="feature",
-        surface="surface",
         file_manager=file_manager,
         images_generator=images_generator,
+        collection=collection,
+        **params
     )
-    if size:
-        length, width, height = size.split()
-        params["length"], params["width"], params["height"] = (
-            Decimal(length),
-            Decimal(width),
-            Decimal(height),
-        )
-    if test_uow_class:
-        params["uow_class"] = FakeUoW
-    if need_params:
-        return await add_tile(**params), params
-    else:
-        return await add_tile(**params)
 
 
 async def add_tile_helper(
@@ -64,46 +43,51 @@ async def add_tile_helper(
     images_generator,
     test_uow_class: bool = True,
     need_params: bool = False,
+    category_name=None,
+    size: TileSize = None,
+    color: TileColor = None,
+    producer_name=None,
 ):
     # обёртка на сервисным методом add_tile, которая создана для многоразового использования одного и того же вызова функции
-    tile = Tile(
-        name="Tile",
-        size=TileSize(length=300, width=200, height=10),
-        color=TileColor("color", "feature"),
-        producer=Producer("producer"),
-        box=Box(area=1, weight=30),
-        boxes_count=3,
-        images=[TileImage(b"MAIN"), TileImage(b"A"), TileImage(b"B")],
-        surface=TileSurface("surface"),
-        category=Category("category"),
-    )
     params = dict(
+        name = "Tile",
+        size = size if size else TileSize(length=300, width=200, height=10),
+        color = color if color else TileColor("color", "feature"),
+        producer = Producer(producer_name if producer_name else "producer"),
+        box = Box(area=1, weight=30),
+        boxes_count = 3,
+        images = [TileImage(b"MAIN"), TileImage(b"A"), TileImage(b"B")],
+        surface = TileSurface("surface"),
+        category = Category(category_name if category_name else "category"),
+    )
+    tile = Tile(**params)
+    infra_params = dict(
         manager=manager, file_manager=file_manager, images_generator=images_generator
     )
     if test_uow_class:
-        params["uow_class"] = FakeUoW
+        infra_params["uow_class"] = FakeUoW
     if need_params:
-        return await add_tile(tile, **params), params
+        return await add_tile(tile, **infra_params), params
     else:
-        return await add_tile(tile, **params)
+        return await add_tile(tile, **infra_params)
 
 
 def assert_tile_fields(tile, expected):
     for k, v in expected.items():
-        assert tile[k] == v, f"{k}: expected {v}, got {tile[k]}"
+        actual = getattr(tile, k)
+        assert actual == v, f"{k}: expected {v}, got {actual}"
 
 
-def assert_size(size: dict, expected: dict):
-    # функция для вынесения логики проверки размеров
-    assert size["length"] == expected["length"]
-    assert size["width"] == expected["width"]
-    assert size["height"] == expected["height"]
+def assert_size(size, expected: dict):
+    assert size.length == expected["length"]
+    assert size.width == expected["width"]
+    assert size.height == expected["height"]
 
 
 def assert_box(box, expected):
     # функция для вынесения логики проверки размеров данных о коробке
-    assert box["weight"] == expected["weight"]
-    assert box["area"] == expected["area"]
+    assert box.weight == expected["weight"]
+    assert box.area == expected["area"]
 
 
 async def assert_handbooks_count(manager, models, expected_count):
@@ -124,7 +108,7 @@ def update_filters(
     feature_name_missing: bool = False,
 ):
     # новые данные для обновления tile с возможностью пропускать половины ключей
-    new_size = {"length": Decimal(500), "width": Decimal(300), "height": Decimal(20)}
+    new_size = {"length": 500, "width": 300, "height": 20}
     if length_missing:
         del new_size["length"]
     if width_missing:
@@ -136,7 +120,7 @@ def update_filters(
         del new_color["color_name"]
     if feature_name_missing:
         del new_color["feature_name"]
-    new_box = {"weight": Decimal(50), "area": Decimal(50)}
+    new_box = {"weight": 50, "area": 50}
     if area_missing:
         del new_box["area"]
     if weight_missing:

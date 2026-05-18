@@ -9,38 +9,43 @@ from adapters.db import build_crud
 from adapters.db_provider import DbProvider
 from domain import *
 from adapters.images import ProductImagesManager, CollectionImagesManager
+from adapters.query_service import CatalogQueryService
 from tests.fakes import FakeStorage, FakeImageGenerator
-from tests.helpers import add_collection_helper, add_tile_helper_with_control_filters
 from core import conf
+from tests.helpers import add_tile_helper, add_collection_helper
 
 
 log = logging.getLogger(__name__)
 
+@pytest.fixture(scope="session")
+async def db_provider():
+    provider = DbProvider(conf.test_db_url)
+    yield provider
+    await provider.close()
 
 @pytest.fixture
-async def crud(request):
-    db_provider = DbProvider(conf.test_db_url)
+async def crud(request, db_provider):
     manager = build_crud(db_provider.session_factory)
     yield manager
     async with db_provider.engine.begin() as conn:
         await conn.execute(
             text(
-                """
-            TRUNCATE
-                tile_images,
-                categories,
-                producers,
-                tile_sizes,
-                boxes,
-                catalog,
-                tile_colors,
-                collections,
-                tile_surface,
-                slugs,
-                collection_category
-                
-            RESTART IDENTITY CASCADE;
-        """
+            """
+                TRUNCATE
+                    tile_images,
+                    categories,
+                    producers,
+                    tile_sizes,
+                    boxes,
+                    catalog,
+                    tile_colors,
+                    collections,
+                    tile_surface,
+                    slugs,
+                    collection_category
+                    
+                RESTART IDENTITY CASCADE;
+            """
             )
         )
     await db_provider.close()
@@ -49,21 +54,12 @@ async def crud(request):
 @pytest.fixture
 async def manager_with_categories(crud):
     category_name1, category_name2 = "category1", "category2"
-    await crud.create(Category, name=category_name1)
-    await crud.create(Category, name=category_name2)
+    await crud.create(seq_data=[Category(name=category_name1), Category(name=category_name2)])
     return crud
 
 
 @pytest.fixture(autouse=True)
 def clean_fs_after_test(request):
-    if not any(
-        "integration" in marker.name
-        for item in request.session.items
-        for marker in item.iter_markers()
-    ):
-        yield
-        return
-
     yield
     images_path = Path("tests/images")
     if images_path.exists() and images_path.is_dir():
@@ -88,11 +84,11 @@ async def collections_env_with_categories(collections_env):
         manager, file_manager = collections_env
         categories = []
         for i in range(categories_cnt):
-            category_name = f"category{i}"
-            log.debug("category_name: %s", category_name)
-            categories.append(category_name)
-            await manager.create(Category, name=category_name)
-        return manager, file_manager, categories
+            category = Category(name=f"category{i}")
+            log.debug("category_name: %s", category.name)
+            categories.append(category)
+        await manager.create(seq_data=categories)
+        return manager, file_manager, [category.name for category in categories]
 
     return wrapper
 
@@ -101,13 +97,13 @@ async def collections_env_with_categories(collections_env):
 async def products_env_with_handbooks(products_env):
     manager, file_manager = products_env
     await manager.create(
-        TileSize, length=Decimal(300), width=Decimal(200), height=Decimal(10)
+        TileSize(length=300, width=200, height=10)
     )
-    await manager.create(TileColor, color_name="color", feature_name="feature")
-    await manager.create(Producer, name="producer")
-    await manager.create(Box, weight=Decimal(30), area=Decimal(1))
-    await manager.create(TileSurface, name="surface")
-    await manager.create(Category, name="category")
+    await manager.create(TileColor(color_name="color", feature_name="feature"))
+    await manager.create(Producer(name="producer"))
+    await manager.create(Box(weight=30, area=1))
+    await manager.create(TileSurface(name="surface"))
+    await manager.create(Category(name="category"))
 
     return manager, file_manager
 
@@ -126,18 +122,19 @@ async def products_env_with_tiles(crud):
         for category_name, tiles_count in categories.items():
             collection_name = category_with_collection.get(category_name, False)
             for i in range(tiles_count):
-                size, color_name, producer = f"{i} {i} {i}", f"color{i}", f"producer{i}"
-                await add_tile_helper_with_control_filters(
+                await add_tile_helper(
                     manager,
                     product_file_manager,
                     FakeImageGenerator(),
                     False,
                     category_name=category_name,
-                    size=size,
-                    color_name=color_name,
-                    producer=producer,
+                    size=TileSize(length=i, width=i, height=i),
+                    color=TileColor(color_name=f"color{i}", feature_name=f"feature{i}"),
+                    producer_name=f"producer{i}",
                 )
             if category_with_collection.get(category_name, False):
+                #collection = Collection(name=collection_name, categories=Category(name=category_name))
+                #await add_collection(manager=manager, collection=collection, file_manager=collection_file_manager, images_generator= FakeImageGenerator())
                 await add_collection_helper(
                     manager,
                     collection_file_manager,
@@ -149,3 +146,7 @@ async def products_env_with_tiles(crud):
         return manager
 
     return wrapper
+
+@pytest.fixture
+def query_service(db_provider):
+    return CatalogQueryService(db_provider.session_factory)

@@ -78,17 +78,17 @@ class ProductImagesManager(FileManager):
     def base_product_path(self, file_name: str) -> Path:
         return self.resolve_path(file_name, ORIGINAL_PRODUCT)
 
-    def get_product_catalog_image_path(self, base_path: str) -> str:
+    async def get_product_catalog_image_path(self, base_path: str) -> str:
         base_path = Path(base_path)
         name = base_path.name
         path_catalog = self.resolve_path(name, PRODUCTS)
-        return self.get_directory(path_catalog, base_path)
+        return await self.get_directory(path_catalog, base_path)
 
-    def get_product_details_image_path(self, base_path: str) -> str:
+    async def get_product_details_image_path(self, base_path: str) -> str:
         base_path = Path(base_path)
         name = base_path.name
         path_details = self.resolve_path(name, DETAILS)
-        return self.get_directory(path_details, base_path)
+        return await self.get_directory(path_details, base_path)
 
 
 class CollectionImagesManager(FileManager):
@@ -101,10 +101,10 @@ class CollectionImagesManager(FileManager):
     def base_collection_path(self, file_name: str) -> Path:
         return self.resolve_path(file_name, ORIGINAL_COLLECTION)
 
-    def get_collections_image_path(self, base_path: str) -> str:
+    async def get_collections_image_path(self, base_path: str) -> str:
         name = Path(base_path).name
         path_collections = self.resolve_path(name, COLLECTIONS)
-        return self.get_directory(path_collections, base_path)
+        return await self.get_directory(path_collections, base_path)
 
 
 class SlideImagesManager(FileManager):
@@ -121,21 +121,27 @@ class SlideImagesManager(FileManager):
     def base_slide_path(self, file_name: str) -> Path:
         return self.resolve_path(file_name, ORIGINAL_SLIDE)
 
-    def get_slides_image_path(self, base_path: str | Path) -> str:
+    async def get_slides_image_path(self, base_path: str | Path) -> str:
         name = Path(base_path).name
         path_slides = self.resolve_path(name, SLIDES)
-        return self.get_directory(path_slides, base_path)
+        return await self.get_directory(path_slides, base_path)
 
-    @property
-    def get_all_slides_paths(self) -> tuple[str, ...]:
+
+
+    async def get_all_slides_paths(self) -> tuple[str, ...]:
         path = self.resolve_path(layer=ORIGINAL_SLIDE)
-        return tuple(
-            self.get_slides_image_path(file)
+        if not path.exists():
+            return ()
+
+        return tuple([
+            await self.get_slides_image_path(file)
             for file in path.iterdir()
             if file.is_file()
-        )
+        ])
 
     @property
     def slides_file_count(self) -> int:
         path = self.resolve_path(layer=ORIGINAL_SLIDE)
+        if not path.exists():
+            return 0
         return sum(1 for f in path.iterdir() if f.is_file())

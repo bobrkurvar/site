@@ -78,13 +78,15 @@ class Category:
 class Tile:
     def __init__(
         self,
-        size: TileSize,
         color: TileColor,
         name: str,
-        box: Box,
         boxes_count: int,
         producer: Producer,
         category: Category,
+        size: TileSize | None = None,
+        size_id: int | None = None,
+        box: Box | None = None,
+        box_id: int | None = None,
         images: list["TileImage"] | list[bytes] = None,
         article: int | None = None,
         surface: TileSurface | None = None,
@@ -93,14 +95,38 @@ class Tile:
         self.article = article
         self.name = name
         self.color = color
-        self.size = size
         self.surface = surface
+        self.size = size
+        # на случай если не подгружены все данные о size
+        self.size_id = size.id if size else size_id
         self.box = box
+        # на случай если не подгружены все данные о box
+        self.box_id = box.id if box else box_id
         self.boxes_count = boxes_count
+
         self.producer = producer
         self.category = category
         # Первый элемент в images - main image
-        self.images = images
+        self._images = images
+
+        if self.size is None and self.size_id is None:
+            raise ValueError("Плитка не может существовать без размера (size или size_id)")
+
+        if self.box is None and self.box_id is None:
+            raise ValueError("Плитка не может существовать без коробки (box или box_id)")
+
+    def __str__(self):
+        return f"{self.article} {str(self.color)} {self.surface} {self.name}"
+
+    @property
+    def images(self) -> list["TileImage"]:
+        if self._images is None:
+            raise ValueError("images нет!")
+        return self._images
+
+    @images.setter
+    def images(self, value):
+        self._images = value
 
     @property
     def present(self):
@@ -108,41 +134,51 @@ class Tile:
             f"{self.category} {self.name} {self.size} {self.color} {self.surface or ''}"
         )
 
-    def __str__(self):
-        return f"{self.article} {str(self.color)} {self.surface} {self.name}"
-
-    def to_dict(self):
-        return {
-            "id": self.article,
-            "name": self.name,
-            "boxes_count": self.boxes_count,
-            "category_name": self.category.name,
-            "producer_name": self.producer.name,
-            "surface_name": self.surface.name if self.surface else None,
-            "size_length": self.size.length,
-            "size_width": self.size.width,
-            "size_height": self.size.height,
-            "size_id": self.size.id,
-            "box_area": self.box.area,
-            "box_weight": self.box.weight,
-            "box_id": self.box.id,
-            "color_name": self.color.color_name,
-            "feature_name": self.color.feature_name,
-        }
-
+    @property
+    def producer_name(self):
+        return self.producer.name
+    @property
+    def category_name(self):
+        return self.category.name
+    @property
+    def surface_name(self):
+        return self.surface.name
+    @property
+    def color_name(self):
+        return self.color.color_name
+    @property
+    def feature_name(self):
+        return self.color.feature_name
+    @property
+    def size_height(self):
+        if not self.size:
+            raise ValueError("Size нет")
+        return self.size.height
+    @property
+    def size_width(self):
+        if not self.size:
+            raise ValueError("Size нет")
+        return self.size.width
+    @property
+    def size_length(self):
+        if not self.size:
+            raise ValueError("Size нет")
+        return self.size.length
 
 class TileImage:
-
     def __init__(
         self,
-        image: bytes | None = None,
+        image_bytes: bytes | None = None,
         image_path: str | None = None,
         tile_id: int | None = None,
         image_id: int | None = None,
     ):
+        if not image_bytes and not image_path:
+            raise ValueError("Изображение плитки должно содержать либо байты, либо путь")
+
         self.id = image_id
         self.tile_id = tile_id
-        self.image = image
+        self.image_bytes = image_bytes
         self.image_path = image_path
 
 
@@ -156,6 +192,8 @@ class Collection:
         collection_id: int | None = None,
         slug: str | None = None,
     ):
+        if not image_path and not image_bytes:
+            raise ValueError(f"Коллекция '{name}' не может существовать без изображения")
         self.id = collection_id
         self.name = name.strip()
         self.image_path = image_path
@@ -168,6 +206,11 @@ class Collection:
             self.categories = [categories]
         else:
             self.categories = []
+
+    def merge_categories(self, new_categories: list[Category]):
+        existing_names = {cat.name for cat in self.categories}
+        unique_new = [cat for cat in new_categories if cat.name not in existing_names]
+        self.categories.extend(unique_new)
 
 
 class CollectionCategory:

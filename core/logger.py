@@ -27,14 +27,18 @@ def setup_logging():
     if not any(isinstance(h, logging.StreamHandler) for h in logger.handlers):
         # console_handler.addFilter(IgnoreFilter())
         logger.addHandler(console_handler)
-    logging.getLogger("asyncio").setLevel(logging.WARNING)
 
     logger.addFilter(IgnoreFilter())
+    logging.getLogger("asyncio").setLevel(logging.WARNING)
+    logging.getLogger("multipart").setLevel(logging.WARNING)
+    logging.getLogger("python_multipart").setLevel(logging.WARNING)
 
 
 def setup_test_logging():
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
     # Не добавляем StreamHandler
-    logging.getLogger("asyncio").setLevel(logging.WARNING)
     logger.addFilter(IgnoreFilter())
+    logging.getLogger("asyncio").setLevel(logging.WARNING)
+    logging.getLogger("multipart").setLevel(logging.WARNING)
+    logging.getLogger("python_multipart").setLevel(logging.WARNING)

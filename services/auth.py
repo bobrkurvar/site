@@ -1,8 +1,15 @@
 import logging
 from datetime import datetime, timedelta, timezone
-from domain.exceptions import *
+from domain import (
+    RefreshTokenReusedCompromisedError,
+    RefreshTokenRotationRaceConditionError,
+    RefreshTokenFamilyExpiredError,
+    RefreshTokenMissingError,
+    UserLoginNotFoundError,
+    CredentialsValidateError
+)
 from domain.user import Admin
-from infra.security import verify, create_token_jti, create_token_family_id
+from infra.security import create_token_jti, create_token_family_id #vefiry
 from infra.auth import data_encode_to_jwt, check_refresh_token
 
 log = logging.getLogger(__name__)
@@ -32,14 +39,14 @@ def create_refresh_token(
 async def check_rotate(payload: dict, redis):
     jti, family_id = payload["jti"], payload["family_id"]
     if not await redis.exists(f"rtfam:{family_id}"):
-        raise InvalidRefreshTokenError
+        raise RefreshTokenFamilyExpiredError
 
     if await redis.incr(f"rt:{jti}") != 0:
         await redis.delete(f"rtfam:{family_id}")
-        raise InvalidRefreshTokenError
+        raise RefreshTokenReusedCompromisedError
 
     if not await redis.exists(f"rtfam:{family_id}"):
-        raise InvalidRefreshTokenError
+        raise RefreshTokenRotationRaceConditionError
 
     new_jti = create_token_jti()
     await redis.set(f"rt:{new_jti}", -1, ttl=86400 * 7)
@@ -48,9 +55,9 @@ async def check_rotate(payload: dict, redis):
     return new_jti, family_id
 
 
-async def create_token_from_refresh(refresh_token: str | None, redis):
+async def create_tokens_from_refresh(refresh_token: str | None, redis):
     if refresh_token is None:
-        raise RefreshTokenNotExistsError
+        raise RefreshTokenMissingError
     sub = check_refresh_token(refresh_token)
     jti, family_id = await check_rotate(sub, redis)
     tokens_data = {
@@ -64,22 +71,21 @@ async def create_token_from_refresh(refresh_token: str | None, redis):
     }
 
 
-async def check_user(manager, username: str, password: str):
-    try:
-        user = (await manager.read(Admin, username=username))[0]
-        if not verify(password, user["password"]):
-            log.debug("wrong password")
-            raise CredentialsValidateError
-    except IndexError:
+async def check_user(manager, verify, username: str, password: str):
+    user = await manager.read_one(Admin, username=username)
+    if not user:
         log.debug("user with username: %s not found", username)
         raise UserLoginNotFoundError(username)
+    if not verify(password, user.password):
+        log.debug("wrong password")
+        raise CredentialsValidateError
 
 
 async def create_tokens_from_login(
-    manager, redis, username: str, password: str, **data
+    manager, redis, username: str, password: str, verify, **data
 ):
     log.debug("check user")
-    await check_user(manager, username, password)
+    await check_user(manager, verify, username, password)
     log.debug("user approve")
     data.update(username=username)
     jti, family_id = create_token_jti(), create_token_family_id()

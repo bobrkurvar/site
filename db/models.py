@@ -1,9 +1,11 @@
 from decimal import Decimal
 
-from sqlalchemy import ForeignKey, ForeignKeyConstraint, UniqueConstraint, inspect
+from sqlalchemy import ForeignKey, ForeignKeyConstraint, UniqueConstraint
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy.ext.associationproxy import AssociationProxy, association_proxy
 from sqlalchemy.types import DECIMAL
+
 
 from core import conf
 
@@ -39,6 +41,13 @@ class Catalog(Base):
         passive_deletes=True,
     )
     category: Mapped["Category"] = relationship("Category", back_populates="tiles")
+    collections: Mapped[list["Collection"]] = relationship(
+        "Collection",
+        secondary="collection_category",
+        primaryjoin="Catalog.category_name == CollectionCategory.category_name",
+        secondaryjoin="CollectionCategory.collection_id == Collection.id",
+        viewonly=True  # Только для чтения
+    )
 
     __table_args__ = (
         ForeignKeyConstraint(
@@ -46,31 +55,6 @@ class Catalog(Base):
             ["tile_colors.color_name", "tile_colors.feature_name"],
         ),
     )
-
-    def model_dump(self) -> dict:
-        insp = inspect(self)
-        return {
-            "id": self.id,
-            "name": self.name,
-            "box_weight": None if "box" in insp.unloaded else self.box.weight,
-            "box_area": None if "box" in insp.unloaded else self.box.area,
-            "size_length": None if "size" in insp.unloaded else self.size.length,
-            "size_width": None if "size" in insp.unloaded else self.size.width,
-            "size_height": None if "size" in insp.unloaded else self.size.height,
-            "images_paths": (
-                []
-                if "images" in insp.unloaded
-                else [img.image_path for img in self.images]
-            ),
-            "box_id": self.box_id,
-            "color_name": self.color_name,
-            "feature_name": self.feature_name,
-            "surface_name": self.surface_name,
-            "producer_name": self.producer_name,
-            "boxes_count": self.boxes_count,
-            "category_name": self.category_name,
-            "size_id": self.size_id,
-        }
 
 
 class Category(Base):
@@ -85,8 +69,6 @@ class Category(Base):
         passive_deletes=True,
     )
 
-    def model_dump(self) -> dict:
-        return {"name": self.name}
 
 
 class TileImage(Base):
@@ -96,18 +78,11 @@ class TileImage(Base):
     image_path: Mapped[str] = mapped_column(default=conf.image_path)
     tile: Mapped["Catalog"] = relationship("Catalog", back_populates="images")
 
-    def model_dump(self) -> dict:
-        return {
-            "image_id": self.image_id,
-            "tile_id": self.tile_id,
-            "image_path": self.image_path,
-        }
 
 
 class Collection(Base):
     __tablename__ = "collections"
     id: Mapped[int] = mapped_column(primary_key=True)
-    # name: Mapped[str] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(unique=True)
     image_path: Mapped[str] = mapped_column(unique=True, nullable=True)
     categories: Mapped[list["CollectionCategory"]] = relationship(
@@ -116,10 +91,12 @@ class Collection(Base):
         cascade="all, delete-orphan",
         passive_deletes=True,
     )
-
-    def model_dump(self) -> dict:
-        return {"id": self.id, "name": self.name, "image_path": self.image_path}
-
+    # noinspection PyTypeChecker
+    categories_proxy: AssociationProxy[list[str]] = association_proxy(
+        "categories",
+        "category_name",
+        creator=lambda cat_name: CollectionCategory(category_name=cat_name)
+    )
 
 class CollectionCategory(Base):
     __tablename__ = "collection_category"
@@ -131,24 +108,11 @@ class CollectionCategory(Base):
     )
 
     category: Mapped["Category"] = relationship(
-        "Categories", back_populates="collections"
+        "Category", back_populates="collections"
     )
     collection: Mapped["Collection"] = relationship(
         "Collection", back_populates="categories"
     )
-
-    def model_dump(self) -> dict:
-        insp = inspect(self)
-        return {
-            "collection_id": self.collection_id,
-            "collection_name": (
-                None if "collection" in insp.unloaded else self.collection.name
-            ),
-            "category_name": self.category_name,
-            "image_path": (
-                None if "collection" in insp.unloaded else self.collection.image_path
-            ),
-        }
 
 
 class TileSize(Base):
@@ -164,14 +128,6 @@ class TileSize(Base):
 
     __table_args__ = (UniqueConstraint("length", "width", "height"),)
 
-    def model_dump(self) -> dict:
-        return {
-            "id": self.id,
-            "length": self.length,
-            "height": self.height,
-            "width": self.width,
-        }
-
 
 class TileColor(Base):
     __tablename__ = "tile_colors"
@@ -182,8 +138,6 @@ class TileColor(Base):
         back_populates="color",
     )
 
-    def model_dump(self) -> dict:
-        return {"color_name": self.color_name, "feature_name": self.feature_name}
 
 
 class TileSurface(Base):
@@ -194,9 +148,6 @@ class TileSurface(Base):
         back_populates="surface",
     )
 
-    def model_dump(self) -> dict:
-        return {"name": self.name}
-
 
 class Producer(Base):
     __tablename__ = "producers"
@@ -205,9 +156,6 @@ class Producer(Base):
         "Catalog",
         back_populates="producer",
     )
-
-    def model_dump(self) -> dict:
-        return {"name": self.name}
 
 
 class Box(Base):
@@ -219,8 +167,6 @@ class Box(Base):
 
     __table_args__ = (UniqueConstraint("weight", "area"),)
 
-    def model_dump(self) -> dict:
-        return {"id": self.id, "weight": self.weight, "area": self.area}
 
 
 class Admin(Base):
@@ -228,14 +174,9 @@ class Admin(Base):
     username: Mapped[str] = mapped_column(primary_key=True)
     password: Mapped[str]
 
-    def model_dump(self) -> dict:
-        return {"username": self.username, "password": self.password}
 
 
 class Slug(Base):
     __tablename__ = "slugs"
     name: Mapped[str] = mapped_column(primary_key=True)
     slug: Mapped[str] = mapped_column(primary_key=True)
-
-    def model_dump(self) -> dict:
-        return {"name": self.name, "slug": self.slug}

@@ -1,6 +1,5 @@
 services:
   app:
-    container_name: site_app
     build:
       context: .
       dockerfile: ./Dockerfile
@@ -9,10 +8,7 @@ services:
       - .env
     environment:
       DB_HOST: postgres
-      DB_PORT: ${DB_PORT}
-      DB_NAME: ${DB_NAME}
       DB_USER: postgres
-      DB_PASSWORD: ${DB_PASSWORD}
       API_HOST: image_service
       REDIS_HOST: redis
     networks:
@@ -25,7 +21,6 @@ services:
     restart: unless-stopped
 
   image_service:
-    container_name: site_image
     build:
       context: .
       dockerfile: ./Dockerfile
@@ -39,7 +34,6 @@ services:
     restart: unless-stopped
 
   postgres:
-    container_name: site_db
     image: postgres:16-alpine
     env_file:
       - .env
@@ -55,7 +49,6 @@ services:
     restart: unless-stopped
 
   migrate:
-    container_name: site_migrate
     profiles: ["tools"]
     build:
       context: .
@@ -65,10 +58,7 @@ services:
       - .env
     environment:
       DB_HOST: postgres
-      DB_PORT: ${DB_PORT}
-      DB_NAME: ${DB_NAME}
       DB_USER: postgres
-      DB_PASSWORD: ${DB_PASSWORD}
     networks:
       - internal
     depends_on:
@@ -76,7 +66,6 @@ services:
     restart: "no"
 
   runner:
-    container_name: site_runner
     profiles: ["tools"]
     build:
       context: .
@@ -86,10 +75,7 @@ services:
       - .env
     environment:
       DB_HOST: postgres
-      DB_PORT: ${DB_PORT}
-      DB_NAME: ${DB_NAME}
       DB_USER: postgres
-      DB_PASSWORD: ${DB_PASSWORD}
     networks:
       - internal
     depends_on:
@@ -97,7 +83,6 @@ services:
     restart: "no"
 
   resize-images-script:
-    container_name: resize-images-script
     profiles: [ "tools" ]
     build:
       context: .
@@ -109,9 +94,26 @@ services:
       - ./static/images:/pysite/static/images # bind mount docker compose down -v не удалит этот том
     restart: "no"
 
+  migrate-collection-paths:
+    profiles: [ "tools" ]
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      target: migrate_paths_script
+    env_file:
+      - .env
+    environment:
+      DB_HOST: postgres
+      DB_USER: postgres
+    networks:
+      - internal
+    depends_on:
+      - postgres
+    volumes:
+      - ./static/images:/pysite/static/images
+    restart: "no"
 
   nginx:
-    container_name: site_nginx
     image: nginx:1.27-alpine
     depends_on:
       - app
@@ -120,18 +122,38 @@ services:
       - ./nginx/snippets:/etc/nginx/snippets:ro
       - ./static:/var/www/static:ro
     restart: unless-stopped
-
     networks:
       - internal
     ports:
         - "80:80"
+
   redis:
     image: redis:7-alpine
+    networks:
+      - internal
+
+  fix-extensions-script:
+    profiles: [ "tools" ]
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      target: fix-extensions-script
+    env_file:
+      - .env
+    environment:
+      DB_HOST: postgres
+      DB_USER: postgres
+    depends_on:
+      - postgres
+    networks:
+      - internal
+    volumes:
+      - ./static/images:/pysite/static/images # Пробрасываем картинки для переименования
+    restart: "no"
 
 networks:
   internal:
     driver: bridge
-
 
 volumes:
   pgdata:

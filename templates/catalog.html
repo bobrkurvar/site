@@ -20,35 +20,44 @@
                 <h3>Фильтры</h3>
                 <form class="filters-form" method="get" action="{{ path }}" id="filtersForm">
                     <div class="filter-group">
-                        <label>Поиск производителю:</label>
+                        <label>Производитель:</label>
                         <select name="producer">
                             <option value="">Все производители</option>
-                            {% for producer in producers %}
-                            <option value="{{ producer }}" {% if request.query_params.get('producer') == producer %}selected{% endif %}>{{ producer }}</option>
+                            {% for producer in filters.producers %}
+                            <option value="{{ producer }}" {% if request.query_params.get('producer') == producer %}selected{% endif %}>
+                                {{ producer }}
+                            </option>
                             {% endfor %}
                         </select>
                     </div>
+
                     <div class="filter-group">
                         <label>Размер:</label>
                         <select name="size">
                             <option value="">Все размеры</option>
-                            {% for size in sizes %}
-                            <option value="{{ size }}" {% if request.query_params.get('size') == size.length ~ ' ' ~ size.width ~ ' ' ~ size.height %}selected{% endif %}>{{ size }}</option>
+                            {% for size in filters.sizes %}
+                            <option value="{{ size.value }}" {% if request.query_params.get('size') == size.value %}selected{% endif %}>
+                                {{ size.present }}
+                            </option>
                             {% endfor %}
                         </select>
                     </div>
+
                     <div class="filter-group">
                         <label>Цвет:</label>
                         <select name="color">
                             <option value="">Все цвета</option>
-                            {% for color in colors %}
-                            <option value="{{ color.color_name }}" {% if request.query_params.get('color') == color.name %}selected{% endif %}>{{ color.color_name }}</option>
+                            {% for color in filters.colors %}
+                            <option value="{{ color.name }}" {% if request.query_params.get('color') == color.name %}selected{% endif %}>
+                                {{ color.name }}
+                            </option>
                             {% endfor %}
                         </select>
                     </div>
+
                     <div class="filter-actions">
                         <button type="submit" class="filter-btn">Применить фильтры</button>
-                        <a href="{{ path }}" class="clear-filters">Сбросить</a>
+                        <button type="button" class="clear-filters" onclick="window.location.href=window.location.pathname">Сбросить</button>
                     </div>
                 </form>
             </div>

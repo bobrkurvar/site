@@ -4,7 +4,7 @@ from fastapi import Depends, Request, Response
 import logging
 from core import conf
 from infra.auth import check_access_token
-from services.auth import create_token_from_refresh
+from services.auth import create_tokens_from_refresh
 from adapters.deps import RedisDep
 
 log = logging.getLogger(__name__)
@@ -61,7 +61,7 @@ async def require_admin(request: Request, cookies: authCookiesDep, redis: RedisD
         log.debug("access token approve")
     else:
         refresh_token = cookies.get_refresh_token(request)
-        return await create_token_from_refresh(refresh_token, redis)
+        return await create_tokens_from_refresh(refresh_token, redis)
 
 
 RequireForAdminDep = Annotated[dict | None, Depends(require_admin)]

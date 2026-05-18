@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 
 log = logging.getLogger(__name__)
 
@@ -8,12 +9,13 @@ class FakeStorage:
         self.storage = fs if fs is not None else {}
 
     async def save(self, path, data):
-        self.storage[str(path)] = data
+        self.storage[Path(path).as_posix()] = data
 
     async def delete(self, path):
         log.debug("delete by path: %s", path)
-        del self.storage[str(path)]
-
+        key = Path(path).as_posix()
+        if key in self.storage:
+            del self.storage[key]
 
 class FakeImageGenerator:
 

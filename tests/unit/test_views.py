@@ -4,27 +4,28 @@ import pytest
 from slugify import slugify
 
 from core.config import ITEMS_PER_PAGE
-from domain import Category, Slug
+from domain import Slug
 from services.views import (
     build_main_images,
     build_tile_filters,
-    extract_quoted_word,
+    #extract_quoted_word,
     fetch_items,
 )
 from tests.unit.conftest import manager_factory
+from types import SimpleNamespace
 
 log = logging.getLogger(__name__)
 
 
-@pytest.mark.asyncio
-async def test_extract_quoted_word_collection_name():
-    # проверка на правильность сбора названия коллекции из текста
-    name1 = 'tile5 "collection"'
-    name2 = 'tile5 "COllection"'
-    collection = "collection"
-    col_from_name1 = extract_quoted_word(name1)
-    col_from_name2 = extract_quoted_word(name2)
-    assert col_from_name1 == collection and col_from_name2 == collection
+# @pytest.mark.asyncio
+# async def test_extract_quoted_word_collection_name():
+#     # проверка на правильность сбора названия коллекции из текста
+#     name1 = 'tile5 "collection"'
+#     name2 = 'tile5 "COllection"'
+#     collection = "collection"
+#     col_from_name1 = extract_quoted_word(name1)
+#     col_from_name2 = extract_quoted_word(name2)
+#     assert col_from_name1 == collection and col_from_name2 == collection
 
 
 @pytest.mark.asyncio
@@ -32,7 +33,8 @@ async def test_build_tile_filters_with_exists_size(manager_factory):
     manager = await manager_factory(1)
     category = "Tile"
     category_slug = slugify(category)
-    await manager.create(Slug, name=category, slug=category_slug)
+    slug = Slug(name=category, slug=category_slug)
+    await manager.create(slug)
     # в качестве категории передаётся именно slug, проверяется правильность конструирования фильтров для запроса к базе данных
     # переданный size в виде строки переходит в size_id для поиска в базе данных
     filters = await build_tile_filters(
@@ -55,7 +57,8 @@ async def test_build_tile_filters_with_not_exists_size(manager_factory):
     manager = await manager_factory()
     category = "Tile"
     category_slug = slugify(category)
-    await manager.create(Slug, name=category, slug=category_slug)
+    slug = Slug(name=category, slug=category_slug)
+    await manager.create(slug)
     filters = await build_tile_filters(
         manager,
         producer="producer",
@@ -72,11 +75,13 @@ async def test_build_tile_filters_with_not_exists_size(manager_factory):
 
 @pytest.mark.asyncio
 async def test_build_main_images():
-    image1 = "image-image-110"
-    tiles = [{"id": 1, "images_paths": [image1]}]
+    image1 = SimpleNamespace(image_path="image-image-110")
+    # Создаем фейковый объект-заглушку с нужными атрибутами
+    tiles = [SimpleNamespace(id=1, images=[image1])]
     assert build_main_images(tiles) == {1: "image-image-0"}
-    image2 = "image-image-0"
-    tiles = [{"id": 1, "images_paths": [image2]}]
+
+    image2 = SimpleNamespace(image_path="image-image-0")
+    tiles = [SimpleNamespace(id=1, images=[image2])]
     assert build_main_images(tiles) == {1: "image-image-0"}
 
 

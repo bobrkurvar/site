@@ -9,6 +9,7 @@ from adapters.deps import DbManagerDep, RedisDep
 from adapters.web import RequireForAdminDep, authCookiesDep
 from services.auth import create_tokens_from_login
 from domain import *
+import asyncio
 
 router = APIRouter(tags=["admin"], prefix="/admin")
 
@@ -23,27 +24,18 @@ async def admin_page(
     refreshed_tokens: RequireForAdminDep,
     cookies: authCookiesDep,
 ):
-    tiles = await manager.read(Tile, loaded=["images", "size", "box"])
-    #tile_sizes = await manager.read(TileSize)
-    # tile_sizes = [
-    #     TileSize(
-    #         size_id=size.id,
-    #         length=size.length,
-    #         width=size.width,
-    #         height=size.height,
-    #     )
-    #     for size in tile_sizes
-    # ]
-    #tile_sizes = [tile.size for tile in tiles]
-    tile_sizes = await manager.read(TileSize)
-    colors_names = await manager.read(TileColor, distinct="color_name")
-    colors_features = await manager.read(TileColor, distinct="feature_name")
-    surfaces = await manager.read(TileSurface)
-    boxes_weights = await manager.read(Box, distinct="weight")
-    boxes_areas = await manager.read(Box, distinct="area")
-    producers = await manager.read(Producer)
-    boxes_count = await manager.read(Tile, distinct="boxes_count")
-    categories = await manager.read(Category)
+    tiles = manager.read(Tile, loaded=["images", "size", "box"])
+    tile_sizes = manager.read(TileSize)
+    colors_names = manager.read(TileColor, distinct="color_name")
+    colors_features = manager.read(TileColor, distinct="feature_name")
+    surfaces = manager.read(TileSurface)
+    boxes_weights = manager.read(Box, distinct="weight")
+    boxes_areas = manager.read(Box, distinct="area")
+    producers = manager.read(Producer)
+    boxes_count = manager.read(Tile, distinct="boxes_count")
+    categories = manager.read(Category)
+    tasks = [tiles, tile_sizes, colors_names, colors_features, surfaces, boxes_weights, boxes_areas, producers, boxes_count, categories]
+    tiles, tile_sizes, colors_names, colors_features, surfaces, boxes_weights, boxes_areas, producers, boxes_count, categories = await asyncio.gather(*tasks)
 
     response = templates.TemplateResponse(
         "admin.html",

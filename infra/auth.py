@@ -1,10 +1,12 @@
 import logging
 from core import conf
 from domain import (
-    AccessTokenNotExistsError,
-    RefreshTokenNotExistsError,
-    InvalidRefreshTokenError,
-    InvalidAccessTokenError,
+    RefreshTokenDecodedError,
+    RefreshTokenMalformedError,
+    RefreshTokenExpireError,
+    AccessTokenExpireError,
+    AccessTokenDecodedError,
+    AccessTokenMalformedError
 )
 import jwt
 
@@ -28,13 +30,13 @@ def check_refresh_token(token: str):
     try:
         payload = get_data_from_token(token)
     except jwt.ExpiredSignatureError:
-        raise RefreshTokenNotExistsError
+        raise RefreshTokenExpireError
     except jwt.InvalidTokenError as exc:
         log.exception(f"ошибка декодирования refresh токена")
-        raise InvalidRefreshTokenError from exc
+        raise RefreshTokenDecodedError from exc
 
     if payload.get("type") != "refresh":
-        raise InvalidRefreshTokenError
+        raise RefreshTokenMalformedError
     return payload
 
 
@@ -42,12 +44,12 @@ def check_access_token(token: str):
     try:
         payload = get_data_from_token(token)
     except jwt.ExpiredSignatureError:
-        raise AccessTokenNotExistsError
+        raise AccessTokenExpireError
     except jwt.InvalidTokenError as exc:
         log.exception(f"ошибка декодирования access токена")
-        raise InvalidAccessTokenError from exc
+        raise AccessTokenDecodedError from exc
 
     if payload.get("type") != "access":
-        raise InvalidAccessTokenError
+        raise AccessTokenMalformedError
 
     return payload

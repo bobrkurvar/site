@@ -4,6 +4,10 @@ import domain
 
 
 def map_catalog_to_orm(d: domain.Tile) -> models.Catalog:
+    orm_images = [
+        models.TileImage(image_path=img.image_path)
+        for img in d.images
+    ]
     return models.Catalog(
         id=d.id,
         name=d.name,
@@ -14,7 +18,8 @@ def map_catalog_to_orm(d: domain.Tile) -> models.Catalog:
         surface_name=d.surface.name,
         producer_name=d.producer.name,
         category_name=d.category.name,
-        boxes_count=d.boxes_count
+        boxes_count=d.boxes_count,
+        images=orm_images
     )
 
 
@@ -27,7 +32,23 @@ def map_tile_image_to_orm(d: domain.TileImage) -> models.TileImage:
 
 
 def map_collection_to_orm(d: domain.Collection) -> models.Collection:
-    return models.Collection(id=d.id, name=d.name, image_path=d.image_path)
+    return models.Collection(
+        id=d.id,
+        name=d.name,
+        image_path=d.image_path,
+        # Маппер сливает строки в прокси
+        categories_proxy=[c.name for c in d.categories]
+    )
+# def map_collection_to_orm(d: domain.Collection) -> models.Collection:
+#
+#     return models.Collection(id=d.id, name=d.name, image_path=d.image_path)
+#
+#     # return models.Collection(
+#     #     id=d.id,
+#     #     name=d.name,
+#     #     image_path=d.image_path,
+#     #     categories=[models.Category(name=c.name) for c in d.categories]
+#     # )
 
 
 def map_collection_category_to_orm(d: domain.CollectionCategory) -> models.CollectionCategory:
@@ -73,18 +94,22 @@ def map_slug_to_orm(d: domain.Slug) -> models.Slug:
 def map_catalog_to_domain(o: models.Catalog) -> domain.Tile:
     insp = inspect(o)
 
-    size = None
-    if "size" not in insp.unloaded and o.size is not None:
-        size = domain.TileSize(
+    images = None
+    if "images" not in insp.unloaded:
+        images = [map_tile_image_to_domain(img) for img in o.images]
+
+    size_obj = None
+    if "size" not in insp.unloaded:
+        size_obj = domain.TileSize(
             size_id=o.size.id,
             height=o.size.height,
             width=o.size.width,
             length=o.size.length,
         )
 
-    box = None
-    if "box" not in insp.unloaded and o.box is not None:
-        box = domain.Box(
+    box_obj = None
+    if "box" not in insp.unloaded:
+        box_obj = domain.Box(
             box_id=o.box.id,
             weight=o.box.weight,
             area=o.box.area,
@@ -100,15 +125,18 @@ def map_catalog_to_domain(o: models.Catalog) -> domain.Tile:
     category = domain.Category(name=o.category_name)
 
     return domain.Tile(
-        size=size,
-        color=color,
+        article=o.id,
         name=o.name,
-        surface=surface,
-        box=box,
         boxes_count=o.boxes_count,
+        color=color,
+        surface=surface,
         producer=producer,
         category=category,
-        article=o.id,
+        size=size_obj,         # Либо готовый объект, либо None
+        size_id=o.size_id,     # ID есть всегда, берем прямо из колонки плитки!
+        box=box_obj,
+        box_id=o.box_id,
+        images=images
     )
 
 def map_category_to_domain(o: models.Category) -> domain.Category:
@@ -120,7 +148,20 @@ def map_tile_image_to_domain(o: models.TileImage) -> domain.TileImage:
 
 
 def map_collection_to_domain(o: models.Collection) -> domain.Collection:
-    return domain.Collection(collection_id=o.id, name=o.name, image_path=o.image_path)
+    insp = inspect(o)
+    categories = None
+    if "categories" not in insp.unloaded:
+        categories = [
+            domain.Category(name=link.category_name)
+            for link in o.categories
+        ]
+
+    return domain.Collection(
+        collection_id=o.id,
+        name=o.name,
+        image_path=o.image_path,
+        categories=categories
+    )
 
 
 

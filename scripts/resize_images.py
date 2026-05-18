@@ -54,46 +54,43 @@ def save_image(image: Image.Image, path: Path, form: str, quality: int):
 
 
 def generate_image_variant(
-    input_path: Path | str, target: str, quality: int = 82, output_dir=None
+        input_path: Path | str, target: str, quality: int = 82, output_dir=None
 ):
-    """
-    Генерирует вариант изображения для сайта.
-
-    - сохраняет пропорции
-    - не апскейлит маленькие изображения
-    - идемпотентна
-    """
-
     if target not in IMAGE_PRESETS:
         raise ValueError(f"Unknown image preset: {target}")
 
     input_path = Path(input_path)
+    if not input_path.exists():
+        return
 
     preset = IMAGE_PRESETS[target]
     width, height = preset["size"]
     mode = preset["mode"]
+
     output_dir = output_dir or OUTPUT_DIRS[target]
     output_dir.mkdir(parents=True, exist_ok=True)
-    output_path = output_dir / input_path.name
-
-    if output_path.exists():
-        log.debug("Image already exists: %s", output_path)
-        return output_path
-
-    if not input_path.exists():
-        return
 
     with Image.open(input_path) as img:
+        # 1. Pillow сама определяет эталонный формат ("JPEG", "WEBP", "PNG")
+        output_format = img.format
+
+        # 2. Нормализуем расширение для выходного файла на диске
+        # Если формат JPEG, ставим .jpg, иначе просто маленькими буквами (.webp, .png)
+        ext = ".jpg" if output_format.upper() == "JPEG" else f".{output_format.lower()}"
+        output_path = output_dir / input_path.with_suffix(ext).name
+
+        # Если такой превью-файл уже сгенерирован, не тратим CPU и выходим
+        if output_path.exists():
+            log.debug("Image already exists: %s", output_path)
+            return output_path
+
+        # 3. Логика ресайза
         img = img.convert("RGB")
         smaller_width = width is not None and img.width < width
         smaller_height = height is not None and img.height < height
-        # защита от апскейла
+
         if smaller_width or smaller_height:
-            log.warning(
-                "Image smaller than target (%s < %s), saving original size",
-                img.size,
-                (width, height),
-            )
+            log.warning("Image smaller than target, saving original size")
             resized = img
         else:
             target_size = (
@@ -102,12 +99,7 @@ def generate_image_variant(
             )
             resized = resize_image(img, target_size, mode)
 
-        output_format = output_path.suffix.lstrip(".").upper()
-        if not output_format:
-            output_format = "JPEG"  # дефолтный формат для файлов без расширения
-        if not input_path.exists():
-            return
-
+        # 4. Сохраняем, передавая гарантированно валидный формат Pillow
         save_image(
             resized,
             output_path,
@@ -117,6 +109,70 @@ def generate_image_variant(
 
     log.info("Generated %s image: %s", target, output_path)
     return output_path
+# def generate_image_variant(
+#     input_path: Path | str, target: str, quality: int = 82, output_dir=None
+# ):
+#     """
+#     Генерирует вариант изображения для сайта.
+#
+#     - сохраняет пропорции
+#     - не апскейлит маленькие изображения
+#     - идемпотентна
+#     """
+#
+#     if target not in IMAGE_PRESETS:
+#         raise ValueError(f"Unknown image preset: {target}")
+#
+#     input_path = Path(input_path)
+#
+#     preset = IMAGE_PRESETS[target]
+#     width, height = preset["size"]
+#     mode = preset["mode"]
+#     output_dir = output_dir or OUTPUT_DIRS[target]
+#     output_dir.mkdir(parents=True, exist_ok=True)
+#     output_path = output_dir / input_path.name
+#
+#     if output_path.exists():
+#         log.debug("Image already exists: %s", output_path)
+#         return output_path
+#
+#     if not input_path.exists():
+#         return
+#
+#     with Image.open(input_path) as img:
+#         img = img.convert("RGB")
+#         smaller_width = width is not None and img.width < width
+#         smaller_height = height is not None and img.height < height
+#         # защита от апскейла
+#         if smaller_width or smaller_height:
+#             log.warning(
+#                 "Image smaller than target (%s < %s), saving original size",
+#                 img.size,
+#                 (width, height),
+#             )
+#             resized = img
+#         else:
+#             target_size = (
+#                 width if width is not None else img.width,
+#                 height if height is not None else img.height,
+#             )
+#             resized = resize_image(img, target_size, mode)
+#
+#         output_format = output_path.suffix.lstrip(".").upper()
+#         if output_format == "JPG" or not output_format:
+#             output_format = "JPEG"
+#         if not input_path.exists():
+#             return
+#
+#         save_image(
+#             resized,
+#             output_path,
+#             output_format,
+#             quality=quality,
+#         )
+#
+#     log.info("Generated %s image: %s", target, output_path)
+#     return output_path
 
 
 def process_all_folders():

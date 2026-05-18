@@ -3,6 +3,7 @@ from fastapi import Depends, Request
 from adapters.redis import RedisService
 from adapters.http_client import HttpClient
 from adapters.db import Crud, build_crud
+from adapters.query_service import CatalogQueryService
 
 
 def get_redis(request: Request) -> RedisService:
@@ -25,7 +26,14 @@ def get_db_manager(request: Request):
         raise RuntimeError("db connection is not initialized")
     return build_crud(db_provider.session_factory)
 
+def get_catalog_query_service(request: Request):
+    db_provider = request.app.state.db_provider
+    if db_provider is None:
+        raise RuntimeError("db connection is not initialized")
+    return CatalogQueryService(db_provider.session_factory)
+
 
 RedisDep = Annotated[RedisService, Depends(get_redis)]
 HttpClientDep = Annotated[HttpClient, Depends(get_image_api)]
 DbManagerDep = Annotated[Crud, Depends(get_db_manager)]
+QueryServiceDep = Annotated[CatalogQueryService, Depends(get_catalog_query_service)]

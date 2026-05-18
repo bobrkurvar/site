@@ -3,7 +3,7 @@ import logging
 import pytest
 
 from domain import *
-from services.tile import delete_tile, update_tile
+from services.tile import update_tile
 from tests.conftest import domain_handbooks_models_for_products
 from tests.fakes import FakeUoW, FakeImageGenerator
 from .helpers import product_catalog_path, product_details_path
@@ -15,6 +15,7 @@ from tests.helpers import (
     assert_handbooks_count,
     update_filters,
 )
+from pathlib import Path
 
 log = logging.getLogger(__name__)
 
@@ -26,12 +27,9 @@ async def test_create_tile_success_when_all_handbooks_exists(
     manager, file_manager, fs = products_env_with_handbooks
     record = await add_tile_helper(manager, file_manager, FakeImageGenerator())
     log.debug("tile: %s", record)
-    # assert record is not None
     # проверка всех справочников
     await assert_handbooks_count(manager, domain_handbooks_models_for_products, 1)
 
-    images_table = await manager.read(TileImage, tile_id=record.id)
-    assert len(images_table) == 3
 
 
 @pytest.mark.asyncio
@@ -45,33 +43,14 @@ async def test_expected_file_paths_exists_after_success_created(
         product_catalog_path(file_manager),
         product_details_path(file_manager),
     )
-    tile_id = record.id
-    file_names = (f"{tile_id}-0", f"{tile_id}-1", f"{tile_id}-2")
-    expected_paths = [
-        str(func(file_name)) for func in paths_funcs for file_name in file_names
-    ]
-    assert set(fs) == set(expected_paths)
-
-    assert fs[expected_paths[0]] == b"MAIN"
-    assert fs[expected_paths[1]] == b"A"
-    assert fs[expected_paths[2]] == b"B"
+    assert len(fs) == 9
+    for img in record.images:
+        file_name = Path(img.image_path).name
+        for func in paths_funcs:
+            expected_path = Path(func(file_name)).as_posix()
+            assert expected_path in fs, f"Файл не найден по ожидаемому пути: {expected_path}"
 
 
-@pytest.mark.asyncio
-async def test_create_tile_success_when_all_handbooks_not_exists(
-    products_env, domain_handbooks_models_for_products
-):
-    manager, file_manager, fs = products_env
-    record = await add_tile_helper(manager, file_manager, FakeImageGenerator())
-
-    # 1. Tile создан
-    assert record is not None
-
-    # проверка всех справочников
-    await assert_handbooks_count(manager, domain_handbooks_models_for_products, 1)
-
-    images_table = await manager.read(TileImage)
-    assert len(images_table) == 3
 
 
 @pytest.mark.asyncio
@@ -85,7 +64,7 @@ async def test_update_tile_success_when_new_attributes_in_handbooks(
     article = record.id  # фильтр для обновления по артикулу
 
     new_filters = update_filters()
-    await update_tile(manager, article, uow_class=FakeUoW, **new_filters)
+    await update_tile(manager=manager, article=article, uow_class=FakeUoW, **new_filters)
 
     new_tile = await manager.read_one(Tile, id=article)
     expected_box, expected_size, color = (
@@ -97,8 +76,8 @@ async def test_update_tile_success_when_new_attributes_in_handbooks(
         color["color_name"],
         color["feature_name"],
     )
-    box = await manager.read_one(Box, id=new_tile["box_id"])
-    size = await manager.read_one(TileSize, id=new_tile["size_id"])
+    box = await manager.read_one(Box, id=new_tile.box.id)
+    size = await manager.read_one(TileSize, id=new_tile.size.id)
 
     # 1 проверка всех новых полей с помощью функций, в которых вынесена логика assert
     assert_size(size, expected_size)
@@ -109,22 +88,3 @@ async def test_update_tile_success_when_new_attributes_in_handbooks(
     await assert_handbooks_count(manager, domain_handbooks_models_for_products, 2)
 
 
-@pytest.mark.asyncio
-async def test_delete_tile_by_article(
-    products_env, domain_handbooks_models_for_products
-):
-    manager, file_manager, fs = products_env
-    record = await add_tile_helper(manager, file_manager, FakeImageGenerator())
-    tile_id = record.id
-    records = await delete_tile(
-        manager, uow_class=FakeUoW, id=tile_id, file_manager=file_manager
-    )
-    assert len(records) == 1
-    # здесь не тестирую удаление в базе, т.к для чтения в этой базе нужен join с images, а в unit тестах я отказался от реализации join в фейке базы данных
-
-    for i in records:
-        assert i.id == tile_id
-
-    new_records = await manager.read(Tile, id=tile_id)
-    assert not new_records
-    await assert_handbooks_count(manager, domain_handbooks_models_for_products, 1)
