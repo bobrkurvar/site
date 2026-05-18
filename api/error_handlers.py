@@ -47,7 +47,7 @@ async def invalid_tokens_or_not_exists_handler(
     request: Request, exc: UnauthorizedError
 ):
     log.debug("tokens error: %s", exc)
-    response = templates.TemplateResponse("admin_login.html", {"request": request})
+    response = templates.TemplateResponse("admin_login.html", {"request": request}, status_code=401)
     cookie_manager = AuthCookies()
     cookie_manager.clear_tokens(response)
     return response

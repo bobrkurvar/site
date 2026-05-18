@@ -35,7 +35,7 @@ def check_refresh_token(token: str):
         log.exception(f"ошибка декодирования refresh токена")
         raise RefreshTokenDecodedError from exc
 
-    if payload.get("type") != "refresh":
+    if payload.get("type") != "refresh" or not payload.get("jti", None) or not payload.get("family_id", None):
         raise RefreshTokenMalformedError
     return payload
 
