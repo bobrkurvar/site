@@ -10,6 +10,7 @@ from adapters.web import RequireForAdminDep, authCookiesDep
 from services.auth import create_tokens_from_login
 from domain import *
 import asyncio
+from infra.security import verify
 
 router = APIRouter(tags=["admin"], prefix="/admin")
 
@@ -68,7 +69,7 @@ async def admin_login_submit(
     redis: RedisDep,
 ):
     response = RedirectResponse("/admin", status_code=303)
-    tokens = await create_tokens_from_login(manager, redis, username, password)
+    tokens = await create_tokens_from_login(manager=manager, redis=redis, username=username, password=password, verify=verify)
     if tokens:
         cookies.set_access_token(response, tokens["access_token"])
         cookies.set_refresh_token(response, tokens["refresh_token"])
