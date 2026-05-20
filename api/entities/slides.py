@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 
 
 @router.post("/insert")
-async def insert_slide_image(
+async def admin_insert_slide(
     http_client: HttpClientDep, images: Annotated[list[UploadFile], File()]
 ):
     images_bytes = [await image.read() for image in images]

@@ -12,7 +12,7 @@ log = logging.getLogger(__name__)
 
 
 @router.post("/delete")
-async def admin_delete_tile_color_feature(
+async def admin_delete_tile_color(
     manager: DbManagerDep,
     color_name: Annotated[str, Form()] = None,
     feature_name: Annotated[str, Form()] = None,

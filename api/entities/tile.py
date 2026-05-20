@@ -9,7 +9,7 @@ from adapters.images import ProductImagesManager, ImageGenerator
 from domain import *
 from services.tile import add_tile, delete_tile, update_tile
 from api.utils import api_input_to_params, strip_input_params
-from api.schemas import CreateTile
+from api.schemas import CreateTile, UpdateTile
 
 router = APIRouter(prefix="/admin/tiles")
 
@@ -61,94 +61,33 @@ async def admin_create_tile(
     return RedirectResponse("/admin", status_code=303)
 
 
-# @router.post("/create")
-# async def admin_create_tile(
-#     name: Annotated[str, Form()],
-#     size: Annotated[str, Form()],
-#     color_name: Annotated[str, Form()],
-#     producer_name: Annotated[str, Form()],
-#     box_weight: Annotated[Decimal, Form()],
-#     box_area: Annotated[Decimal, Form()],
-#     boxes_count: Annotated[int, Form()],
-#     main_image: Annotated[UploadFile, File()],
-#     category_name: Annotated[str, Form()],
-#     manager: DbManagerDep,
-#     http_client: HttpClientDep,
-#     feature_name: Annotated[str, Form()],
-#     surface_name: Annotated[str, Form()],
-#     images: Annotated[list[UploadFile], File()],
-# ):
-#     #tile = map_to_tile_domain()
-#     name, size, color_name, producer_name, category_name, feature_name, surface_name = [
-#         value.strip()
-#         for value in (
-#             name,
-#             size,
-#             color_name,
-#             producer_name,
-#             category_name,
-#             feature_name,
-#             surface_name,
-#         )
-#     ]
-#     bytes_images = [await img.read() for img in images] if images else []
-#     bytes_main_image = await main_image.read()
-#     length_str, width_str, height_str = size.split()
-#     length, width, height = Decimal(length_str), Decimal(width_str), Decimal(height_str)
-#     surface_name = surface_name or None
-#     tile = Tile(
-#         size = TileSize(length=length, width=width, height=height),
-#         color = TileColor(color_name=color_name, feature_name=feature_name),
-#         name=name,
-#         box=Box(area=box_area, weight=box_weight),
-#
-#     )
-#     await add_tile(
-#         name,
-#         length,
-#         width,
-#         height,
-#         color_name,
-#         producer_name,
-#         box_weight,
-#         box_area,
-#         boxes_count,
-#         bytes_main_image,
-#         category_name,
-#         manager,
-#         bytes_images,
-#         images_generator=ImageGenerator(http_client),
-#         file_manager=ProductImagesManager(),
-#         color_feature=feature_name,
-#         surface=surface_name,
-#     )
-#     return RedirectResponse("/admin", status_code=303)
-
-
 @router.post("/update")
 async def admin_update_tile(
     manager: DbManagerDep,
-    article: Annotated[int, Form()],
-    name: Annotated[str, Form()],
-    size: Annotated[str, Form()],
-    color_name: Annotated[str, Form()],
-    producer_name: Annotated[str, Form()],
-    box_weight: Annotated[Decimal | str, Form()],
-    box_area: Annotated[Decimal | str, Form()],
-    boxes_count: Annotated[int | str, Form()],
-    category_name: Annotated[str, Form()],
-    feature_name: Annotated[str, Form()],
-    surface_name: Annotated[str, Form()],
+    dto: Annotated[UpdateTile, Form()],
+    # article: Annotated[int, Form()],
+    # name: Annotated[str, Form()],
+    # size: Annotated[str, Form()],
+    # color_name: Annotated[str, Form()],
+    # producer_name: Annotated[str, Form()],
+    # box_weight: Annotated[Decimal | str, Form()],
+    # box_area: Annotated[Decimal | str, Form()],
+    # boxes_count: Annotated[int | str, Form()],
+    # category_name: Annotated[str, Form()],
+    # feature_name: Annotated[str, Form()],
+    # surface_name: Annotated[str, Form()],
 ):
-    params = {
-        k: v
-        for k, v in locals().items()
-        if v not in (None, "") and k not in ("manager", "article")
-    }
-    params = strip_input_params(**params)
-    params = api_input_to_params(**params)
+    # params = {
+    #     k: v
+    #     for k, v in locals().items()
+    #     if v not in (None, "") and k not in ("manager", "article")
+    # }
+    #
+    # params = strip_input_params(**params)
+    #params = api_input_to_params(**params)
 
+    params = dto.custom_dump()
     log.debug("to update: %s", params)
     if params:
-        await update_tile(manager, article, **params)
+        await update_tile(manager, dto.article, **params)
     return RedirectResponse("/admin", status_code=303)

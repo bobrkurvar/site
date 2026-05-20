@@ -1,11 +1,11 @@
 import logging
-from typing import Annotated
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from adapters.deps import DbManagerDep
 from adapters.images import SlideImagesManager
+from adapters.web import AuthCookies
 from services.views import get_categories_for_items
 
 router = APIRouter()
@@ -32,6 +32,6 @@ async def get_main_page(request: Request, manager: DbManagerDep):
 @router.get("/cookie/delete")
 async def cookie_delete(request: Request):
     response = RedirectResponse("/", status_code=303)
-    response.delete_cookie("access_token", path="/")
-    log.debug("COOKIES after delete: %s", request.cookies)
+    AuthCookies().clear_tokens(response)
+    log.debug("COOKIES after delete: %s", response.headers)
     return response

@@ -14,7 +14,7 @@ log = logging.getLogger(__name__)
 
 
 @router.post("/create")
-async def admin_create_tile_collection(
+async def admin_create_collection(
     manager: DbManagerDep,
     http_client: HttpClientDep,
     collection_name: Annotated[str, Form()],
@@ -33,7 +33,7 @@ async def admin_create_tile_collection(
 
 
 @router.post("/delete")
-async def admin_delete_tile_collections(
+async def admin_delete_collections(
     manager: DbManagerDep,
     collection_name: Annotated[str, Form()],
 ):
