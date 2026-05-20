@@ -96,9 +96,7 @@ async def add_collection(
             collection_target = collection
         else:
             collection_record.merge_categories(collection.categories)
-            # existing_names = {cat.name for cat in collection_record.categories}
-            # new_categories = [cat for cat in collection.categories if cat.name not in existing_names]
-            # collection_record.categories.extend(new_categories)
+
             collection_target = collection_record
         result = await manager.save(collection_target, session=uow.session)
 
