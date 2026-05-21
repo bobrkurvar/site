@@ -71,7 +71,7 @@ def test():
             compose_run(
                 "up",
                 "--build",
-                "-d",
+                "--wait",
                 "postgres",
                 "app",
                 "nginx",

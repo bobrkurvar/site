@@ -1,6 +1,5 @@
 # from decimal import Decimal
 #
-#
 # def api_input_to_params(**input_params):
 #     if not input_params:
 #         return {}

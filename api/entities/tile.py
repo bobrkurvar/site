@@ -8,7 +8,7 @@ from adapters.deps import DbManagerDep, HttpClientDep
 from adapters.images import ProductImagesManager, ImageGenerator
 from domain import *
 from services.tile import add_tile, delete_tile, update_tile
-from api.utils import api_input_to_params, strip_input_params
+#from api.utils import api_input_to_params, strip_input_params
 from api.schemas import CreateTile, UpdateTile
 
 router = APIRouter(prefix="/admin/tiles")
