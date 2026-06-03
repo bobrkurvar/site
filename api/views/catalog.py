@@ -7,8 +7,9 @@ from adapters.deps import DbManagerDep, QueryServiceDep
 from adapters.images import ProductImagesManager
 from core.config import ITEMS_PER_PAGE
 from domain import Slug, Tile
-from services.views import (build_main_images, build_tile_filters, fetch_items,
+from services.views import (build_tile_filters, fetch_items,
                             get_categories_for_items)
+import asyncio
 
 router = APIRouter(tags=["presentation"], prefix="/catalog")
 templates = Jinja2Templates("templates")
@@ -27,20 +28,20 @@ async def get_tile_page(
         category_name=category_name,
         id=tile_id,
     )
-    images = []
     if tile:
         images = [
             await product_manager.get_product_details_image_path(i.image_path)
             for i in tile.images
         ]
-    log.debug("detail images: %s", images)
+        tile.set_images(images)
+    #log.debug("detail images: %s", images)
     categories = await get_categories_for_items(manager)
     return templates.TemplateResponse(
         "tile_detail.html",
         {
             "request": request,
             "tile": tile,
-            "images": images,
+            #"images": images,
             "categories": categories,
         },
     )
@@ -62,12 +63,19 @@ async def get_catalog_tiles_page(
     offset = (page - 1) * limit
     tiles, total_count = await fetch_items(manager, limit, offset, **filters)
     filters = await query_service.get_catalog_filters(category_slug=category_slug)
-    main_images = build_main_images(tiles)
+    #main_images = build_main_images(tiles)
     product_manager = ProductImagesManager()
-    for k in main_images:
-        main_images[k] = await product_manager.get_product_catalog_image_path(
-            main_images[k]
+    # for k in main_images:
+    #     main_images[k] = await product_manager.get_product_catalog_image_path(
+    #         main_images[k]
+    #     )
+    for tile in tiles:
+        coroutines = (
+            product_manager.get_product_catalog_image_path(path)
+            for path in tile.images_paths
         )
+        resolved_paths = await asyncio.gather(*coroutines)
+        tile.set_images(resolved_paths)
 
     total_pages = max((total_count + limit - 1) // limit, 1)
     categories = await get_categories_for_items(manager)
@@ -80,7 +88,7 @@ async def get_catalog_tiles_page(
             "page": page,
             "total_pages": total_pages,
             "total_count": total_count,
-            "main_images": main_images,
+            #"main_images": main_images,
             "categories": categories,
             "category": category_slug,
             "filters": filters,

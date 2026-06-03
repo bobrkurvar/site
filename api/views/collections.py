@@ -7,8 +7,9 @@ from adapters.deps import DbManagerDep, QueryServiceDep
 from adapters.images import CollectionImagesManager, ProductImagesManager
 from core.config import COLLECTIONS_PER_PAGE
 from domain import Collection, CollectionCategory, DomainFilter, Slug
-from services.views import (build_main_images, build_tile_filters,
+from services.views import (build_tile_filters,
                             fetch_collections_items, get_categories_for_items)
+import asyncio
 
 router = APIRouter(tags=["presentation"], prefix="/catalog")
 templates = Jinja2Templates("templates")
@@ -42,9 +43,10 @@ async def get_collections_page(
     slug_map = {s.name: s.slug for s in slugs}
     collection_manager = CollectionImagesManager()
     for coll in category_collections:
-        coll.image_path = await collection_manager.get_collections_image_path(
+        new_image_path = await collection_manager.get_collections_image_path(
             coll.image_path
         )
+        coll.assign_image_path(new_image_path)
         coll.slug = slug_map.get(coll.name)
         collections.append(coll)
     total_count = await manager.count(CollectionCategory, category_name=category_name)
@@ -88,12 +90,19 @@ async def get_catalog_tiles_page(
     filters = await query_service.get_catalog_filters(
         collection_slug=collection, category_slug=category
     )
-    main_images = build_main_images(tiles)
+    #main_images = build_main_images(tiles)
     product_manager = ProductImagesManager()
-    for k in main_images:
-        main_images[k] = await product_manager.get_product_catalog_image_path(
-            main_images[k]
+    # for k in main_images:
+    #     main_images[k] = await product_manager.get_product_catalog_image_path(
+    #         main_images[k]
+    #     )
+    for tile in tiles:
+        coroutines = (
+            product_manager.get_product_catalog_image_path(path)
+            for path in tile.images_paths
         )
+        resolved_paths = await asyncio.gather(*coroutines)
+        tile.set_images(resolved_paths)
 
     total_pages = max((total_count + limit - 1) // limit, 1)
     categories = await get_categories_for_items(manager)
@@ -107,7 +116,7 @@ async def get_catalog_tiles_page(
             "path_to_catalog": path_to_catalog,
             "total_pages": total_pages,
             "total_count": total_count,
-            "main_images": main_images,
+            #"main_images": main_images,
             "categories": categories,
             "filters": filters,
             "active_tab": "None",

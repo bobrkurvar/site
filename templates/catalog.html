@@ -71,8 +71,8 @@
                     <a href="{{ path_to_catalog or request.path }}/{{ tile.article }}" class="tile-card-link">
                         <div class="tile-card">
                             <div class="tile-image-container">
-                                {% if main_images[tile.id] %}
-                                <img src="/{{ main_images[tile.article] }}" alt="{{ tile.name }}" class="tile-image" loading="lazy">
+                                {% if tile.main_image_path %}
+                                <img src="/{{ tile.main_image_path }}" alt="{{ tile.name }}" class="tile-image" loading="lazy">
                                 {% else %}
                                 <div class="no-image">Нет изображения</div>
                                 {% endif %}

@@ -1,5 +1,5 @@
 from decimal import Decimal
-
+from collections.abc import Collection as AbcCol
 
 class TileSize:
     def __init__(
@@ -124,6 +124,17 @@ class Tile:
     def __str__(self):
         return f"{self.article} {str(self.color)} {self.surface} {self.name}"
 
+    def set_images(self, images_paths: AbcCol[str]):
+        self._images = [Image(image_path=image_path) for image_path in images_paths]
+
+    @property
+    def main_image_path(self):
+        return self.images[0].image_path
+
+    @property
+    def images_paths(self):
+        return [image.image_path for image in self.images]
+
     @property
     def images(self) -> list["Image"]:
         if self._images is None:
@@ -175,29 +186,6 @@ class Tile:
         return self.size.length
 
 
-# class TileImage:
-#     def __init__(
-#         self,
-#         image_bytes: bytes | None = None,
-#         image_path: str | None = None,
-#         tile_id: int | None = None,
-#         image_id: int | None = None,
-#     ):
-#         if not image_bytes and not image_path:
-#             raise ValueError("Изображение плитки должно содержать либо байты, либо путь")
-#
-#         self.id = image_id
-#         self.tile_id = tile_id
-#         self.image_bytes = image_bytes
-#         self.image_path = image_path
-#
-#     def consume_bytes(self) -> bytes:
-#         if self.image_bytes is None:
-#             raise ValueError("Байты уже были потреблены или не заданы")
-#
-#         data = self.image_bytes
-#         self.image_bytes = None
-#         return data
 class Image:
     def __init__(
         self,

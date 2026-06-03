@@ -21,9 +21,9 @@
             </div>
 
             <div class="tile-image-main">
-                {% if images %}
+                {% if tile.images_paths %}
                     <img id="main-image"
-                         src="/{{ images[0] }}"
+                         src="/{{ tile.main_image_path }}"
                          alt="{{ tile.name }}"
                          class="tile-detail-image"
                          loading="eager">
@@ -37,7 +37,7 @@
 
             <div class="tile-thumbnails">
                 {% if images and images|length > 1 %}
-                    {% for img in images %}
+                    {% for img in tile.images_paths %}
                     <div class="thumbnail {% if loop.first %}active-thumb{% endif %}">
                         <img src="/{{ img }}"
                              alt="{{ tile.name }}"

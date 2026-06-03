@@ -34,19 +34,19 @@ async def build_tile_filters(
     return filters
 
 
-def build_main_images(tiles):
-    main_images = {}
-    for tile in tiles:
-        path_obj = Path(tile.images[0].image_path)
-        parts = path_obj.stem.split("-")
-        if len(parts) > 1:
-            parts[-1] = "0"
-            new_filename = f"{'-'.join(parts)}{path_obj.suffix}"
-            main_images[tile.id] = (path_obj.parent / new_filename).as_posix()
-        else:
-            main_images[tile.id] = path_obj.as_posix()
-
-    return main_images
+# def build_main_images(tiles):
+#     main_images = {}
+#     for tile in tiles:
+#         path_obj = Path(tile.images[0].image_path)
+#         parts = path_obj.stem.split("-")
+#         if len(parts) > 1:
+#             parts[-1] = "0"
+#             new_filename = f"{'-'.join(parts)}{path_obj.suffix}"
+#             main_images[tile.id] = (path_obj.parent / new_filename).as_posix()
+#         else:
+#             main_images[tile.id] = path_obj.as_posix()
+#
+#     return main_images
 
 
 async def fetch_items(manager, limit, offset, **filters):
