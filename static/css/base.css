@@ -13,6 +13,7 @@ body {
     background-position: center; /* центрирует изображение */
     background-repeat: repeat; /* не повторяет изображение */
     background-attachment: fixed; /* фон не скроллится вместе со страницей */
+    /*background-attachment: scroll !important;
 }
 
 /* Вся шапка */

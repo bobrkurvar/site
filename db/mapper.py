@@ -1,13 +1,11 @@
 from sqlalchemy import inspect
-from db import models
+
 import domain
+from db import models
 
 
 def map_catalog_to_orm(d: domain.Tile) -> models.Catalog:
-    orm_images = [
-        models.TileImage(image_path=img.image_path)
-        for img in d.images
-    ]
+    orm_images = [models.TileImage(image_path=img.image_path) for img in d.images]
     return models.Catalog(
         id=d.id,
         name=d.name,
@@ -19,7 +17,7 @@ def map_catalog_to_orm(d: domain.Tile) -> models.Catalog:
         producer_name=d.producer.name,
         category_name=d.category.name,
         boxes_count=d.boxes_count,
-        images=orm_images
+        images=orm_images,
     )
 
 
@@ -27,18 +25,20 @@ def map_category_to_orm(d: domain.Category) -> models.Category:
     return models.Category(name=d.name)
 
 
-def map_tile_image_to_orm(d: domain.TileImage) -> models.TileImage:
-    return models.TileImage(image_id=d.id, tile_id=d.tile_id, image_path=d.image_path)
+def map_tile_image_to_orm(d: domain.Image) -> models.TileImage:
+    return models.TileImage(image_id=d.id, tile_id=d.master_id, image_path=d.image_path)
 
 
 def map_collection_to_orm(d: domain.Collection) -> models.Collection:
     return models.Collection(
         id=d.id,
         name=d.name,
-        image_path=d.image_path,
+        image_path=d.image.image_path,
         # Маппер сливает строки в прокси
-        categories_proxy=[c.name for c in d.categories]
+        categories_proxy=[c.name for c in d.categories],
     )
+
+
 # def map_collection_to_orm(d: domain.Collection) -> models.Collection:
 #
 #     return models.Collection(id=d.id, name=d.name, image_path=d.image_path)
@@ -51,17 +51,21 @@ def map_collection_to_orm(d: domain.Collection) -> models.Collection:
 #     # )
 
 
-def map_collection_category_to_orm(d: domain.CollectionCategory) -> models.CollectionCategory:
+def map_collection_category_to_orm(
+    d: domain.CollectionCategory,
+) -> models.CollectionCategory:
     return models.CollectionCategory(
-        collection_id=d.collection_id,
-        category_name=d.category_name
+        collection_id=d.collection_id, category_name=d.category_name
     )
 
-def map_collection_category_to_domain(o: models.CollectionCategory) -> domain.CollectionCategory:
+
+def map_collection_category_to_domain(
+    o: models.CollectionCategory,
+) -> domain.CollectionCategory:
     return domain.CollectionCategory(
-        collection_id=o.collection_id,
-        category_name=o.category_name
+        collection_id=o.collection_id, category_name=o.category_name
     )
+
 
 def map_size_to_orm(d: domain.TileSize) -> models.TileSize:
     return models.TileSize(id=d.id, length=d.length, height=d.height, width=d.width)
@@ -115,10 +119,7 @@ def map_catalog_to_domain(o: models.Catalog) -> domain.Tile:
             area=o.box.area,
         )
 
-    color = domain.TileColor(
-        color_name=o.color_name,
-        feature_name=o.feature_name
-    )
+    color = domain.TileColor(color_name=o.color_name, feature_name=o.feature_name)
 
     surface = domain.TileSurface(name=o.surface_name) if o.surface_name else None
     producer = domain.Producer(name=o.producer_name)
@@ -132,41 +133,42 @@ def map_catalog_to_domain(o: models.Catalog) -> domain.Tile:
         surface=surface,
         producer=producer,
         category=category,
-        size=size_obj,         # Либо готовый объект, либо None
-        size_id=o.size_id,     # ID есть всегда, берем прямо из колонки плитки!
+        size=size_obj,  # Либо готовый объект, либо None
+        size_id=o.size_id,  # ID есть всегда, берем прямо из колонки плитки!
         box=box_obj,
         box_id=o.box_id,
-        images=images
+        images=images,
     )
+
 
 def map_category_to_domain(o: models.Category) -> domain.Category:
     return domain.Category(name=o.name)
 
 
-def map_tile_image_to_domain(o: models.TileImage) -> domain.TileImage:
-    return domain.TileImage(image_id=o.image_id, tile_id=o.tile_id, image_path=o.image_path)
+def map_tile_image_to_domain(o: models.TileImage) -> domain.Image:
+    return domain.Image(
+        image_id=o.image_id, master_id=o.tile_id, image_path=o.image_path
+    )
 
 
 def map_collection_to_domain(o: models.Collection) -> domain.Collection:
     insp = inspect(o)
     categories = None
     if "categories" not in insp.unloaded:
-        categories = [
-            domain.Category(name=link.category_name)
-            for link in o.categories
-        ]
+        categories = [domain.Category(name=link.category_name) for link in o.categories]
 
     return domain.Collection(
         collection_id=o.id,
         name=o.name,
-        image_path=o.image_path,
-        categories=categories
+        image=domain.Image(image_path=o.image_path),
+        categories=categories,
     )
 
 
-
 def map_size_to_domain(o: models.TileSize) -> domain.TileSize:
-    return domain.TileSize(size_id=o.id, length=o.length, height=o.height, width=o.width)
+    return domain.TileSize(
+        size_id=o.id, length=o.length, height=o.height, width=o.width
+    )
 
 
 def map_color_to_domain(o: models.TileColor) -> domain.TileColor:
@@ -195,9 +197,9 @@ def map_slug_to_domain(o: models.Slug) -> domain.Slug:
 
 class MapperRegistry:
     def __init__(self):
-        self._models = {}          # domain_cls -> orm_model
-        self._to_orm_funcs = {}    # domain_cls -> func
-        self._to_domain_funcs = {} # orm_model -> func (Внимание: ключ - ORM класс!)
+        self._models = {}  # domain_cls -> orm_model
+        self._to_orm_funcs = {}  # domain_cls -> func
+        self._to_domain_funcs = {}  # orm_model -> func (Внимание: ключ - ORM класс!)
 
     def register(self, domain_cls, orm_model, to_orm, to_domain):
         self._models[domain_cls] = orm_model
@@ -222,19 +224,44 @@ class MapperRegistry:
         return func(orm_obj)
 
 
-
-
 registry = MapperRegistry()
-registry.register(domain.Tile,models.Catalog,map_catalog_to_orm,map_catalog_to_domain)
-registry.register(domain.Category, models.Category, map_category_to_orm, map_category_to_domain)
-registry.register(domain.Collection, models.Collection, map_collection_to_orm, map_collection_to_domain)
-registry.register(domain.CollectionCategory, models.CollectionCategory, map_collection_category_to_orm, map_collection_category_to_domain)
+registry.register(
+    domain.Tile, models.Catalog, map_catalog_to_orm, map_catalog_to_domain
+)
+registry.register(
+    domain.Category, models.Category, map_category_to_orm, map_category_to_domain
+)
+registry.register(
+    domain.Collection,
+    models.Collection,
+    map_collection_to_orm,
+    map_collection_to_domain,
+)
+registry.register(
+    domain.CollectionCategory,
+    models.CollectionCategory,
+    map_collection_category_to_orm,
+    map_collection_category_to_domain,
+)
 registry.register(domain.TileSize, models.TileSize, map_size_to_orm, map_size_to_domain)
-registry.register(domain.TileColor, models.TileColor, map_color_to_orm, map_color_to_domain)
-registry.register(domain.TileSurface, models.TileSurface, map_surface_to_orm, map_surface_to_domain)
-registry.register(domain.Producer, models.Producer, map_producer_to_orm, map_producer_to_domain)
+registry.register(
+    domain.TileColor, models.TileColor, map_color_to_orm, map_color_to_domain
+)
+registry.register(
+    domain.TileSurface, models.TileSurface, map_surface_to_orm, map_surface_to_domain
+)
+registry.register(
+    domain.Producer, models.Producer, map_producer_to_orm, map_producer_to_domain
+)
 registry.register(domain.Box, models.Box, map_box_to_orm, map_box_to_domain)
-registry.register(domain.TileImage, models.TileImage, map_tile_image_to_orm, map_tile_image_to_domain)
+registry.register(
+    domain.Image, models.TileImage, map_tile_image_to_orm, map_tile_image_to_domain
+)
 registry.register(domain.Admin, models.Admin, map_admin_to_orm, map_admin_to_domain)
 registry.register(domain.Slug, models.Slug, map_slug_to_orm, map_slug_to_domain)
-registry.register(domain.CollectionCategory, models.CollectionCategory, map_collection_category_to_orm, map_collection_category_to_domain)
+registry.register(
+    domain.CollectionCategory,
+    models.CollectionCategory,
+    map_collection_category_to_orm,
+    map_collection_category_to_domain,
+)

@@ -1,18 +1,14 @@
 import logging
+from types import SimpleNamespace
 
 import pytest
 from slugify import slugify
 
 from core.config import ITEMS_PER_PAGE
 from domain import Slug
-from services.views import (
-    build_main_images,
-    build_tile_filters,
-    #extract_quoted_word,
-    fetch_items,
-)
+from services.views import (build_main_images,  # extract_quoted_word,
+                            build_tile_filters, fetch_items)
 from tests.unit.conftest import manager_factory
-from types import SimpleNamespace
 
 log = logging.getLogger(__name__)
 

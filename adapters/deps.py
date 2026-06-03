@@ -1,9 +1,11 @@
 from typing import Annotated
+
 from fastapi import Depends, Request
-from adapters.redis import RedisService
-from adapters.http_client import HttpClient
+
 from adapters.db import Crud, build_crud
+from adapters.http_client import HttpClient
 from adapters.query_service import CatalogQueryService
+from adapters.redis import RedisService
 
 
 def get_redis(request: Request) -> RedisService:
@@ -25,6 +27,7 @@ def get_db_manager(request: Request):
     if db_provider is None:
         raise RuntimeError("db connection is not initialized")
     return build_crud(db_provider.session_factory)
+
 
 def get_catalog_query_service(request: Request):
     db_provider = request.app.state.db_provider

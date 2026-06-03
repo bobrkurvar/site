@@ -1,17 +1,22 @@
-from playwright.sync_api import expect
 import logging
 import re
+
+from playwright.sync_api import expect
+
 from core import conf
+
+from .helpers import login_as_admin
 
 log = logging.getLogger(__name__)
 
 
 def test_admin_login_success(page):
-    page.goto(f"http://{conf.api_host}/admin")
-    page.get_by_label("Username").fill("andy")
-    page.get_by_label("Password").fill("user1122")
-    with page.expect_request("**/admin/login/submit"):
-        page.get_by_role("button", name="Login").click()
+    login_as_admin(page)
+    # page.goto(f"http://{conf.api_host}/admin")
+    # page.get_by_label("Username").fill("andy")
+    # page.get_by_label("Password").fill("user1122")
+    # with page.expect_request("**/admin/login/submit"):
+    #     page.get_by_role("button", name="Login").click()
     log.debug(page.url)
     expect(page).to_have_url(re.compile(r".*/admin"))
     # на странице админа может высветиться html админки в случае успеха или
@@ -21,23 +26,18 @@ def test_admin_login_success(page):
 
 
 def test_admin_login_user_not_found(page):
-    page.goto(f"http://{conf.api_host}/admin")
-    page.get_by_label("Username").fill("invalid_username")
-    page.get_by_label("Password").fill("invalid_password")
-    page.get_by_role("button", name="Login").click()
+    # page.goto(f"http://{conf.api_host}/admin")
+    # page.get_by_label("Username").fill("invalid_username")
+    # page.get_by_label("Password").fill("invalid_password")
+    # page.get_by_role("button", name="Login").click()
+    login_as_admin(page, username="wrong_username")
     log.debug(page.url)
     expect(page).to_have_url(re.compile(r".*/admin/login/submit"))
 
 
-
 def test_admin_refresh_access_token(page):
     # 1. Выполняем успешный логин
-    page.goto(f"http://{conf.api_host}/admin")
-    page.get_by_label("Username").fill("andy")
-    page.get_by_label("Password").fill("user1122")
-    with page.expect_request("**/admin/login/submit"):
-        page.get_by_role("button", name="Login").click()
-
+    login_as_admin(page)
     # Убеждаемся, что логин прошел успешно
     expect(page).to_have_url(re.compile(r".*/admin"))
     expect(page.get_by_label("Username")).to_have_count(0)
@@ -77,12 +77,12 @@ def test_admin_refresh_access_token(page):
 
 def test_admin_refresh_token_reuse_compromised(page):
     # Выполняем успешный логин
-    page.goto(f"http://{conf.api_host}/admin")
-    page.get_by_label("Username").fill("andy")
-    page.get_by_label("Password").fill("user1122")
-    with page.expect_request("**/admin/login/submit"):
-        page.get_by_role("button", name="Login").click()
-
+    # page.goto(f"http://{conf.api_host}/admin")
+    # page.get_by_label("Username").fill("andy")
+    # page.get_by_label("Password").fill("user1122")
+    # with page.expect_request("**/admin/login/submit"):
+    #     page.get_by_role("button", name="Login").click()
+    login_as_admin(page)
     expect(page).to_have_url(re.compile(r".*/admin"))
 
     # Крадем оригинальный refresh_token (Токен А)
@@ -101,7 +101,9 @@ def test_admin_refresh_token_reuse_compromised(page):
     # Подменяем новый refresh_token обратно на старый (Токен А)
     # Сначала удаляем access_token, чтобы спровоцировать ротацию
     current_cookies = page.context.cookies()
-    attack_cookies = [c for c in current_cookies if c["name"] not in ["access_token", "refresh_token"]]
+    attack_cookies = [
+        c for c in current_cookies if c["name"] not in ["access_token", "refresh_token"]
+    ]
     # Возвращаем старый рефреш
     attack_cookies.append(original_refresh_cookie)
 
@@ -119,4 +121,6 @@ def test_admin_refresh_token_reuse_compromised(page):
     # Опционально: убеждаемся, что сервер подчистил куки
     final_cookies = page.context.cookies()
     has_refresh = any(cookie["name"] == "refresh_token" for cookie in final_cookies)
-    assert has_refresh is False, "Скомпрометированный refresh_token не был удален из cookies!"
+    assert (
+        has_refresh is False
+    ), "Скомпрометированный refresh_token не был удален из cookies!"

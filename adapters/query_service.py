@@ -1,5 +1,7 @@
 from sqlalchemy import text
-from services.read_models import CatalogFiltersDTO, FilterColorDTO, FilterSizeDTO
+
+from services.read_models import (CatalogFiltersDTO, FilterColorDTO,
+                                  FilterSizeDTO)
 
 
 class CatalogQueryService:
@@ -7,7 +9,7 @@ class CatalogQueryService:
         self.session_factory = session_factory
 
     async def get_catalog_filters(
-            self, category_slug: str | None = None, collection_slug: str | None = None
+        self, category_slug: str | None = None, collection_slug: str | None = None
     ) -> CatalogFiltersDTO:
         sql = """
             WITH filtered_tiles AS (
@@ -28,14 +30,13 @@ class CatalogQueryService:
         """
 
         async with self.session_factory.begin() as session:
-            result = await session.execute(text(sql), {
-                "cat_slug": category_slug,
-                "col_slug": collection_slug
-            })
+            result = await session.execute(
+                text(sql), {"cat_slug": category_slug, "col_slug": collection_slug}
+            )
             raw_sizes, raw_colors, raw_producers = result.tuples().one()
 
             return CatalogFiltersDTO(
                 sizes=[FilterSizeDTO(**s) for s in (raw_sizes or [])],
                 colors=[FilterColorDTO(**c) for c in (raw_colors or [])],
-                producers=list(raw_producers or [])
+                producers=list(raw_producers or []),
             )

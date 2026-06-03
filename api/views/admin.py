@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from typing import Annotated
 
@@ -7,10 +8,9 @@ from starlette.responses import RedirectResponse
 
 from adapters.deps import DbManagerDep, RedisDep
 from adapters.web import RequireForAdminDep, authCookiesDep
-from services.auth import create_tokens_from_login
 from domain import *
-import asyncio
 from infra.security import verify
+from services.auth import create_tokens_from_login
 
 router = APIRouter(tags=["admin"], prefix="/admin")
 
@@ -35,8 +35,30 @@ async def admin_page(
     producers = manager.read(Producer)
     boxes_count = manager.read(Tile, distinct="boxes_count")
     categories = manager.read(Category)
-    tasks = [tiles, tile_sizes, colors_names, colors_features, surfaces, boxes_weights, boxes_areas, producers, boxes_count, categories]
-    tiles, tile_sizes, colors_names, colors_features, surfaces, boxes_weights, boxes_areas, producers, boxes_count, categories = await asyncio.gather(*tasks)
+    tasks = [
+        tiles,
+        tile_sizes,
+        colors_names,
+        colors_features,
+        surfaces,
+        boxes_weights,
+        boxes_areas,
+        producers,
+        boxes_count,
+        categories,
+    ]
+    (
+        tiles,
+        tile_sizes,
+        colors_names,
+        colors_features,
+        surfaces,
+        boxes_weights,
+        boxes_areas,
+        producers,
+        boxes_count,
+        categories,
+    ) = await asyncio.gather(*tasks)
 
     response = templates.TemplateResponse(
         "admin.html",
@@ -69,7 +91,13 @@ async def admin_login_submit(
     redis: RedisDep,
 ):
     response = RedirectResponse("/admin", status_code=303)
-    tokens = await create_tokens_from_login(manager=manager, redis=redis, username=username, password=password, verify=verify)
+    tokens = await create_tokens_from_login(
+        manager=manager,
+        redis=redis,
+        username=username,
+        password=password,
+        verify=verify,
+    )
     if tokens:
         cookies.set_access_token(response, tokens["access_token"])
         cookies.set_refresh_token(response, tokens["refresh_token"])

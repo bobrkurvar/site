@@ -24,4 +24,3 @@ async def admin_delete_tile_size(
     else:
         await manager.delete(TileSize)
     return RedirectResponse("/admin", status_code=303)
-

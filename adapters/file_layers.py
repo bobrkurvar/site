@@ -1,4 +1,4 @@
-from shared import PRODUCTS, DETAILS, COLLECTIONS, SLIDES
+from shared import COLLECTIONS, DETAILS, PRODUCTS, SLIDES
 
 ORIGINAL_PRODUCT = "original_product"
 ORIGINAL_COLLECTION = "original_collection"

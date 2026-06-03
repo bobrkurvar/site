@@ -1,10 +1,14 @@
+import logging
+
 import pytest
 
-from core.logger import setup_test_logging, setup_logging
+from core.logger import setup_logging, setup_test_logging
 from domain import *
 
 setup_test_logging()
 # setup_logging()
+
+log = logging.getLogger(__name__)
 
 
 @pytest.fixture

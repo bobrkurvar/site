@@ -1,8 +1,7 @@
-import logging
 import json
+import logging
 
 from redis.asyncio import ConnectionError, Redis
-
 
 log = logging.getLogger(__name__)
 
@@ -32,7 +31,6 @@ class RedisProvider:
     async def close(self) -> None:
         await self._redis.aclose()
         await self._redis.connection_pool.disconnect()
-
 
 
 class RedisService:
@@ -79,4 +77,3 @@ class RedisService:
     async def expire(self, key: str, ttl: int):
         key = f"{self.prefix}:{key}"
         await self.conn.expire(key, ttl)
-

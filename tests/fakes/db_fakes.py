@@ -1,9 +1,9 @@
 import logging
+from typing import Any
 
 from domain import NotFoundError
-from typing import Any
-from .mapper import registry
 
+from .mapper import registry
 
 log = logging.getLogger(__name__)
 

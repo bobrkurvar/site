@@ -1,11 +1,12 @@
+import logging
 from typing import Annotated
 
 from fastapi import Depends, Request, Response
-import logging
+
+from adapters.deps import RedisDep
 from core import conf
 from infra.auth import check_access_token
 from services.auth import create_tokens_from_refresh
-from adapters.deps import RedisDep
 
 log = logging.getLogger(__name__)
 

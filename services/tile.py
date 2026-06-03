@@ -2,8 +2,8 @@ import asyncio
 import logging
 
 from domain import *
-from infra.uow import UnitOfWork
 from infra.security import calculate_file_hash
+from infra.uow import UnitOfWork
 
 log = logging.getLogger(__name__)
 
@@ -47,16 +47,17 @@ async def add_tile(
         tile.box = await add_items(
             tile.box, manager, uow.session, weight=tile.box.weight, area=tile.box.area
         )
-        images_bytes = [img.image_bytes for img in tile.images if img]
-        tile.images.clear()
         async with file_manager.session() as files:
-            for img in images_bytes:
-                file_name = await asyncio.to_thread(calculate_file_hash, img)
+            for img in tile.images:
+                img_bytes = img.consume_bytes()
+                file_name = await asyncio.to_thread(calculate_file_hash, img_bytes)
                 image_path = file_manager.base_product_path(file_name)
-                tile.images.append(TileImage(image_path=str(image_path)))
+                img.image_path = str(image_path)
                 try:
-                    await files.save(image_path, img)
-                    miniatures = await images_generator.generate_product_variants(img)
+                    await files.save(image_path, img_bytes)
+                    miniatures = await images_generator.generate_product_variants(
+                        img_bytes
+                    )
                     for layer, miniature in miniatures.items():
                         await files.save_by_layer(file_name, miniature, layer)
                 except FileExistsError:
@@ -130,6 +131,7 @@ def extract_composite_fields(tile: Tile) -> dict:
         "color_name": tile.color_name,
         "feature_name": tile.feature_name,
     }
+
 
 async def create_composite(
     manager, article: int, values: dict, columns: tuple, *to_join
@@ -229,62 +231,3 @@ async def update_tile(
         )
 
 
-# async def update_tile(
-#     manager,
-#     article: int,
-#     uow_class=UnitOfWork,
-#     name: str | None = None,
-#     size: dict | None = None,
-#     color: dict | None = None,
-#     producer_name: str | None = None,
-#     box: dict | None = None,
-#     boxes_count: int | None = None,
-#     category_name: str | None = None,
-#     surface_name: str | None = None,
-# ):
-#     async with uow_class(manager) as uow:
-#         tile = await manager.read_one(Tile, id=article, session=uow.session, loaded=["size", "box"])
-#         if not tile:
-#             raise ValueError(f"Tile with article {article} not found")
-#         handbooks = []
-#         attrs = []
-#         if size:
-#             for k, v in size.items():
-#                 setattr(tile.size, k, v)
-#             tile.size.id=None
-#             attrs.append("size")
-#             handbooks.append(tile.size)
-#         if color:
-#             for k, v in color.items():
-#                 setattr(tile.color, k, v)
-#             attrs.append("color")
-#             handbooks.append(tile.color)
-#         if box:
-#             for k, v in box.items():
-#                 setattr(tile.box, k, v)
-#             tile.box.id=None
-#             attrs.append("box")
-#             handbooks.append(tile.box)
-#         if producer_name:
-#             tile.producer.name = producer_name
-#             attrs.append("producer")
-#             handbooks.append(tile.producer)
-#         if category_name:
-#             tile.category.name = category_name
-#             attrs.append("category")
-#             handbooks.append(tile.category)
-#         if surface_name:
-#             tile.surface.name= surface_name
-#             attrs.append("surface")
-#             handbooks.append(tile.surface)
-#
-#         if handbooks:
-#             created_handbooks = await manager.create(seq_data=handbooks, session=uow.session)
-#             for attr_name, resolved_obj in zip(attrs, created_handbooks):
-#                 setattr(tile, attr_name, resolved_obj)
-#
-#         if name is not None:
-#             tile.name = name
-#         if boxes_count is not None:
-#             tile.boxes_count = boxes_count
-#         await manager.save(tile)

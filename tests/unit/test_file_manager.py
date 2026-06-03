@@ -1,6 +1,9 @@
-import pytest
 from pathlib import Path
-from shared import COLLECTIONS, PRODUCTS, DETAILS
+
+import pytest
+
+from shared import COLLECTIONS, DETAILS, PRODUCTS
+
 
 @pytest.mark.asyncio
 async def test_files_session_remove_exists_files_when_raises(product_images):
@@ -14,7 +17,6 @@ async def test_files_session_remove_exists_files_when_raises(product_images):
             raise Exception
     except Exception:
         assert not fs
-
 
 
 def test_base_collection_path(collection_images):
@@ -37,7 +39,7 @@ def test_resolve_path_for_collection_catalog_layer(collection_images):
 @pytest.mark.asyncio
 async def test_save_file_collection_catalog_path(collection_images):
     images_manager, fs, root = collection_images
-    file_name, img, layer = "abcdef123456.jpg", b'aaa', COLLECTIONS
+    file_name, img, layer = "abcdef123456.jpg", b"aaa", COLLECTIONS
     await images_manager.save_by_layer(file_name, img, layer)
     expected_path = Path(f"{root}/collections/catalog/{file_name}").as_posix()
     assert expected_path in fs
@@ -59,6 +61,7 @@ def test_resolve_path_for_product_catalog_layer(product_images):
     expected_path = Path(f"{root}/products/catalog/{file_name}")
     assert path == expected_path
 
+
 def test_resolve_path_for_product_details_layer(product_images):
     images_manager, _, root = product_images
     file_name = "abcdef123456.jpg"
@@ -71,7 +74,7 @@ def test_resolve_path_for_product_details_layer(product_images):
 @pytest.mark.asyncio
 async def test_save_file_product_catalog_path(product_images):
     images_manager, fs, root = product_images
-    file_name, img, layer = "abcdef123456.jpg", b'aaa', PRODUCTS
+    file_name, img, layer = "abcdef123456.jpg", b"aaa", PRODUCTS
     await images_manager.save_by_layer(file_name, img, layer)
     expected_path = Path(f"{root}/products/catalog/{file_name}").as_posix()
     assert expected_path in fs
@@ -80,7 +83,7 @@ async def test_save_file_product_catalog_path(product_images):
 @pytest.mark.asyncio
 async def test_save_file_product_details_path(product_images):
     images_manager, fs, root = product_images
-    file_name, img, layer = "abcdef123456.jpg", b'aaa', DETAILS
+    file_name, img, layer = "abcdef123456.jpg", b"aaa", DETAILS
     await images_manager.save_by_layer(file_name, img, layer)
     expected_path = Path(f"{root}/products/details/{file_name}").as_posix()
     assert expected_path in fs

@@ -2,16 +2,13 @@ import logging
 
 from fastapi import APIRouter, Request
 from fastapi.templating import Jinja2Templates
+
 from adapters.deps import DbManagerDep, QueryServiceDep
 from adapters.images import CollectionImagesManager, ProductImagesManager
 from core.config import COLLECTIONS_PER_PAGE
-from domain import CollectionCategory, Slug, DomainFilter, Collection
-from services.views import (
-    build_main_images,
-    build_tile_filters,
-    fetch_collections_items,
-    get_categories_for_items,
-)
+from domain import Collection, CollectionCategory, DomainFilter, Slug
+from services.views import (build_main_images, build_tile_filters,
+                            fetch_collections_items, get_categories_for_items)
 
 router = APIRouter(tags=["presentation"], prefix="/catalog")
 templates = Jinja2Templates("templates")
@@ -31,7 +28,11 @@ async def get_collections_page(
     category_name = (await manager.read_one(Slug, slug=category)).name
     category_collections = await manager.read(
         Collection,
-        domain_filters=[DomainFilter(model=CollectionCategory, field="category_name", value=category_name)],
+        domain_filters=[
+            DomainFilter(
+                model=CollectionCategory, field="category_name", value=category_name
+            )
+        ],
         offset=offset,
         limit=limit,
     )
@@ -84,11 +85,15 @@ async def get_catalog_tiles_page(
         manager, collection, limit, offset, **filters
     )
 
-    filters = await query_service.get_catalog_filters(collection_slug=collection, category_slug=category)
+    filters = await query_service.get_catalog_filters(
+        collection_slug=collection, category_slug=category
+    )
     main_images = build_main_images(tiles)
     product_manager = ProductImagesManager()
     for k in main_images:
-        main_images[k] = await product_manager.get_product_catalog_image_path(main_images[k])
+        main_images[k] = await product_manager.get_product_catalog_image_path(
+            main_images[k]
+        )
 
     total_pages = max((total_count + limit - 1) // limit, 1)
     categories = await get_categories_for_items(manager)

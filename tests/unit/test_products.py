@@ -1,21 +1,16 @@
 import logging
+from pathlib import Path
 
 import pytest
 
 from domain import *
 from services.tile import update_tile
 from tests.conftest import domain_handbooks_models_for_products
-from tests.fakes import FakeUoW, FakeImageGenerator
+from tests.fakes import FakeImageGenerator, FakeUoW
+from tests.helpers import (add_tile_helper, assert_box, assert_handbooks_count,
+                           assert_size, assert_tile_fields, update_filters)
+
 from .helpers import product_catalog_path, product_details_path
-from tests.helpers import (
-    add_tile_helper,
-    assert_size,
-    assert_box,
-    assert_tile_fields,
-    assert_handbooks_count,
-    update_filters,
-)
-from pathlib import Path
 
 log = logging.getLogger(__name__)
 
@@ -29,7 +24,6 @@ async def test_create_tile_success_when_all_handbooks_exists(
     log.debug("tile: %s", record)
     # проверка всех справочников
     await assert_handbooks_count(manager, domain_handbooks_models_for_products, 1)
-
 
 
 @pytest.mark.asyncio
@@ -48,9 +42,9 @@ async def test_expected_file_paths_exists_after_success_created(
         file_name = Path(img.image_path).name
         for func in paths_funcs:
             expected_path = Path(func(file_name)).as_posix()
-            assert expected_path in fs, f"Файл не найден по ожидаемому пути: {expected_path}"
-
-
+            assert (
+                expected_path in fs
+            ), f"Файл не найден по ожидаемому пути: {expected_path}"
 
 
 @pytest.mark.asyncio
@@ -64,7 +58,9 @@ async def test_update_tile_success_when_new_attributes_in_handbooks(
     article = record.id  # фильтр для обновления по артикулу
 
     new_filters = update_filters()
-    await update_tile(manager=manager, article=article, uow_class=FakeUoW, **new_filters)
+    await update_tile(
+        manager=manager, article=article, uow_class=FakeUoW, **new_filters
+    )
 
     new_tile = await manager.read_one(Tile, id=article)
     expected_box, expected_size, color = (
@@ -86,5 +82,3 @@ async def test_update_tile_success_when_new_attributes_in_handbooks(
 
     # 2. Проверка всех справочников, поля в справочниках не должны изменятся, а должны появится новые
     await assert_handbooks_count(manager, domain_handbooks_models_for_products, 2)
-
-

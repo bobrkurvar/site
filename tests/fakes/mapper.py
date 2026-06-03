@@ -1,17 +1,7 @@
-from domain import (
-    Admin,
-    Box,
-    Category,
-    CollectionCategory,
-    Collection,
-    Producer,
-    Slug,
-    Tile,
-    TileColor,
-    TileImage,
-    TileSize,
-    TileSurface,
-)
+import domain
+from domain import (Admin, Box, Category, Collection, CollectionCategory,
+                    Image, Producer, Slug, Tile, TileColor, TileSize,
+                    TileSurface)
 
 #
 #
@@ -55,7 +45,6 @@ from domain import (
 #         return cls.domain_model_to_orm_fields_mapper[domain_model]
 
 
-import domain
 
 
 def map_catalog_to_orm(d: domain.Tile) -> dict:
@@ -77,7 +66,7 @@ def map_category_to_orm(d: domain.Category) -> dict:
     return dict(name=d.name)
 
 
-def map_tile_image_to_orm(d: domain.TileImage) -> dict:
+def map_tile_image_to_orm(d: domain.Image) -> dict:
     return dict(image_id=d.id, tile_id=d.tile_id, image_path=d.image_path)
 
 
@@ -158,8 +147,8 @@ def map_category_to_domain(o: dict) -> domain.Category:
     return domain.Category(name=o["name"])
 
 
-def map_tile_image_to_domain(o: dict) -> domain.TileImage:
-    return domain.TileImage(
+def map_tile_image_to_domain(o: dict) -> domain.Image:
+    return domain.Image(
         image_id=o["image_id"], tile_id=o["tile_id"], image_path=o["image_path"]
     )
 
@@ -238,7 +227,7 @@ registry.register(domain.TileColor, map_color_to_orm, map_color_to_domain)
 registry.register(domain.TileSurface, map_surface_to_orm, map_surface_to_domain)
 registry.register(domain.Producer, map_producer_to_orm, map_producer_to_domain)
 registry.register(domain.Box, map_box_to_orm, map_box_to_domain)
-registry.register(domain.TileImage, map_tile_image_to_orm, map_tile_image_to_domain)
+registry.register(domain.Image, map_tile_image_to_orm, map_tile_image_to_domain)
 registry.register(domain.Admin, map_admin_to_orm, map_admin_to_domain)
 registry.register(domain.Slug, map_slug_to_orm, map_slug_to_domain)
 registry.register(

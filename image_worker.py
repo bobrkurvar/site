@@ -9,8 +9,7 @@ from PIL import Image, ImageOps
 from pydantic import BaseModel
 
 from core.logger import setup_logging
-from shared import PRODUCTS, DETAILS, COLLECTIONS, SLIDES
-
+from shared import COLLECTIONS, DETAILS, PRODUCTS, SLIDES
 
 setup_logging()
 
@@ -70,7 +69,6 @@ def image_to_bytes(
 def generate_image_variant(image_bytes: bytes, target: str):
     """
     Генерирует вариант изображения для сайта.
-
     - сохраняет пропорции
     - не апскейлит маленькие изображения
     - идемпотентна

@@ -30,3 +30,64 @@
 #     for k, v in params.items():
 #         params[k] = v.strip()
 #     return params
+
+from decimal import Decimal
+from typing import Annotated
+
+from fastapi import Form
+
+from .schemas import CreateTile, UpdateTile
+
+
+def create_tile_form(
+    name: Annotated[str, Form()],
+    size: Annotated[str, Form()],
+    color_name: Annotated[str, Form()],
+    producer_name: Annotated[str, Form()],
+    box_weight: Annotated[Decimal, Form()],
+    box_area: Annotated[Decimal, Form()],
+    boxes_count: Annotated[int, Form()],
+    category_name: Annotated[str, Form()],
+    feature_name: Annotated[str | None, Form()] = None,
+    surface_name: Annotated[str | None, Form()] = None,
+) -> CreateTile:
+    return CreateTile(
+        name=name,
+        size=size,
+        color_name=color_name,
+        producer_name=producer_name,
+        box_weight=box_weight,
+        box_area=box_area,
+        boxes_count=boxes_count,
+        category_name=category_name,
+        feature_name=feature_name,
+        surface_name=surface_name,
+    )
+
+
+def update_tile_form(
+    article: Annotated[int, Form()],
+    name: Annotated[str, Form()],
+    size: Annotated[str, Form()],
+    color_name: Annotated[str, Form()],
+    producer_name: Annotated[str, Form()],
+    box_weight: Annotated[Decimal | str, Form()],
+    box_area: Annotated[Decimal | str, Form()],
+    boxes_count: Annotated[int | str, Form()],
+    category_name: Annotated[str, Form()],
+    feature_name: Annotated[str, Form()],
+    surface_name: Annotated[str, Form()],
+) -> UpdateTile:
+    return UpdateTile(
+        article=article,
+        name=name,
+        size=size,
+        color_name=color_name,
+        producer_name=producer_name,
+        box_weight=box_weight,
+        box_area=box_area,
+        boxes_count=boxes_count,
+        category_name=category_name,
+        feature_name=feature_name,
+        surface_name=surface_name,
+    )

@@ -1,4 +1,5 @@
-from shared import COLLECTIONS, PRODUCTS, DETAILS
+from shared import COLLECTIONS, DETAILS, PRODUCTS
+
 
 def collection_catalog_path(manager):
     def wrapper(file_name):

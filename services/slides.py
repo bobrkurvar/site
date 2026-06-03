@@ -1,7 +1,5 @@
 import logging
 
-from core import logger
-
 log = logging.getLogger(__name__)
 
 

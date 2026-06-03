@@ -7,12 +7,8 @@ from adapters.deps import DbManagerDep, QueryServiceDep
 from adapters.images import ProductImagesManager
 from core.config import ITEMS_PER_PAGE
 from domain import Slug, Tile
-from services.views import (
-    build_main_images,
-    build_tile_filters,
-    fetch_items,
-    get_categories_for_items,
-)
+from services.views import (build_main_images, build_tile_filters, fetch_items,
+                            get_categories_for_items)
 
 router = APIRouter(tags=["presentation"], prefix="/catalog")
 templates = Jinja2Templates("templates")
@@ -69,7 +65,9 @@ async def get_catalog_tiles_page(
     main_images = build_main_images(tiles)
     product_manager = ProductImagesManager()
     for k in main_images:
-        main_images[k] = await product_manager.get_product_catalog_image_path(main_images[k])
+        main_images[k] = await product_manager.get_product_catalog_image_path(
+            main_images[k]
+        )
 
     total_pages = max((total_count + limit - 1) // limit, 1)
     categories = await get_categories_for_items(manager)

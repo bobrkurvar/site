@@ -2,9 +2,10 @@ from decimal import Decimal
 
 import pytest
 
-from domain import Box, Category, Producer, Tile, TileColor, TileSize, TileSurface
-from tests.fakes import FakeCRUD, FakeStorage, FakeRedisService
-from adapters.images import ProductImagesManager, CollectionImagesManager
+from adapters.images import CollectionImagesManager, ProductImagesManager
+from domain import (Box, Category, Producer, Tile, TileColor, TileSize,
+                    TileSurface)
+from tests.fakes import FakeCRUD, FakeRedisService, FakeStorage
 
 
 async def noop(*args, **kwargs):
@@ -77,7 +78,6 @@ def crud():
     return FakeCRUD()
 
 
-
 @pytest.fixture
 def redis():
     return FakeRedisService()
@@ -111,6 +111,7 @@ async def collection_env(crud):
     fs = {}
     file_manager = CollectionImagesManager(root="tests/images", storage=FakeStorage(fs))
     return crud, file_manager, fs
+
 
 @pytest.fixture
 def collection_images():

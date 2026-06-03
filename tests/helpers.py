@@ -1,39 +1,32 @@
-from tests.fakes import FakeUoW
-from services.tile import add_tile
+from domain import (Box, Category, Collection, Image, Producer, Tile,
+                    TileColor, TileSize, TileSurface)
 from services.collections import add_collection
-from domain import (
-    Tile,
-    TileSize,
-    TileColor,
-    Producer,
-    Box,
-    TileSurface,
-    Category,
-    TileImage,
-    Collection
-)
+from services.tile import add_tile
+from tests.fakes import FakeUoW
+
 
 async def add_collection_helper(
     manager,
     file_manager,
     images_generator,
-    collection_name = None,
-    category_name = None,
-    test_uow_class = True,
+    collection_name=None,
+    category_name=None,
+    test_uow_class=True,
 ):
     collection = Collection(
         name=collection_name if collection_name else "collection1",
         categories=Category(name=category_name if category_name else "category1"),
-        image_bytes=b"COLLECTION"
+        image=Image(image_bytes=b"COLLECTION"),
     )
     params = {}
-    if test_uow_class: params["uow_class"] = FakeUoW
+    if test_uow_class:
+        params["uow_class"] = FakeUoW
     return await add_collection(
         manager=manager,
         file_manager=file_manager,
         images_generator=images_generator,
         collection=collection,
-        **params
+        **params,
     )
 
 
@@ -41,6 +34,7 @@ async def add_tile_helper(
     manager,
     file_manager,
     images_generator,
+    name: str = "Tile",
     test_uow_class: bool = True,
     need_params: bool = False,
     category_name=None,
@@ -50,15 +44,15 @@ async def add_tile_helper(
 ):
     # обёртка на сервисным методом add_tile, которая создана для многоразового использования одного и того же вызова функции
     params = dict(
-        name = "Tile",
-        size = size if size else TileSize(length=300, width=200, height=10),
-        color = color if color else TileColor("color", "feature"),
-        producer = Producer(producer_name if producer_name else "producer"),
-        box = Box(area=1, weight=30),
-        boxes_count = 3,
-        images = [TileImage(b"MAIN"), TileImage(b"A"), TileImage(b"B")],
-        surface = TileSurface("surface"),
-        category = Category(category_name if category_name else "category"),
+        name=name,
+        size=size if size else TileSize(length=300, width=200, height=10),
+        color=color if color else TileColor("color", "feature"),
+        producer=Producer(producer_name if producer_name else "producer"),
+        box=Box(area=1, weight=30),
+        boxes_count=3,
+        images=[Image(b"MAIN"), Image(b"A"), Image(b"B")],
+        surface=TileSurface("surface"),
+        category=Category(category_name if category_name else "category"),
     )
     tile = Tile(**params)
     infra_params = dict(

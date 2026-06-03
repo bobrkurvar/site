@@ -2,17 +2,12 @@ import logging
 
 from fastapi import Request
 from fastapi.responses import RedirectResponse
-
-from domain.exceptions import (
-    AlreadyExistsError,
-    ForeignKeyViolationError,
-    NotFoundError,
-    UnauthorizedError,
-    CredentialsValidateError,
-    UserLoginNotFoundError,
-)
 from fastapi.templating import Jinja2Templates
+
 from adapters.web import AuthCookies
+from domain.exceptions import (AlreadyExistsError, CredentialsValidateError,
+                               ForeignKeyViolationError, NotFoundError,
+                               UnauthorizedError, UserLoginNotFoundError)
 
 log = logging.getLogger(__name__)
 templates = Jinja2Templates("templates")
@@ -47,7 +42,9 @@ async def invalid_tokens_or_not_exists_handler(
     request: Request, exc: UnauthorizedError
 ):
     log.debug("tokens error: %s", exc)
-    response = templates.TemplateResponse("admin_login.html", {"request": request}, status_code=401)
+    response = templates.TemplateResponse(
+        "admin_login.html", {"request": request}, status_code=401
+    )
     cookie_manager = AuthCookies()
     cookie_manager.clear_tokens(response)
     return response

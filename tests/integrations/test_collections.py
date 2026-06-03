@@ -1,17 +1,14 @@
 import logging
+
 import pytest
 
-from domain import (
-    AlreadyExistsError,
-    CollectionCategory,
-    Collection,
-    NotFoundError,
-    Slug,
-)
+from domain import (AlreadyExistsError, Collection, CollectionCategory,
+                    NotFoundError, Slug)
 from services.collections import delete_collection
-from .helpers import collection_files_count
-from tests.helpers import add_collection_helper
 from tests.fakes import FakeImageGenerator
+from tests.helpers import add_collection_helper
+
+from .helpers import collection_files_count
 
 log = logging.getLogger(__name__)
 
@@ -28,7 +25,7 @@ async def test_create_collection_category_when_collection_not_exists_success(
         file_manager=file_manager,
         images_generator=FakeImageGenerator(),
         category_name=category_name,
-        test_uow_class=False
+        test_uow_class=False,
     )
     # сервисная функция должна вернуть запись
     assert collection is not None
@@ -58,22 +55,26 @@ async def test_create_collection_category_when_collection_exists_success(
             file_manager=file_manager,
             images_generator=FakeImageGenerator(),
             category_name=category_name,
-            test_uow_class=False
+            test_uow_class=False,
         )
-    collection_in_db = await manager.read(Collection, name=collection.name, loaded="categories")
+    collection_in_db = await manager.read(
+        Collection, name=collection.name, loaded="categories"
+    )
     slug = await manager.read(Slug, name=collection.name)
     collection_category = await manager.read(
         CollectionCategory, collection_id=collection.id
     )
     # действительно в базе есть запись одной коллекции, создались две записи коллекция-категория, slug одной коллекции
     assert (
-        len(collection_in_db) == 1 and len(collection_category) == len(collection_in_db[0].categories) == 2 and len(slug) == 1
+        len(collection_in_db) == 1
+        and len(collection_category) == len(collection_in_db[0].categories) == 2
+        and len(slug) == 1
     )
 
 
 @pytest.mark.asyncio
 async def test_create_collection_category_idempotency(
-        collections_env_with_categories,
+    collections_env_with_categories,
 ):
     # Проверяем, что повторное добавление одной и той же категории не плодит сущности и не падает
     manager, file_manager, categories = await collections_env_with_categories()
@@ -84,7 +85,7 @@ async def test_create_collection_category_idempotency(
         file_manager=file_manager,
         images_generator=FakeImageGenerator(),
         category_name=categories[0],
-        test_uow_class=False
+        test_uow_class=False,
     )
 
     # Добавляем ТОЙ ЖЕ коллекции ТУ ЖЕ категорию второй раз
@@ -93,7 +94,7 @@ async def test_create_collection_category_idempotency(
         file_manager=file_manager,
         images_generator=FakeImageGenerator(),
         category_name=categories[0],
-        test_uow_class=False
+        test_uow_class=False,
     )
 
     collection_category = await manager.read(
@@ -122,7 +123,7 @@ async def test_create_collection_category_when_collection_not_exists_failure(
             images_generator=FakeImageGenerator(),
             category_name=category_name,
             collection_name=collection_name,
-            test_uow_class=False
+            test_uow_class=False,
         )
     collections = await manager.read(Collection)
     collection_category = await manager.read(CollectionCategory)
@@ -139,7 +140,7 @@ async def test_delete_collection_success(collections_env_with_categories):
         file_manager=file_manager,
         images_generator=FakeImageGenerator(),
         category_name=category_name,
-        test_uow_class=False
+        test_uow_class=False,
     )
     await delete_collection(
         collection_name="collection1",

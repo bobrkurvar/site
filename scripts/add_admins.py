@@ -25,7 +25,9 @@ async def add_admins():
             password = get_hash(admin["password"])
             log.debug("HASH PASWORD: %s,", password)
             try:
-                await manager.create(Admin(username=admin["username"], password=password))
+                await manager.create(
+                    Admin(username=admin["username"], password=password)
+                )
             except AlreadyExistsError:
                 log.warning("user already exists")
     finally:

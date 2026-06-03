@@ -64,7 +64,6 @@ COPY infra infra
 CMD ["python", "fix_extensions.py"]
 
 
-
 FROM base AS int_tests
 COPY core ./core
 COPY tests ./tests
@@ -89,5 +88,7 @@ COPY infra infra
 COPY domain domain
 COPY pytest.ini pytest.ini
 COPY adapters adapters
+COPY db db
+COPY shared.py shared.py
 CMD ["pytest", "tests/e2e"]
 

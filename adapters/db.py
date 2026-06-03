@@ -1,15 +1,15 @@
 import logging
 from collections.abc import Collection
+from contextlib import asynccontextmanager
 
-from sqlalchemy import delete, select, update
+from sqlalchemy import delete, func, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import async_sessionmaker
 from sqlalchemy.orm import selectinload
+
 from db.mapper import registry as rg
-from sqlalchemy import func
-from contextlib import asynccontextmanager
-from domain import (AlreadyExistsError, ForeignKeyViolationError,
-                               NotFoundError, DomainFilter, Operation)
+from domain import (AlreadyExistsError, DomainFilter, ForeignKeyViolationError,
+                    NotFoundError, Operation)
 
 log = logging.getLogger(__name__)
 
@@ -20,16 +20,21 @@ async def handle_integrity_errors():
         yield
     except IntegrityError as err:
         diag = getattr(err.orig, "diag", None)
-        table_name = getattr(diag, "table_name", "unknown_table") if diag else "unknown_table"
+        table_name = (
+            getattr(diag, "table_name", "unknown_table") if diag else "unknown_table"
+        )
         pgcode = getattr(err.orig, "pgcode", None)
 
         if pgcode == "23505":
-            constraint_name = getattr(diag, "constraint_name", "unknown") if diag else "unknown"
+            constraint_name = (
+                getattr(diag, "constraint_name", "unknown") if diag else "unknown"
+            )
             raise AlreadyExistsError(table_name, constraint_name)
         elif pgcode == "23503":
             detail = getattr(diag, "message_detail", str(err)) if diag else str(err)
             raise ForeignKeyViolationError(table_name, detail)
         raise
+
 
 class Crud:
     def __init__(self, session_factory, registry):
@@ -43,7 +48,10 @@ class Crud:
         return self._session_factory
 
     async def create(
-            self, domain_obj=None, seq_data: list | None = None, session=None,
+        self,
+        domain_obj=None,
+        seq_data: list | None = None,
+        session=None,
     ) -> tuple | object:
         incoming_data = seq_data if seq_data is not None else [domain_obj]
 
@@ -71,15 +79,18 @@ class Crud:
                 async with self.session_factory.begin() as session_ctx:
                     return await _create_internal(session_ctx)
 
-
     async def delete(self, domain_cls, session=None, **filters) -> tuple:
         async def _delete_internal(cur_session) -> tuple:
             log.debug("%s filter for delete: %s", domain_cls.__name__, filters)
             model = self._registry.get_model(domain_cls)
-            conditions = [getattr(model, field) == value for field, value in filters.items()]
+            conditions = [
+                getattr(model, field) == value for field, value in filters.items()
+            ]
             delete_query = delete(model).where(*conditions).returning(model)
             result = await cur_session.execute(delete_query)
-            deleted_domains = tuple(self._registry.to_domain(record) for record in result.scalars())
+            deleted_domains = tuple(
+                self._registry.to_domain(record) for record in result.scalars()
+            )
             log.debug("Удалено %d записей из %s", len(deleted_domains), model.__name__)
             if not deleted_domains:
                 raise NotFoundError(model.__name__, **filters)
@@ -90,15 +101,15 @@ class Crud:
         async with self.session_factory.begin() as session_ctx:
             return await _delete_internal(session_ctx)
 
-
     async def update(self, domain_cls, filters: dict, session=None, **values) -> tuple:
         async def _update_internal(cur_session):
-            model = self._registry.get_model(domain_cls)
-            conditions = [getattr(model, field) == value for field, value in filters.items()]
-            if not conditions:
-                raise ValueError("Update must have filters.")
+            if not filters:
+                raise ValueError("Update must have filters to prevent global table updates.")
 
-            query = update(model).where(*conditions).values(**values).returning(model)
+            model = self._registry.get_model(domain_cls)
+            query = self._apply_conditions(update(model), model, filters)
+            query = query.values(**values).returning(model)
+
             result = await cur_session.execute(query)
             updated_records = result.scalars()
             return tuple(self._registry.to_domain(record) for record in updated_records)
@@ -109,19 +120,10 @@ class Crud:
             return await _update_internal(session_ctx)
 
     async def read_one(
-        self,
-        domain_cls,
-        *,
-        session=None,
-        loaded=None,
-        **filters
+        self, domain_cls, *, session=None, loaded=None, **filters
     ) -> object | None:
         results = await self.read(
-            domain_cls,
-            session=session,
-            loaded=loaded,
-            limit=1,
-            **filters
+            domain_cls, session=session, loaded=loaded, limit=1, **filters
         )
 
         return results[0] if results else None
@@ -135,7 +137,9 @@ class Crud:
                 if filter_orm_model is not base_orm_model:
                     if filter_orm_model not in joined_models:
                         if getattr(d_filter, "join_on", None):
-                            relationship_attr = getattr(base_orm_model, d_filter.join_on)
+                            relationship_attr = getattr(
+                                base_orm_model, d_filter.join_on
+                            )
                             query = query.join(relationship_attr)
                         else:
                             query = query.join(filter_orm_model)
@@ -185,10 +189,11 @@ class Crud:
         offset: int | None = None,
         order_by: str | None = None,
         distinct: str | None = None,
-        **filters
+        **filters,
     ) -> tuple:
         if isinstance(loaded, str):
             loaded = [loaded]
+
         async def _read_internal(cur_session):
             base_orm_model = self._registry.get_model(domain_cls)
             options = []
@@ -196,16 +201,22 @@ class Crud:
             if loaded:
                 for loaded_attr in set(loaded):
                     if hasattr(base_orm_model, loaded_attr):
-                        options.append(selectinload(getattr(base_orm_model, loaded_attr)))
+                        options.append(
+                            selectinload(getattr(base_orm_model, loaded_attr))
+                        )
             if options:
                 query = query.options(*options)
             query = self._apply_domain_filters(query, base_orm_model, domain_filters)
             query = self._apply_conditions(query, base_orm_model, filters)
 
-            if distinct: query = query.distinct(getattr(base_orm_model, distinct))
-            if order_by: query = query.order_by(getattr(base_orm_model, order_by))
-            if offset is not None: query = query.offset(offset)
-            if limit: query = query.limit(limit)
+            if distinct:
+                query = query.distinct(getattr(base_orm_model, distinct))
+            if order_by:
+                query = query.order_by(getattr(base_orm_model, order_by))
+            if offset is not None:
+                query = query.offset(offset)
+            if limit:
+                query = query.limit(limit)
 
             result = (await cur_session.execute(query)).scalars().unique()
             return tuple(self._registry.to_domain(r) for r in result)
@@ -220,7 +231,7 @@ class Crud:
         domain_cls,
         *,
         domain_filters: Collection[DomainFilter] | None = None,
-        **filters
+        **filters,
     ) -> int:
         base_orm_model = self._registry.get_model(domain_cls)
         query = select(func.count()).select_from(base_orm_model)
@@ -233,7 +244,9 @@ class Crud:
 
     async def save(self, domain_obj, session=None) -> object:
         async def _save_internal(cur_session):
-            log.debug("Сохранение агрегата через merge: %s", domain_obj.__class__.__name__)
+            log.debug(
+                "Сохранение агрегата через merge: %s", domain_obj.__class__.__name__
+            )
             orm_obj = self._registry.to_orm(domain_obj)
             merged_orm = await cur_session.merge(orm_obj)
             await cur_session.flush()
@@ -248,7 +261,4 @@ class Crud:
 
 
 def build_crud(session_factory) -> Crud:
-    return Crud(
-        session_factory=session_factory,
-        registry=rg
-    )
+    return Crud(session_factory=session_factory, registry=rg)

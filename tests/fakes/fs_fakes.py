@@ -17,6 +17,7 @@ class FakeStorage:
         if key in self.storage:
             del self.storage[key]
 
+
 class FakeImageGenerator:
 
     async def generate_product_variants(self, img: bytes):
