@@ -5,11 +5,13 @@ import pytest
 from adapters.images import CollectionImagesManager, ProductImagesManager
 from domain import (Box, Category, Producer, Tile, TileColor, TileSize,
                     TileSurface)
-from tests.fakes import FakeCRUD, FakeRedisService, FakeStorage
+from tests.fakes import FakeCRUD, FakeRedisService, FakeStorage, FakeImageGenerator
+from dataclasses import dataclass
+from tests.fakes.db_fakes import FakeUoW
 
 
-async def noop(*args, **kwargs):
-    return None
+# async def noop(*args, **kwargs):
+#     return None
 
 
 # Генератор размеров
@@ -84,16 +86,8 @@ def redis():
 
 
 @pytest.fixture
-async def products_env(crud):
-    fs = {}
-    file_manager = ProductImagesManager(root="tests/images", storage=FakeStorage(fs))
-    return crud, file_manager, fs
-
-
-@pytest.fixture
 async def products_env_with_handbooks(products_env):
-    manager, file_manager, fs = products_env
-    await manager.create(
+    await products_env.uow.db.create(
         seq_data=[
             TileSize(length=300, width=200, height=10),
             TileColor(color_name="color", feature_name="feature"),
@@ -103,23 +97,54 @@ async def products_env_with_handbooks(products_env):
             Category(name="category"),
         ]
     )
-    return manager, file_manager, fs
+    return products_env
+
+
+
+
+@dataclass
+class ProductsEnv:
+    uow: FakeUoW
+    file_manager: ProductImagesManager
+    image_generator: FakeImageGenerator
+    fs: dict
+
+
+@dataclass
+class CollectionsEnv:
+    uow: FakeUoW
+    file_manager: CollectionImagesManager
+    image_generator: FakeImageGenerator
+    fs: dict
 
 
 @pytest.fixture
-async def collection_env(crud):
+def products_env(db):
     fs = {}
-    file_manager = CollectionImagesManager(root="tests/images", storage=FakeStorage(fs))
-    return crud, file_manager, fs
+    file_manager = ProductImagesManager(
+        root="tests/images",
+        storage=FakeStorage(fs),
+    )
+
+    return ProductsEnv(
+        uow=FakeUoW(db),
+        file_manager=file_manager,
+        fs=fs,
+        image_generator=FakeImageGenerator()
+    )
 
 
 @pytest.fixture
-def collection_images():
-    fs, root = {}, "tests/images"
-    return CollectionImagesManager(root=root, storage=FakeStorage(fs)), fs, root
+def collections_env(db):
+    fs = {}
+    file_manager = CollectionImagesManager(
+        root="tests/images",
+        storage=FakeStorage(fs),
+    )
 
-
-@pytest.fixture
-def product_images():
-    fs, root = {}, "tests/images"
-    return ProductImagesManager(root=root, storage=FakeStorage(fs)), fs, root
+    return CollectionsEnv(
+        uow=FakeUoW(db),
+        file_manager=file_manager,
+        fs=fs,
+        image_generator=FakeImageGenerator()
+    )

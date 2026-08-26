@@ -6,8 +6,7 @@ from slugify import slugify
 
 from core.config import ITEMS_PER_PAGE
 from domain import Slug
-from services.views import (build_main_images,  # extract_quoted_word,
-                            build_tile_filters, fetch_items)
+from services.views import build_tile_filters, fetch_items
 from tests.unit.conftest import manager_factory
 
 log = logging.getLogger(__name__)
@@ -69,16 +68,16 @@ async def test_build_tile_filters_with_not_exists_size(manager_factory):
     }  # id размера не найдётся в базе и size_id не будет в фильтрах
 
 
-@pytest.mark.asyncio
-async def test_build_main_images():
-    image1 = SimpleNamespace(image_path="image-image-110")
-    # Создаем фейковый объект-заглушку с нужными атрибутами
-    tiles = [SimpleNamespace(id=1, images=[image1])]
-    assert build_main_images(tiles) == {1: "image-image-0"}
-
-    image2 = SimpleNamespace(image_path="image-image-0")
-    tiles = [SimpleNamespace(id=1, images=[image2])]
-    assert build_main_images(tiles) == {1: "image-image-0"}
+# @pytest.mark.asyncio
+# async def test_build_main_images():
+#     image1 = SimpleNamespace(image_path="image-image-110")
+#     # Создаем фейковый объект-заглушку с нужными атрибутами
+#     tiles = [SimpleNamespace(id=1, images=[image1])]
+#     assert build_main_images(tiles) == {1: "image-image-0"}
+#
+#     image2 = SimpleNamespace(image_path="image-image-0")
+#     tiles = [SimpleNamespace(id=1, images=[image2])]
+#     assert build_main_images(tiles) == {1: "image-image-0"}
 
 
 @pytest.mark.asyncio

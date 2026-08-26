@@ -1,7 +1,6 @@
 import logging
 
 from domain import Collection, Slug
-from adapters.uow import UnitOfWork
 
 log = logging.getLogger(__name__)
 
@@ -9,18 +8,17 @@ log = logging.getLogger(__name__)
 
 async def add_collection(
     collection: Collection,
-    manager,
     images_generator,
     file_manager,
-    uow_class=UnitOfWork,
+    uow,
 ):
-    async with uow_class(manager) as uow:
-        collection_record = await manager.read_one(
-            Collection, name=collection.name, session=uow.session, loaded="categories"
+    async with uow:
+        collection_record = await uow.db.read_one(
+            Collection, name=collection.name,  loaded="categories"
         )
 
         if not collection_record:
-            slug = await manager.create(Slug(name=collection.name), session=uow.session)
+            slug = await uow.db.create(Slug(name=collection.name))
             file_name = slug.slug
             image_path = file_manager.base_collection_path(file_name)
             collection.assign_image_path(str(image_path))
@@ -47,23 +45,21 @@ async def add_collection(
             collection_record.merge_categories(collection.categories)
 
             collection_target = collection_record
-        result = await manager.save(collection_target, session=uow.session)
+        result = await uow.db.save(collection_target)
 
         return result
 
 
 async def delete_collection(
     collection_name: str,
-    manager,
     file_manager,
-    uow_class=UnitOfWork,
+    uow,
 ):
-    async with uow_class(manager) as uow:
-        collection = await manager.delete(
+    async with uow:
+        collection = await uow.db.delete(
             Collection,
             name=collection_name,
-            session=uow.session,
         )
-        await manager.delete(Slug, name=collection_name, session=uow.session)
+        await uow.db.delete(Slug, name=collection_name)
         collection = collection[0]
         await file_manager.delete_collection(collection.image_path)

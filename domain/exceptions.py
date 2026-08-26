@@ -162,3 +162,7 @@ class AccessTokenMalformedError(InvalidAccessTokenError):
         super().__init__(
             reason="повреждена структура или отсутствуют обязательные поля"
         )
+
+
+class ConcurrentModificationError(RepositoryError):
+    pass

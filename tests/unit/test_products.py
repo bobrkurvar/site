@@ -5,8 +5,6 @@ import pytest
 
 from domain import *
 from services.tile import update_tile
-from tests.conftest import domain_handbooks_models_for_products
-from tests.fakes import FakeImageGenerator, FakeUoW
 from tests.helpers import (add_tile_helper, assert_box, assert_handbooks_count,
                            assert_size, assert_tile_fields, update_filters)
 

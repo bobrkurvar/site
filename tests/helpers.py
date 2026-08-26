@@ -59,7 +59,7 @@ async def add_tile_helper(
         manager=manager, file_manager=file_manager, images_generator=images_generator
     )
     if test_uow_class:
-        infra_params["uow_class"] = FakeUoW
+        infra_params["uow"] = FakeUoW()
     if need_params:
         return await add_tile(tile, **infra_params), params
     else:

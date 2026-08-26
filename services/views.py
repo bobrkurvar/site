@@ -1,8 +1,7 @@
 import logging
 from decimal import Decimal
-from pathlib import Path
 
-from domain import Category, Operation, Slug, Tile, TileSize
+from domain import Category, Operation, Slug, Tile, TileSize, Operations
 
 log = logging.getLogger(__name__)
 
@@ -67,7 +66,7 @@ async def fetch_collections_items(manager, collection_slug, limit, offset, **fil
     collection_name = slug_record.name
     search_pattern = f'%"{collection_name}"%'
 
-    filters["name"] = Operation(value=search_pattern, op="ilike")
+    filters["name"] = Operation(value=search_pattern, op=Operations.ilike)
 
     items = await manager.read(
         Tile, loaded=["images", "size", "box"], limit=limit, offset=offset, **filters
