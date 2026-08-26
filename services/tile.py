@@ -3,7 +3,7 @@ import logging
 
 from domain import *
 from infra.security import calculate_file_hash
-from infra.uow import UnitOfWork
+from adapters.uow import UnitOfWork
 
 log = logging.getLogger(__name__)
 

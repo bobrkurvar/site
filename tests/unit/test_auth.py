@@ -99,11 +99,11 @@ async def test_get_new_tokens_from_refresh_success(redis):
 
 @pytest.mark.asyncio
 async def test_get_new_tokens_from_refresh_fail_when_family_not_exists(redis):
+    # Если в кэше нет записи о семействе, значит токен выдан не мной или запись закончилась
+    # что означает что и refresh токен должен закончиться
     data = {"user": "user", "id": 1}
     family_id, jti = create_token_family_id(), create_token_jti()
     refresh_token = create_refresh_token(data, family_id=family_id, jti=jti)
-    # Если в кэше нет записи о семействе, значит токен выдан не мной или запись закончилась
-    # что означает что и refresh токен должен закончиться
     with pytest.raises(RefreshTokenFamilyExpiredError):
         await create_tokens_from_refresh(refresh_token, redis)
 

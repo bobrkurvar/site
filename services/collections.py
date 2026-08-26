@@ -1,7 +1,7 @@
 import logging
 
 from domain import Collection, Slug
-from infra.uow import UnitOfWork
+from adapters.uow import UnitOfWork
 
 log = logging.getLogger(__name__)
 
