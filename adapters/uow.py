@@ -27,7 +27,6 @@ class UnitOfWork:
 
         self.db = GenericRepository(session=self.session, registry=self._registry)
 
-
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):

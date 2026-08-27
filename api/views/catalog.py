@@ -3,12 +3,11 @@ import logging
 from fastapi import APIRouter, Request
 from fastapi.templating import Jinja2Templates
 
-from adapters.deps import DbManagerDep, QueryServiceDep
+from adapters.deps import UowDep, QueryServiceDep
 from adapters.images import ProductImagesManager
 from core.config import ITEMS_PER_PAGE
-from domain import Slug, Tile
-from services.views import (build_tile_filters, fetch_items,
-                            get_categories_for_items)
+from domain import Tile, Category
+from services.views import build_tile_filters, fetch_items
 import asyncio
 
 router = APIRouter(tags=["presentation"], prefix="/catalog")
@@ -16,69 +15,96 @@ templates = Jinja2Templates("templates")
 log = logging.getLogger(__name__)
 
 
-@router.get("/{category}/products/{tile_id:int}")
+@router.get("/products/{article:int}")
 async def get_tile_page(
-    request: Request, category: str, tile_id: int, manager: DbManagerDep
+    request: Request, article: int, uow: UowDep
 ):
     product_manager = ProductImagesManager()
-    category_name = (await manager.read_one(Slug, slug=category)).name
-    tile = await manager.read_one(
-        Tile,
-        loaded=["images", "size", "box"],
-        category_name=category_name,
-        id=tile_id,
-    )
-    if tile:
-        images = [
-            await product_manager.get_product_details_image_path(i.image_path)
-            for i in tile.images
-        ]
-        tile.set_images(images)
-    #log.debug("detail images: %s", images)
-    categories = await get_categories_for_items(manager)
+    async with uow:
+        tile = await uow.db.read_one(
+            Tile,
+            loaded=["images", "size", "box"],
+            id=article,
+        )
+        if tile:
+            # images = [
+            #     await product_manager.get_product_details_image_path(i.image_path)
+            #     for i in tile.images
+            # ]
+            # tile.set_images(images)
+            images = await asyncio.gather(
+                *(
+                    product_manager.get_product_details_image_path(image.image_path)
+                    for image in tile.images
+                )
+            )
+            tile.set_images(images)
+        categories = await uow.db.read(Category)
     return templates.TemplateResponse(
         "tile_detail.html",
         {
             "request": request,
             "tile": tile,
-            #"images": images,
             "categories": categories,
         },
     )
 
 
-@router.get("/{category_slug}/products")
+@router.get("/{category_slug}/{category_id:int}/products")
 async def get_catalog_tiles_page(
     request: Request,
     category_slug: str,
-    manager: DbManagerDep,
+    category_id: int,
+    uow: UowDep,
     query_service: QueryServiceDep,
     producer: str | None = None,
     size: str | None = None,
     color: str | None = None,
     page: int = 1,
 ):
-    filters = await build_tile_filters(manager, producer, size, color, category_slug)
     limit = ITEMS_PER_PAGE
     offset = (page - 1) * limit
-    tiles, total_count = await fetch_items(manager, limit, offset, **filters)
-    filters = await query_service.get_catalog_filters(category_slug=category_slug)
-    #main_images = build_main_images(tiles)
-    product_manager = ProductImagesManager()
-    # for k in main_images:
-    #     main_images[k] = await product_manager.get_product_catalog_image_path(
-    #         main_images[k]
-    #     )
-    for tile in tiles:
-        coroutines = (
-            product_manager.get_product_catalog_image_path(path)
-            for path in tile.images_paths
+
+    async with uow:
+        category = await uow.db.read_one(
+            Category,
+            id=category_id,
+            with_raise=True,
         )
-        resolved_paths = await asyncio.gather(*coroutines)
+
+        tile_filters = await build_tile_filters(
+            uow.db,
+            producer,
+            size,
+            color,
+            category.name,
+        )
+
+        tiles, total_count = await fetch_items(
+            uow.db,
+            limit,
+            offset,
+            **tile_filters,
+        )
+
+        categories = await uow.db.read(Category, order_by="name")
+
+    filter_options = await query_service.get_catalog_filters(
+        category_name=category.name,
+    )
+
+    product_manager = ProductImagesManager()
+    for tile in tiles:
+        resolved_paths = await asyncio.gather(
+            *(
+                product_manager.get_product_catalog_image_path(path)
+                for path in tile.images_paths
+            )
+        )
         tile.set_images(resolved_paths)
 
     total_pages = max((total_count + limit - 1) // limit, 1)
-    categories = await get_categories_for_items(manager)
+    category_path = f"{category_slug}/{category_id}"
 
     return templates.TemplateResponse(
         "catalog.html",
@@ -88,10 +114,9 @@ async def get_catalog_tiles_page(
             "page": page,
             "total_pages": total_pages,
             "total_count": total_count,
-            #"main_images": main_images,
             "categories": categories,
-            "category": category_slug,
-            "filters": filters,
+            "category_path": category_path,
+            "filters": filter_options,
             "active_tab": "products",
         },
     )

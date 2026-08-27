@@ -8,9 +8,15 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 from sqlalchemy.orm.exc import StaleDataError
 
-from domain import (AlreadyExistsError, ConcurrentModificationError,
-                    DomainFilter, ForeignKeyViolationError, NotFoundError,
-                    Operation, Operations)
+from domain import (
+    AlreadyExistsError,
+    ConcurrentModificationError,
+    DomainFilter,
+    ForeignKeyViolationError,
+    NotFoundError,
+    Operation,
+    Operations,
+)
 
 log = logging.getLogger(__name__)
 
@@ -251,4 +257,3 @@ class GenericRepository:
                 raise ConcurrentModificationError(
                     "Данные были изменены другим пользователем"
                 )
-

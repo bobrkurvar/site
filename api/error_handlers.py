@@ -5,9 +5,14 @@ from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 from adapters.web import AuthCookies
-from domain.exceptions import (AlreadyExistsError, CredentialsValidateError,
-                               ForeignKeyViolationError, NotFoundError,
-                               UnauthorizedError, UserLoginNotFoundError)
+from domain.exceptions import (
+    AlreadyExistsError,
+    CredentialsValidateError,
+    ForeignKeyViolationError,
+    NotFoundError,
+    UnauthorizedError,
+    UserLoginNotFoundError,
+)
 
 log = logging.getLogger(__name__)
 templates = Jinja2Templates("templates")

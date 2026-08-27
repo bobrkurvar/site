@@ -169,9 +169,3 @@ class Admin(Base):
     __tablename__ = "admins"
     username: Mapped[str] = mapped_column(primary_key=True)
     password: Mapped[str]
-
-
-class Slug(Base):
-    __tablename__ = "slugs"
-    name: Mapped[str] = mapped_column(primary_key=True)
-    slug: Mapped[str] = mapped_column(primary_key=True)

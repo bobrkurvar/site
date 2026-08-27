@@ -1,9 +1,9 @@
 import logging
-
-from domain import Collection, Slug
+import asyncio
+from domain import Collection
+from infra.security import calculate_file_hash
 
 log = logging.getLogger(__name__)
-
 
 
 async def add_collection(
@@ -14,12 +14,13 @@ async def add_collection(
 ):
     async with uow:
         collection_record = await uow.db.read_one(
-            Collection, name=collection.name,  loaded="categories"
+            Collection, name=collection.name, loaded="categories"
         )
 
         if not collection_record:
-            slug = await uow.db.create(Slug(name=collection.name))
-            file_name = slug.slug
+            # slug = await uow.db.create(Slug(name=collection.name))
+            # file_name = slug.slug
+            file_name = await asyncio.to_thread(calculate_file_hash, collection.image.image_bytes)
             image_path = file_manager.base_collection_path(file_name)
             collection.assign_image_path(str(image_path))
 
@@ -60,6 +61,5 @@ async def delete_collection(
             Collection,
             name=collection_name,
         )
-        await uow.db.delete(Slug, name=collection_name)
         collection = collection[0]
         await file_manager.delete_collection(collection.image_path)

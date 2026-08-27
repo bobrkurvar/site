@@ -91,10 +91,6 @@ def map_admin_to_orm(d: domain.Admin) -> models.Admin:
     return models.Admin(username=d.username, password=d.password)
 
 
-def map_slug_to_orm(d: domain.Slug) -> models.Slug:
-    return models.Slug(name=d.name, slug=d.slug)
-
-
 def map_catalog_to_domain(o: models.Catalog) -> domain.Tile:
     insp = inspect(o)
 
@@ -191,9 +187,6 @@ def map_admin_to_domain(o: models.Admin) -> domain.Admin:
     return domain.Admin(username=o.username, password=o.password)
 
 
-def map_slug_to_domain(o: models.Slug) -> domain.Slug:
-    return domain.Slug(name=o.name, slug=o.slug)
-
 
 class MapperRegistry:
     def __init__(self):
@@ -258,7 +251,6 @@ registry.register(
     domain.Image, models.TileImage, map_tile_image_to_orm, map_tile_image_to_domain
 )
 registry.register(domain.Admin, models.Admin, map_admin_to_orm, map_admin_to_domain)
-registry.register(domain.Slug, models.Slug, map_slug_to_orm, map_slug_to_domain)
 registry.register(
     domain.CollectionCategory,
     models.CollectionCategory,

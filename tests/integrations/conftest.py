@@ -5,7 +5,8 @@ from pathlib import Path
 import pytest
 from sqlalchemy import text
 
-from adapters.db import build_crud
+from adapters.uow import UnitOfWork
+from db.mapper import registry
 from adapters.db_provider import DbProvider
 from adapters.images import CollectionImagesManager, ProductImagesManager
 from adapters.query_service import CatalogQueryService
@@ -25,9 +26,9 @@ async def db_provider():
 
 
 @pytest.fixture
-async def crud(request, db_provider):
-    manager = build_crud(db_provider.session_factory)
-    yield manager
+async def uow(request, db_provider):
+    uow = UnitOfWork(registry=registry, provider=db_provider)
+    yield uow
     async with db_provider.engine.begin() as conn:
         await conn.execute(
             text(
@@ -69,16 +70,38 @@ def clean_fs_after_test(request):
         shutil.rmtree(images_path)
 
 
+@dataclass
+class ProductsEnv:
+    uow: UnitOfWork
+    file_manager: ProductImagesManager
+    image_generator: FakeImageGenerator
+
+
+@dataclass
+class CollectionsEnv:
+    uow: UnitOfWork
+    file_manager: CollectionImagesManager
+    image_generator: FakeImageGenerator
+
+
 @pytest.fixture
-def products_env(crud):
+def products_env(uow):
     file_manager = ProductImagesManager(root="tests/images")
-    return crud, file_manager
+    return ProductsEnv(
+        uow=uow,
+        file_manager=file_manager,
+        image_generator=FakeImageGenerator(),
+    )
 
 
 @pytest.fixture
-async def collections_env(crud):
+def collections_env(uow):
     file_manager = CollectionImagesManager(root="tests/images")
-    return crud, file_manager
+    return CollectionsEnv(
+        uow=uow,
+        file_manager=file_manager,
+        image_generator=FakeImageGenerator(),
+    )
 
 
 @pytest.fixture

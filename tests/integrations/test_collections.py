@@ -2,8 +2,13 @@ import logging
 
 import pytest
 
-from domain import (AlreadyExistsError, Collection, CollectionCategory,
-                    NotFoundError, Slug)
+from domain import (
+    AlreadyExistsError,
+    Collection,
+    CollectionCategory,
+    NotFoundError,
+    Slug,
+)
 from services.collections import delete_collection
 from tests.fakes import FakeImageGenerator
 from tests.helpers import add_collection_helper

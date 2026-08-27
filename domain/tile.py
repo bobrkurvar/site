@@ -1,5 +1,7 @@
 from decimal import Decimal
 from collections.abc import Collection as AbcCol
+from slugify import slugify
+
 
 class TileSize:
     def __init__(
@@ -73,6 +75,10 @@ class Category:
 
     def __repr__(self):
         return self.name
+
+    @property
+    def slug(self) -> str:
+        return slugify(self.name)
 
 
 class Tile:
@@ -220,7 +226,6 @@ class Collection:
         image: Image,
         categories: list[Category] | Category | None = None,
         collection_id: int | None = None,
-        slug: str | None = None,
     ):
         # if not image_path and not image_bytes:
         #     raise ValueError(f"Коллекция '{name}' не может существовать без изображения")
@@ -229,7 +234,6 @@ class Collection:
         # self.image_path = image_path
         # self.image_bytes = image_bytes
         self.image = image
-        self.slug = slug
 
         if isinstance(categories, list):
             self.categories = categories
@@ -253,6 +257,9 @@ class Collection:
         unique_new = [cat for cat in new_categories if cat.name not in existing_names]
         self.categories.extend(unique_new)
 
+    @property
+    def slug(self) -> str:
+        return slugify(self.name)
 
 class CollectionCategory:
     def __init__(self, collection_id: int, category_name: str):

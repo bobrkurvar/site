@@ -1,41 +1,44 @@
-from domain import (Box, Category, Collection, Image, Producer, Tile,
-                    TileColor, TileSize, TileSurface)
+from domain import (
+    Box,
+    Category,
+    Collection,
+    Image,
+    Producer,
+    Tile,
+    TileColor,
+    TileSize,
+    TileSurface,
+)
 from services.collections import add_collection
 from services.tile import add_tile
 from tests.fakes import FakeUoW
 
 
 async def add_collection_helper(
-    manager,
+    uow,
     file_manager,
     images_generator,
     collection_name=None,
     category_name=None,
-    test_uow_class=True,
 ):
     collection = Collection(
         name=collection_name if collection_name else "collection1",
         categories=Category(name=category_name if category_name else "category1"),
         image=Image(image_bytes=b"COLLECTION"),
     )
-    params = {}
-    if test_uow_class:
-        params["uow_class"] = FakeUoW
     return await add_collection(
-        manager=manager,
+        uow=uow,
         file_manager=file_manager,
         images_generator=images_generator,
         collection=collection,
-        **params,
     )
 
 
 async def add_tile_helper(
-    manager,
+    uow,
     file_manager,
     images_generator,
     name: str = "Tile",
-    test_uow_class: bool = True,
     need_params: bool = False,
     category_name=None,
     size: TileSize = None,
@@ -55,15 +58,13 @@ async def add_tile_helper(
         category=Category(category_name if category_name else "category"),
     )
     tile = Tile(**params)
-    infra_params = dict(
-        manager=manager, file_manager=file_manager, images_generator=images_generator
+    add_tile_coroutine = add_tile(
+        tile=tile, images_generator=images_generator, file_manager=file_manager, uow=uow
     )
-    if test_uow_class:
-        infra_params["uow"] = FakeUoW()
     if need_params:
-        return await add_tile(tile, **infra_params), params
+        return await add_tile_coroutine, params
     else:
-        return await add_tile(tile, **infra_params)
+        return await add_tile_coroutine
 
 
 def assert_tile_fields(tile, expected):
@@ -84,9 +85,9 @@ def assert_box(box, expected):
     assert box.area == expected["area"]
 
 
-async def assert_handbooks_count(manager, models, expected_count):
+async def assert_handbooks_count(db, models, expected_count):
     for model in models:
-        rows = await manager.read(model)
+        rows = await db.read(model)
         assert (
             len(rows) == expected_count
         ), f"model: {model} count != {expected_count} count = {len(rows)}"

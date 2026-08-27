@@ -4,9 +4,14 @@ from binascii import Error
 from functools import wraps
 from pathlib import Path
 
-from adapters.file_layers import (COLLECTION_IMAGE_LAYERS, ORIGINAL_COLLECTION,
-                                  ORIGINAL_PRODUCT, ORIGINAL_SLIDE,
-                                  PRODUCT_IMAGE_LAYERS, SLIDE_IMAGE_LAYERS)
+from adapters.file_layers import (
+    COLLECTION_IMAGE_LAYERS,
+    ORIGINAL_COLLECTION,
+    ORIGINAL_PRODUCT,
+    ORIGINAL_SLIDE,
+    PRODUCT_IMAGE_LAYERS,
+    SLIDE_IMAGE_LAYERS,
+)
 from adapters.files import FileManager
 from services.exceptions import ImageProcessingError
 from shared import COLLECTIONS, DETAILS, PRODUCTS, SLIDES

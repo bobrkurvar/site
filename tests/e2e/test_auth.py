@@ -12,11 +12,6 @@ log = logging.getLogger(__name__)
 
 def test_admin_login_success(page):
     login_as_admin(page)
-    # page.goto(f"http://{conf.api_host}/admin")
-    # page.get_by_label("Username").fill("andy")
-    # page.get_by_label("Password").fill("user1122")
-    # with page.expect_request("**/admin/login/submit"):
-    #     page.get_by_role("button", name="Login").click()
     log.debug(page.url)
     expect(page).to_have_url(re.compile(r".*/admin"))
     # на странице админа может высветиться html админки в случае успеха или
@@ -26,10 +21,6 @@ def test_admin_login_success(page):
 
 
 def test_admin_login_user_not_found(page):
-    # page.goto(f"http://{conf.api_host}/admin")
-    # page.get_by_label("Username").fill("invalid_username")
-    # page.get_by_label("Password").fill("invalid_password")
-    # page.get_by_role("button", name="Login").click()
     login_as_admin(page, username="wrong_username")
     log.debug(page.url)
     expect(page).to_have_url(re.compile(r".*/admin/login/submit"))
@@ -77,11 +68,6 @@ def test_admin_refresh_access_token(page):
 
 def test_admin_refresh_token_reuse_compromised(page):
     # Выполняем успешный логин
-    # page.goto(f"http://{conf.api_host}/admin")
-    # page.get_by_label("Username").fill("andy")
-    # page.get_by_label("Password").fill("user1122")
-    # with page.expect_request("**/admin/login/submit"):
-    #     page.get_by_role("button", name="Login").click()
     login_as_admin(page)
     expect(page).to_have_url(re.compile(r".*/admin"))
 

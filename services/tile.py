@@ -38,10 +38,8 @@ async def add_tile(
         )
         await add_items(tile.producer, uow.db, name=tile.producer.name)
         await add_items(tile.category, uow.db, name=tile.category.name)
-        slug = Slug(name=tile.category.name)
-        await add_items(slug, uow.db, name=tile.category.name)
         tile.box = await add_items(
-            tile.box, uow.db,  weight=tile.box.weight, area=tile.box.area
+            tile.box, uow.db, weight=tile.box.weight, area=tile.box.area
         )
         async with file_manager.session() as files:
             for img in tile.images:
@@ -64,9 +62,7 @@ async def add_tile(
 
 async def delete_tile(file_manager, uow, **filters):
     async with uow:
-        tiles_to_delete = await uow.db.read(
-            Tile, loaded=["images"], **filters
-        )
+        tiles_to_delete = await uow.db.read(Tile, loaded=["images"], **filters)
         if not tiles_to_delete:
             return []
 
@@ -232,8 +228,4 @@ async def update_tile(
                 uow.db, article, domain_model, **updated_in_model
             )
             to_update.update(updated_fields_in_tile)
-        await uow.db.update(
-            Tile, filters=dict(id=article), **to_update
-        )
-
-
+        await uow.db.update(Tile, filters=dict(id=article), **to_update)

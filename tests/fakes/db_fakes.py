@@ -86,9 +86,10 @@ class FakeCRUD:
 
 
 class FakeUoW:
-    def __init__(self, *args, **kwargs):
+    def __init__(self, db):
         self.committed = False
-        self.session = self  # если session нужен, но не используется
+        # self.session = self
+        self.db = db
 
     async def __aenter__(self):
         return self

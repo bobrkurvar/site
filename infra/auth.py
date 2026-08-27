@@ -3,9 +3,14 @@ import logging
 import jwt
 
 from core import conf
-from domain import (AccessTokenDecodedError, AccessTokenExpireError,
-                    AccessTokenMalformedError, RefreshTokenDecodedError,
-                    RefreshTokenExpireError, RefreshTokenMalformedError)
+from domain import (
+    AccessTokenDecodedError,
+    AccessTokenExpireError,
+    AccessTokenMalformedError,
+    RefreshTokenDecodedError,
+    RefreshTokenExpireError,
+    RefreshTokenMalformedError,
+)
 
 log = logging.getLogger(__name__)
 

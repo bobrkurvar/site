@@ -1,11 +1,14 @@
 import logging
 from datetime import datetime, timedelta, timezone
 
-from domain import (CredentialsValidateError, RefreshTokenFamilyExpiredError,
-                    RefreshTokenMissingError,
-                    RefreshTokenReusedCompromisedError,
-                    RefreshTokenRotationRaceConditionError,
-                    UserLoginNotFoundError)
+from domain import (
+    CredentialsValidateError,
+    RefreshTokenFamilyExpiredError,
+    RefreshTokenMissingError,
+    RefreshTokenReusedCompromisedError,
+    RefreshTokenRotationRaceConditionError,
+    UserLoginNotFoundError,
+)
 from domain.user import Admin
 from infra.auth import check_refresh_token, data_encode_to_jwt
 from infra.security import create_token_family_id, create_token_jti
@@ -13,6 +16,7 @@ from infra.security import create_token_family_id, create_token_jti
 log = logging.getLogger(__name__)
 
 REFRESH_TTL_SECONDS = 86400 * 7
+
 
 def _create_token(data: dict, expire: datetime, toke_type: str):
     to_encode = data.copy()
@@ -68,12 +72,11 @@ async def consume_refresh_token(payload: dict, redis):
     return new_jti, family_id
 
 
-
 async def create_tokens_from_refresh(uow, refresh_token: str | None, redis):
     if refresh_token is None:
         raise RefreshTokenMissingError
     payload = check_refresh_token(refresh_token)
-    user_id = int(payload["int"])
+    user_id = int(payload["sub"])
     async with uow:
         await uow.db.read_one(Admin, id=user_id, with_raise=True)
     jti, family_id = await consume_refresh_token(payload, redis)

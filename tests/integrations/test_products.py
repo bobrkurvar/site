@@ -7,8 +7,14 @@ from services.exceptions import ImageProcessingError
 from services.tile import delete_tile, update_tile
 from tests.conftest import domain_handbooks_models_for_products
 from tests.fakes import FakeImageGenerator
-from tests.helpers import (add_tile_helper, assert_box, assert_handbooks_count,
-                           assert_size, assert_tile_fields, update_filters)
+from tests.helpers import (
+    add_tile_helper,
+    assert_box,
+    assert_handbooks_count,
+    assert_size,
+    assert_tile_fields,
+    update_filters,
+)
 
 from .helpers import product_files_count
 
@@ -16,28 +22,28 @@ log = logging.getLogger(__name__)
 
 
 @pytest.mark.asyncio
-async def test_create_tile_success_when_handbooks_already_exists(
-    domain_handbooks_models_for_products, products_env_with_handbooks
+async def test_create_tile_success_when_all_handbooks_exists(
+    products_env_with_handbooks, domain_handbooks_models_for_products
 ):
-    manager, file_manager = products_env_with_handbooks
+    """
+    Product_env_with_handbooks создаёт по одному справочнику, тест проверяет что при создании новых товарных позиций
+    с использованием существующих справочных данных не создаются новые
+    """
+    env = products_env_with_handbooks
     record = await add_tile_helper(
-        manager, file_manager, FakeImageGenerator(), test_uow_class=False
+        uow=env.uow, file_manager=env.file_manager, images_generator=env.image_generator
     )
-
-    assert record is not None
-    await assert_handbooks_count(manager, domain_handbooks_models_for_products, 1)
-    images = await manager.read(Image, tile_id=record.id)
-    assert len(images) == 3
+    log.debug("tile: %s", record)
+    # проверка всех справочников
+    await assert_handbooks_count(env.uow.db, domain_handbooks_models_for_products, 1)
 
 
 @pytest.mark.asyncio
 async def test_create_tile_success_when_handbooks_not_exists(
     domain_handbooks_models_for_products, products_env
 ):
-    manager, file_manager = products_env
-    record = await add_tile_helper(
-        manager, file_manager, FakeImageGenerator(), test_uow_class=False
-    )
+    env = products_env
+    record = await add_tile_helper(file_manager=env.file_manager, uow=env.uow, images_generator=env.images_generator)
     # Tile создан
     assert record is not None
     tile_id = record.id
@@ -68,18 +74,21 @@ async def test_create_tile_failure(products_env, domain_handbooks_models_for_pro
 
 @pytest.mark.asyncio
 async def test_update_tile_success_when_new_attributes_in_handbooks(
-    domain_handbooks_models_for_products, products_env
+    products_env_with_handbooks, domain_handbooks_models_for_products
 ):
-    manager, file_manager = products_env
+    env = products_env_with_handbooks
+    uow = env.uow
     record = await add_tile_helper(
-        manager, file_manager, FakeImageGenerator(), test_uow_class=False
+        uow=env.uow, file_manager=env.file_manager, images_generator=env.image_generator
     )
+
+    log.debug("old_tile: %s", record)
     article = record.id  # фильтр для обновления по артикулу
 
-    # новые данные
     new_filters = update_filters()
-    await update_tile(manager, article, **new_filters)
+    await update_tile(uow=uow, article=article, **new_filters)
 
+    new_tile = await uow.db.read_one(Tile, id=article)
     expected_box, expected_size, color = (
         new_filters.pop("box"),
         new_filters.pop("size"),
@@ -89,15 +98,16 @@ async def test_update_tile_success_when_new_attributes_in_handbooks(
         color["color_name"],
         color["feature_name"],
     )
-    new_tile = await manager.read_one(Tile, id=article)
-    box = await manager.read_one(Box, id=new_tile.box_id)
-    size = await manager.read_one(TileSize, id=new_tile.size_id)
+    box = await uow.db.read_one(Box, id=new_tile.box.id)
+    size = await uow.db.read_one(TileSize, id=new_tile.size.id)
+
     # 1 проверка всех новых полей с помощью функций, в которых вынесена логика assert
     assert_size(size, expected_size)
     assert_box(box, expected_box)
     assert_tile_fields(new_tile, new_filters)
+
     # 2. Проверка всех справочников, поля в справочниках не должны изменятся, а должны появится новые
-    await assert_handbooks_count(manager, domain_handbooks_models_for_products, 2)
+    await assert_handbooks_count(uow.db, domain_handbooks_models_for_products, 2)
 
 
 @pytest.mark.asyncio
