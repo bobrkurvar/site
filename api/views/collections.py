@@ -50,7 +50,9 @@ async def get_collections_page(
             )
             coll.assign_image_path(new_image_path)
             collections.append(coll)
-        total_count = await uow.db.count(CollectionCategory, category_name=category_name)
+        total_count = await uow.db.count(
+            CollectionCategory, category_name=category_name
+        )
         total_pages = max((total_count + limit - 1) // limit, 1)
         categories = await get_categories_for_items(uow.db)
 
@@ -69,7 +71,9 @@ async def get_collections_page(
     )
 
 
-@router.get("/{category_slug}/{category_id:int}/collections/{collection_slug}/{collection_id:int}")
+@router.get(
+    "/{category_slug}/{category_id:int}/collections/{collection_slug}/{collection_id:int}"
+)
 async def get_catalog_tiles_page(
     request: Request,
     uow: UowDep,
@@ -112,7 +116,7 @@ async def get_catalog_tiles_page(
             uow.db, collection.name, limit, offset, **filters
         )
 
-        filter_options  = await query_service.get_catalog_filters(
+        filter_options = await query_service.get_catalog_filters(
             collection_name=collection.name, category_name=category.name
         )
 
@@ -137,7 +141,7 @@ async def get_catalog_tiles_page(
             "total_pages": total_pages,
             "total_count": total_count,
             "categories": categories,
-            "filters": filter_options ,
+            "filters": filter_options,
             "active_tab": "None",
         },
     )

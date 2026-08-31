@@ -1,43 +1,24 @@
-
 import pytest
 
 from adapters.images import CollectionImagesManager, ProductImagesManager
-from domain import Box, Category, Producer, TileColor, TileSize, TileSurface
-from tests.fakes import FakeCRUD, FakeRedisService, FakeStorage, FakeImageGenerator
+from tests.fakes import FakeRepo, FakeRedisService, FakeStorage, FakeImageGenerator
 from dataclasses import dataclass
 from tests.fakes.db_fakes import FakeUoW
 
 
-
-
 @pytest.fixture
 def db():
-    return FakeCRUD()
+    return FakeRepo()
 
 
 @pytest.fixture
-def uow(db):
+def uow_fix(db):
     return FakeUoW(db)
 
 
 @pytest.fixture
 def redis():
     return FakeRedisService()
-
-
-@pytest.fixture
-async def products_env_with_handbooks(products_env):
-    await products_env.uow.db.create(
-        seq_data=[
-            TileSize(length=300, width=200, height=10),
-            TileColor(color_name="color", feature_name="feature"),
-            Producer(name="producer"),
-            Box(weight=30, area=1),
-            TileSurface(name="surface"),
-            Category(name="category"),
-        ]
-    )
-    return products_env
 
 
 @dataclass
@@ -57,7 +38,7 @@ class CollectionsEnv:
 
 
 @pytest.fixture
-def products_env(uow):
+def products_env(uow_fix) -> ProductsEnv:
     fs = {}
     file_manager = ProductImagesManager(
         root="tests/images",
@@ -65,7 +46,7 @@ def products_env(uow):
     )
 
     return ProductsEnv(
-        uow=uow,
+        uow=uow_fix,
         file_manager=file_manager,
         fs=fs,
         image_generator=FakeImageGenerator(),
@@ -73,7 +54,7 @@ def products_env(uow):
 
 
 @pytest.fixture
-def collections_env(uow):
+def collections_env(uow_fix):
     fs = {}
     file_manager = CollectionImagesManager(
         root="tests/images",
@@ -81,7 +62,7 @@ def collections_env(uow):
     )
 
     return CollectionsEnv(
-        uow=uow,
+        uow=uow_fix,
         file_manager=file_manager,
         fs=fs,
         image_generator=FakeImageGenerator(),

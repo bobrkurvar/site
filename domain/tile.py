@@ -261,6 +261,7 @@ class Collection:
     def slug(self) -> str:
         return slugify(self.name)
 
+
 class CollectionCategory:
     def __init__(self, collection_id: int, category_name: str):
         self.collection_id = collection_id

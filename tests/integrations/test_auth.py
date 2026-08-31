@@ -32,7 +32,6 @@ async def test_get_tokens_from_login_success(db, redis):
     assert refresh_token and access_token
 
 
-
 @pytest.mark.asyncio
 async def test_get_tokens_from_login_wrong_password(crud, redis):
     username, password = "username", "password"
@@ -84,8 +83,12 @@ async def test_get_new_tokens_from_refresh_fail_when_token_already_used(redis, u
     # а этот валидный
     await redis.set(f"rt:{jti2}", value=-1, ttl=86400 * 7)
     with pytest.raises(RefreshTokenReusedCompromisedError):
-        await create_tokens_from_refresh(refresh_token=refresh_token1, redis=redis, uow=uow)
+        await create_tokens_from_refresh(
+            refresh_token=refresh_token1, redis=redis, uow=uow
+        )
     assert not await redis.exists(f"rtfam:{family_id}")
     # даже другой токен из этого же семейства инвалидируется
     with pytest.raises(RefreshTokenFamilyExpiredError):
-        await create_tokens_from_refresh(refresh_token=refresh_token2, redis=redis, uow=uow)
+        await create_tokens_from_refresh(
+            refresh_token=refresh_token2, redis=redis, uow=uow
+        )

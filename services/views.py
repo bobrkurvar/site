@@ -31,8 +31,6 @@ async def build_tile_filters(
     return filters
 
 
-
-
 async def fetch_items(manager, limit, offset, **filters):
     total_items = await manager.read(Tile, loaded=["images", "size", "box"], **filters)
     items = await manager.read(
@@ -68,5 +66,3 @@ async def fetch_collections_items(
     total_count = await manager.count(Tile, **filters)
 
     return items, total_count
-
-

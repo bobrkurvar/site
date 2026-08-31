@@ -12,8 +12,9 @@ from adapters.images import CollectionImagesManager, ProductImagesManager
 from adapters.query_service import CatalogQueryService
 from core import conf
 from domain import *
-from tests.fakes import FakeImageGenerator, FakeStorage
-from tests.helpers import add_collection_helper, add_tile_helper
+from tests.fakes import FakeImageGenerator
+from dataclasses import dataclass
+
 
 log = logging.getLogger(__name__)
 
@@ -26,7 +27,7 @@ async def db_provider():
 
 
 @pytest.fixture
-async def uow(request, db_provider):
+async def uow_fix(request, db_provider):
     uow = UnitOfWork(registry=registry, provider=db_provider)
     yield uow
     async with db_provider.engine.begin() as conn:
@@ -53,15 +54,6 @@ async def uow(request, db_provider):
     await db_provider.close()
 
 
-@pytest.fixture
-async def manager_with_categories(crud):
-    category_name1, category_name2 = "category1", "category2"
-    await crud.create(
-        seq_data=[Category(name=category_name1), Category(name=category_name2)]
-    )
-    return crud
-
-
 @pytest.fixture(autouse=True)
 def clean_fs_after_test(request):
     yield
@@ -74,33 +66,33 @@ def clean_fs_after_test(request):
 class ProductsEnv:
     uow: UnitOfWork
     file_manager: ProductImagesManager
-    image_generator: FakeImageGenerator
+    images_generator: FakeImageGenerator
 
 
 @dataclass
 class CollectionsEnv:
     uow: UnitOfWork
     file_manager: CollectionImagesManager
-    image_generator: FakeImageGenerator
+    images_generator: FakeImageGenerator
 
 
 @pytest.fixture
-def products_env(uow):
+def products_env(uow_fix) -> ProductsEnv:
     file_manager = ProductImagesManager(root="tests/images")
     return ProductsEnv(
-        uow=uow,
+        uow=uow_fix,
         file_manager=file_manager,
-        image_generator=FakeImageGenerator(),
+        images_generator=FakeImageGenerator(),
     )
 
 
 @pytest.fixture
-def collections_env(uow):
+def collections_env(uow_fix) -> CollectionsEnv:
     file_manager = CollectionImagesManager(root="tests/images")
     return CollectionsEnv(
-        uow=uow,
+        uow=uow_fix,
         file_manager=file_manager,
-        image_generator=FakeImageGenerator(),
+        images_generator=FakeImageGenerator(),
     )
 
 
@@ -114,60 +106,64 @@ async def collections_env_with_categories(collections_env):
             log.debug("category_name: %s", category.name)
             categories.append(category)
         await manager.create(seq_data=categories)
-        return manager, file_manager, [category.name for category in categories]
+        return collections_env, [category.name for category in categories]
 
     return wrapper
 
 
 @pytest.fixture
-async def products_env_with_handbooks(products_env):
-    manager, file_manager = products_env
-    await manager.create(TileSize(length=300, width=200, height=10))
-    await manager.create(TileColor(color_name="color", feature_name="feature"))
-    await manager.create(Producer(name="producer"))
-    await manager.create(Box(weight=30, area=1))
-    await manager.create(TileSurface(name="surface"))
-    await manager.create(Category(name="category"))
-
-    return manager, file_manager
-
-
-@pytest.fixture
-async def products_env_with_tiles(crud):
-    async def wrapper(categories: dict, category_with_collection: dict = None):
-        manager, product_file_manager, collection_file_manager = (
-            crud,
-            ProductImagesManager(root="tests/images", storage=FakeStorage()),
-            CollectionImagesManager(root="tests/images", storage=FakeStorage()),
+async def products_env_with_handbooks(products_env) -> ProductsEnv:
+    uow = products_env.uow
+    async with uow:
+        await uow.db.create(
+            seq_data=[
+                TileSize(length=300, width=200, height=10),
+                TileColor(color_name="color", feature_name="feature"),
+                Producer(name="producer"),
+                Box(weight=30, area=1),
+                TileSurface(name="surface"),
+                Category(name="category"),
+            ]
         )
-        category_with_collection = (
-            category_with_collection if category_with_collection else {}
-        )
-        for category_name, tiles_count in categories.items():
-            collection_name = category_with_collection.get(category_name, False)
-            for i in range(tiles_count):
-                await add_tile_helper(
-                    manager=manager,
-                    file_manager=product_file_manager,
-                    images_generator=FakeImageGenerator(),
-                    test_uow_class=False,
-                    category_name=category_name,
-                    size=TileSize(length=i, width=i, height=i),
-                    color=TileColor(color_name=f"color{i}", feature_name=f"feature{i}"),
-                    producer_name=f"producer{i}",
-                )
-            if category_with_collection.get(category_name, False):
-                await add_collection_helper(
-                    manager=manager,
-                    file_manager=collection_file_manager,
-                    images_generator=FakeImageGenerator(),
-                    collection_name=collection_name,
-                    category_name=category_name,
-                    test_uow_class=False,
-                )
-        return manager
+    return products_env
 
-    return wrapper
+
+# @pytest.fixture
+# async def products_env_with_tiles(crud):
+#     async def wrapper(categories: dict, category_with_collection: dict = None):
+#         manager, product_file_manager, collection_file_manager = (
+#             crud,
+#             ProductImagesManager(root="tests/images", storage=FakeStorage()),
+#             CollectionImagesManager(root="tests/images", storage=FakeStorage()),
+#         )
+#         category_with_collection = (
+#             category_with_collection if category_with_collection else {}
+#         )
+#         for category_name, tiles_count in categories.items():
+#             collection_name = category_with_collection.get(category_name, False)
+#             for i in range(tiles_count):
+#                 await add_tile_helper(
+#                     manager=manager,
+#                     file_manager=product_file_manager,
+#                     images_generator=FakeImageGenerator(),
+#                     test_uow_class=False,
+#                     category_name=category_name,
+#                     size=TileSize(length=i, width=i, height=i),
+#                     color=TileColor(color_name=f"color{i}", feature_name=f"feature{i}"),
+#                     producer_name=f"producer{i}",
+#                 )
+#             if category_with_collection.get(category_name, False):
+#                 await add_collection_helper(
+#                     manager=manager,
+#                     file_manager=collection_file_manager,
+#                     images_generator=FakeImageGenerator(),
+#                     collection_name=collection_name,
+#                     category_name=category_name,
+#                     test_uow_class=False,
+#                 )
+#         return manager
+#
+#     return wrapper
 
 
 @pytest.fixture

@@ -18,9 +18,9 @@ async def add_collection(
         )
 
         if not collection_record:
-            # slug = await uow.db.create(Slug(name=collection.name))
-            # file_name = slug.slug
-            file_name = await asyncio.to_thread(calculate_file_hash, collection.image.image_bytes)
+            file_name = await asyncio.to_thread(
+                calculate_file_hash, collection.image.image_bytes
+            )
             image_path = file_manager.base_collection_path(file_name)
             collection.assign_image_path(str(image_path))
 

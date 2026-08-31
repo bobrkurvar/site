@@ -187,7 +187,6 @@ def map_admin_to_domain(o: models.Admin) -> domain.Admin:
     return domain.Admin(username=o.username, password=o.password)
 
 
-
 class MapperRegistry:
     def __init__(self):
         self._models = {}  # domain_cls -> orm_model

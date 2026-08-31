@@ -16,9 +16,7 @@ log = logging.getLogger(__name__)
 
 
 @router.get("/products/{article:int}")
-async def get_tile_page(
-    request: Request, article: int, uow: UowDep
-):
+async def get_tile_page(request: Request, article: int, uow: UowDep):
     product_manager = ProductImagesManager()
     async with uow:
         tile = await uow.db.read_one(

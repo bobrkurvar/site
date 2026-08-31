@@ -12,7 +12,7 @@ from services.auth import (
     create_access_token,
     create_refresh_token,
     create_tokens_from_refresh,
-    consume_refresh_token
+    consume_refresh_token,
 )
 
 log = logging.getLogger(__name__)
@@ -40,7 +40,6 @@ def test_create_refresh_token():
     assert family_id == data_from_token["family_id"] and jti == data_from_token["jti"]
 
 
-
 @pytest.mark.asyncio
 async def test_get_new_tokens_from_refresh_success(redis, uow):
     data = {"role": "user", "sub": "1"}
@@ -49,7 +48,9 @@ async def test_get_new_tokens_from_refresh_success(redis, uow):
     # устанавливаю ключи для проверки правильной токена
     await redis.set(f"rtfam:{family_id}", value=1, ttl=86400 * 7)
     await redis.set(f"rt:{jti}", value=-1, ttl=86400 * 7)
-    tokens = await create_tokens_from_refresh(refresh_token=refresh_token, redis=redis, uow=uow)
+    tokens = await create_tokens_from_refresh(
+        refresh_token=refresh_token, redis=redis, uow=uow
+    )
     access_token, refresh_token = tokens["access_token"], tokens["refresh_token"]
     assert access_token and refresh_token
 
@@ -62,7 +63,9 @@ async def test_get_new_tokens_from_refresh_fail_when_family_not_exists(redis, uo
     family_id, jti = create_token_family_id(), create_token_jti()
     refresh_token = create_refresh_token(data, family_id=family_id, jti=jti)
     with pytest.raises(RefreshTokenFamilyExpiredError):
-        await create_tokens_from_refresh(refresh_token=refresh_token, redis=redis, uow=uow)
+        await create_tokens_from_refresh(
+            refresh_token=refresh_token, redis=redis, uow=uow
+        )
 
 
 @pytest.mark.asyncio

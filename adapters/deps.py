@@ -29,12 +29,12 @@ def get_image_api(request: Request) -> HttpClient:
 #         raise RuntimeError("db connection is not initialized")
 #     return build_crud(db_provider.session_factory)
 
+
 def get_uow(request: Request):
     db_provider = request.app.state.db_provider
     if db_provider is None:
         raise RuntimeError("db connection is not initialized")
     return UnitOfWork(registry=registry, provider=db_provider)
-
 
 
 def get_catalog_query_service(request: Request):
