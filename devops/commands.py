@@ -129,3 +129,25 @@ class Logs:
 
     def __iter__(self):
         return iter(self.args)
+
+
+
+@dataclass(frozen=True)
+class Ps:
+    all: bool = False
+    format: str | None = None
+
+    @property
+    def args(self) -> tuple[str, ...]:
+        args = ["ps"]
+
+        if self.all:
+            args.append("--all")
+
+        if self.format:
+            args.extend(("--format", self.format))
+
+        return tuple(args)
+
+    def __iter__(self):
+        return iter(self.args)

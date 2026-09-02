@@ -17,18 +17,21 @@ class Compose:
 
         return args
 
-    def run(self, *commands, check: bool = False) -> int:
-        code = 0
+    def execute(self, *commands, check: bool = False, capture_output=False):
+        result = None
 
         for command in commands:
             args = self.make_command(command)
 
             print(">", " ".join(args))
 
-            result = subprocess.run(args)
-            code = result.returncode
+            result = subprocess.run(
+                args,
+                capture_output=capture_output,
+                text=capture_output,
+            )
 
             if check:
                 result.check_returncode()
 
-        return code
+        return result

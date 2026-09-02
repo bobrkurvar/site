@@ -1,5 +1,8 @@
 from .perform import Compose
 from .commands import Run, Down, Up, Logs
+from .utils import failed_services
+
+import json
 
 prod_env = Compose(
     "docker-compose.yml",
@@ -16,32 +19,24 @@ local_env = Compose(
     project="local_site",
 )
 
-log_service = (
-    "app",
-    "postgres",
-    "nginx",
-    "image_service",
-)
+# log_service = (
+#     "app",
+#     "postgres",
+#     "nginx",
+#     "image_service",
+# )
 
 
 def integration_tests():
-    test_env.run(Down(volumes=True))
+    test_env.execute(Down(volumes=True))
     try:
-        return test_env.run(Run("int_tests", build=True))
+        return test_env.execute(Run("int_tests", build=True), check=True)
+    except:
+        failed = failed_services(test_env)
+        if failed:
+            test_env.execute(Logs(*failed))
+        raise
     finally:
-        test_env.run(Down(volumes=True))
+        test_env.execute(Down(volumes=True))
 
 
-def show_logs(compose: Compose, *, follow: bool = True):
-    services = "|".join(log_service)
-    service = input(f"[{services}]: ").strip()
-
-    if service not in log_service:
-        return
-
-    compose.run(
-        Logs(
-            service,
-            follow=follow,
-        )
-    )
