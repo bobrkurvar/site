@@ -21,11 +21,6 @@ class FileSystemStorage:
         path = Path(path)
         await asyncio.to_thread(path.unlink, missing_ok=True)
 
-    # @staticmethod
-    # def get_directory(main_path: str | Path, other_path: str | Path) -> str:
-    #     if Path(main_path).exists():
-    #         return str(main_path)
-    #     return str(other_path)
     @staticmethod
     async def get_directory(main_path: str | Path, other_path: str | Path) -> str:
         path_exists = await asyncio.to_thread(Path(main_path).exists)
@@ -83,9 +78,6 @@ class FileManager:
 
     async def get_directory(self, main_path: str | Path, other_path: str | Path) -> str:
         return await self._storage.get_directory(main_path, other_path)
-        # if main_path.exists():
-        #     return str(main_path)
-        # return str(other_path)
 
 
 class FileSession:
@@ -114,6 +106,3 @@ class FileSession:
     async def rollback(self):
         log.debug("paths to rollback: %s", self._saved_files)
         await self._fm.delete(self._saved_files)
-
-    # def __getattr__(self, name):
-    #     return getattr(self._fm, name)

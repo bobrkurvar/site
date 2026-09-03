@@ -2,78 +2,71 @@ import asyncio
 import logging
 
 from domain import *
-from infra.uow import UnitOfWork
 from infra.security import calculate_file_hash
 
 log = logging.getLogger(__name__)
 
 
-async def add_items(domain_obj, manager, session, **filters):
-    item = await manager.read_one(type(domain_obj), **filters, session=session)
+async def add_items(domain_obj, manager, **filters):
+    item = await manager.read_one(type(domain_obj), **filters)
     if not item:
-        item = await manager.create(domain_obj, session=session)
+        item = await manager.create(domain_obj)
     return item
 
 
 async def add_tile(
     tile: Tile,
-    manager,
     images_generator,
     file_manager,
-    uow_class=UnitOfWork,
+    uow,
 ):
-    async with uow_class(manager) as uow:
+    async with uow:
         tile.size = await add_items(
             tile.size,
-            manager,
-            uow.session,
+            uow.db,
             height=tile.size.height,
             width=tile.size.width,
             length=tile.size.length,
         )
         if tile.surface:
-            await add_items(tile.surface, manager, uow.session, name=tile.surface.name)
+            await add_items(tile.surface, uow.db, name=tile.surface.name)
         await add_items(
             tile.color,
-            manager,
-            uow.session,
+            uow.db,
             color_name=tile.color.color_name,
             feature_name=tile.color.feature_name,
         )
-        await add_items(tile.producer, manager, uow.session, name=tile.producer.name)
-        await add_items(tile.category, manager, uow.session, name=tile.category.name)
-        slug = Slug(name=tile.category.name)
-        await add_items(slug, manager, uow.session, name=tile.category.name)
+        await add_items(tile.producer, uow.db, name=tile.producer.name)
+        await add_items(tile.category, uow.db, name=tile.category.name)
         tile.box = await add_items(
-            tile.box, manager, uow.session, weight=tile.box.weight, area=tile.box.area
+            tile.box, uow.db, weight=tile.box.weight, area=tile.box.area
         )
-        images_bytes = [img.image_bytes for img in tile.images if img]
-        tile.images.clear()
         async with file_manager.session() as files:
-            for img in images_bytes:
-                file_name = await asyncio.to_thread(calculate_file_hash, img)
+            for img in tile.images:
+                img_bytes = img.consume_bytes()
+                file_name = await asyncio.to_thread(calculate_file_hash, img_bytes)
                 image_path = file_manager.base_product_path(file_name)
-                tile.images.append(TileImage(image_path=str(image_path)))
+                img.image_path = str(image_path)
                 try:
-                    await files.save(image_path, img)
-                    miniatures = await images_generator.generate_product_variants(img)
+                    await files.save(image_path, img_bytes)
+                    miniatures = await images_generator.generate_product_variants(
+                        img_bytes
+                    )
                     for layer, miniature in miniatures.items():
                         await files.save_by_layer(file_name, miniature, layer)
                 except FileExistsError:
                     log.debug("путь %s уже занять", image_path)
                     pass
-        return await manager.create(tile, session=uow.session)
+        return await uow.db.create(tile)
 
 
-async def delete_tile(manager, file_manager, uow_class=UnitOfWork, **filters):
-    async with uow_class(manager) as uow:
-        tiles_to_delete = await manager.read(
-            Tile, loaded=["images"], session=uow.session, **filters
-        )
+async def delete_tile(file_manager, uow, **filters):
+    async with uow:
+        tiles_to_delete = await uow.db.read(Tile, loaded=["images"], **filters)
         if not tiles_to_delete:
             return []
 
-        del_res = await manager.delete(Tile, session=uow.session, **filters)
+        del_res = await uow.db.delete(Tile, **filters)
         for tile in tiles_to_delete:
             images_paths = [image.image_path for image in tile.images]
             for image in images_paths:
@@ -131,6 +124,7 @@ def extract_composite_fields(tile: Tile) -> dict:
         "feature_name": tile.feature_name,
     }
 
+
 async def create_composite(
     manager, article: int, values: dict, columns: tuple, *to_join
 ):
@@ -157,10 +151,10 @@ def map_tile_param_to_model_param(tile_param: str):
         return tile_param
 
 
-async def create_new_model(manager, article: int, model, session, **values):
+async def create_new_model(db, article: int, model, **values):
     if model is TileSize:
         await create_composite(
-            manager,
+            db,
             article,
             values,
             ("size_length", "size_width", "size_height"),
@@ -168,15 +162,26 @@ async def create_new_model(manager, article: int, model, session, **values):
         )
     elif model is Box:
         await create_composite(
-            manager, article, values, ("box_area", "box_weight"), "box"
+            db,
+            article,
+            values,
+            ("box_area", "box_weight"),
+            "box",
         )
     elif model is TileColor:
         await create_composite(
-            manager, article, values, ("color_name", "feature_name"), "color"
+            db,
+            article,
+            values,
+            ("color_name", "feature_name"),
+            "color",
         )
+
     log.debug("model: %s values: %s", model, values)
+
     new_instance = model(**values)
-    domain_obj = await add_items(new_instance, manager, session, **values)
+    domain_obj = await add_items(new_instance, db, **values)
+
     return model_to_update_values(model, domain_obj, **values)
 
 
@@ -195,9 +200,8 @@ def map_param_to_domain_model(param_name: str):
 
 
 async def update_tile(
-    manager,
+    uow,
     article: int,
-    uow_class=UnitOfWork,
     name: str | None = None,
     size: dict | None = None,
     color: dict | None = None,
@@ -210,10 +214,10 @@ async def update_tile(
     params = {
         k: v
         for k, v in locals().items()
-        if v is not None and k not in {"manager", "article", "uow_class"}
+        if v is not None and k not in {"uow", "article"}
     }
     to_update = {}
-    async with uow_class(manager) as uow:
+    async with uow:
         for k, v in params.items():
             domain_model = map_param_to_domain_model(k)
             if domain_model is Tile:
@@ -221,70 +225,7 @@ async def update_tile(
                 continue
             updated_in_model = dict_for_update_model(k, v)
             updated_fields_in_tile = await create_new_model(
-                manager, article, domain_model, uow.session, **updated_in_model
+                uow.db, article, domain_model, **updated_in_model
             )
             to_update.update(updated_fields_in_tile)
-        await manager.update(
-            Tile, session=uow.session, filters=dict(id=article), **to_update
-        )
-
-
-# async def update_tile(
-#     manager,
-#     article: int,
-#     uow_class=UnitOfWork,
-#     name: str | None = None,
-#     size: dict | None = None,
-#     color: dict | None = None,
-#     producer_name: str | None = None,
-#     box: dict | None = None,
-#     boxes_count: int | None = None,
-#     category_name: str | None = None,
-#     surface_name: str | None = None,
-# ):
-#     async with uow_class(manager) as uow:
-#         tile = await manager.read_one(Tile, id=article, session=uow.session, loaded=["size", "box"])
-#         if not tile:
-#             raise ValueError(f"Tile with article {article} not found")
-#         handbooks = []
-#         attrs = []
-#         if size:
-#             for k, v in size.items():
-#                 setattr(tile.size, k, v)
-#             tile.size.id=None
-#             attrs.append("size")
-#             handbooks.append(tile.size)
-#         if color:
-#             for k, v in color.items():
-#                 setattr(tile.color, k, v)
-#             attrs.append("color")
-#             handbooks.append(tile.color)
-#         if box:
-#             for k, v in box.items():
-#                 setattr(tile.box, k, v)
-#             tile.box.id=None
-#             attrs.append("box")
-#             handbooks.append(tile.box)
-#         if producer_name:
-#             tile.producer.name = producer_name
-#             attrs.append("producer")
-#             handbooks.append(tile.producer)
-#         if category_name:
-#             tile.category.name = category_name
-#             attrs.append("category")
-#             handbooks.append(tile.category)
-#         if surface_name:
-#             tile.surface.name= surface_name
-#             attrs.append("surface")
-#             handbooks.append(tile.surface)
-#
-#         if handbooks:
-#             created_handbooks = await manager.create(seq_data=handbooks, session=uow.session)
-#             for attr_name, resolved_obj in zip(attrs, created_handbooks):
-#                 setattr(tile, attr_name, resolved_obj)
-#
-#         if name is not None:
-#             tile.name = name
-#         if boxes_count is not None:
-#             tile.boxes_count = boxes_count
-#         await manager.save(tile)
+        await uow.db.update(Tile, filters=dict(id=article), **to_update)

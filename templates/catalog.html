@@ -8,8 +8,8 @@
 <main class="catalog-panel">
     {% if active_tab != "None"%}
         <div class="catalog-tabs">
-            <a href="/catalog/{{ category }}/products" class="catalog-tab {% if active_tab == 'products' %}active{% endif %}">Товары</a>
-            <a href="/catalog/{{ category }}/collections" class="catalog-tab {% if active_tab == 'collections' %}active{% endif %}">Коллекции</a>
+            <a href="/catalog/{{ category_path }}/products" class="catalog-tab {% if active_tab == 'products' %}active{% endif %}">Товары</a>
+            <a href="/catalog/{{ category_path }}/collections" class="catalog-tab {% if active_tab == 'collections' %}active{% endif %}">Коллекции</a>
         </div>
     {% endif %}
 
@@ -18,7 +18,7 @@
         <aside class="filters-sidebar">
             <div class="filters-panel">
                 <h3>Фильтры</h3>
-                <form class="filters-form" method="get" action="{{ path }}" id="filtersForm">
+                <form class="filters-form" method="get" action="{{ request.url.path }}" id="filtersForm">
                     <div class="filter-group">
                         <label>Производитель:</label>
                         <select name="producer">
@@ -68,11 +68,11 @@
             {% if active_tab != "collections" %}
                 <div class="tile-grid">
                     {% for tile in tiles %}
-                    <a href="{{ path_to_catalog or request.path }}/{{ tile.article }}" class="tile-card-link">
+                    <a href="/catalog/products/{{ tile.article }}" class="tile-card-link">
                         <div class="tile-card">
                             <div class="tile-image-container">
-                                {% if main_images[tile.id] %}
-                                <img src="/{{ main_images[tile.article] }}" alt="{{ tile.name }}" class="tile-image" loading="lazy">
+                                {% if tile.main_image_path %}
+                                <img src="/{{ tile.main_image_path }}" alt="{{ tile.name }}" class="tile-image" loading="lazy">
                                 {% else %}
                                 <div class="no-image">Нет изображения</div>
                                 {% endif %}
@@ -87,14 +87,14 @@
                     {% if not tiles %}
                     <div class="empty-catalog">
                         <p>Товары не найдены</p>
-                        <a href="{{ path }}" class="clear-filters">Показать все товары</a>
+                        <a href="{{ request.url.path }}" class="clear-filters">Показать все товары</a>
                     </div>
                     {% endif %}
                 </div>
             {% else %}
                 <div class="collection-grid">
                     {% for col in collections %}
-                    <a href="collections/{{ col.slug }}" class="collection-item-link">
+                        <a href="/catalog/{{ category_path }}/collections/{{ col.slug }}/{{ col.id }}" class="collection-item-link">
                         <div class="collection-item">
                             <div class="tile-image-container">
                                 {% if col.image_path %}

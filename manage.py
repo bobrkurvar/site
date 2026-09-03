@@ -1,7 +1,6 @@
 import subprocess
 import sys
 
-
 PROD_PROJECT = "site"
 PROD_COMPOSE = "docker-compose.yml"
 TEST_PROJECT = "tests"
@@ -51,7 +50,7 @@ def compose_run(*args):
 
 
 def logs(test=False):
-    services = ["app", "postgres", "nginx"]
+    services = ["app", "postgres", "nginx", "image_service"]
     outs = "|".join(services)
     out = input(f"[{outs}]: ").strip()
     if out in services:
@@ -62,11 +61,9 @@ def logs(test=False):
 
 
 def test():
-    global IS_TEST
-    IS_TEST = True
     run(compose_run("down", "-v", "--remove-orphans"))
-    e2e_code = 0
-    int_code = 0
+    logs_flag = False
+    e2e_code = int_code = 0
     try:
         tests = ""
         while tests not in {"int", "e2e", "all"}:
@@ -82,16 +79,22 @@ def test():
                 "redis",
             )
         )
-        run_or_exit(compose_run("run", "--rm", "--build", "migrate"))
-        run_or_exit(compose_run("run", "--rm", "--build", "runner"))
+        run_or_exit(compose_run("run", "--rm", "--build", "--no-deps", "migrate"))
+        run_or_exit(compose_run("run", "--rm", "--build", "--no-deps", "runner"))
         if tests in {"e2e", "all"}:
             run_or_exit(compose_run("build", "e2e_tests"))
-            e2e_code = run(compose_run("run", "--rm", "e2e_tests"))
+            e2e_code = run(compose_run("run", "--rm", "--no-deps", "e2e_tests"))
         if tests in {"int", "all"}:
             run_or_exit(compose_run("build", "int_tests"))
-            int_code = run(compose_run("run", "--rm", "int_tests"))
-        logs(test=True)
+            int_code = run(compose_run("run", "--rm", "--no-deps", "int_tests"))
+
+        logs_flag = True
+        while True:
+            logs(test=True)
     finally:
+        if not logs_flag:
+            print("after error logs")
+            logs(test=True)
         run(compose_run("down", "-v", "--remove-orphans"))
         return e2e_code or int_code
 
@@ -134,8 +137,6 @@ def down() -> int:
 
 
 def down_test() -> int:
-    global IS_TEST
-    IS_TEST = True
     return run(compose_run("down", "--remove-orphans"))
 
 
@@ -148,7 +149,7 @@ def local():
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python manage.py [test|prod|local|down|down-test|logs]")
+        print("Usage: python manage.py [test|prod|local|down|logs]")
         sys.exit(1)
 
     cmd = sys.argv[1]
@@ -163,8 +164,6 @@ if __name__ == "__main__":
         code = prod()
     elif cmd == "down":
         code = down()
-    elif cmd == "down-test":
-        code = down_test()
     elif cmd == "logs":
         code = logs()
     else:

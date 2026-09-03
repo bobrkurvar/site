@@ -1,9 +1,10 @@
 from decimal import Decimal
+
 from pydantic import BaseModel, ConfigDict, field_validator
 
 
 class CreateTile(BaseModel):
-    # model_config = ConfigDict(str_strip_whitespace=True)
+    model_config = ConfigDict(str_strip_whitespace=True)
     name: str
     size: str
     color_name: str
@@ -27,11 +28,9 @@ class CreateTile(BaseModel):
     def height(self) -> Decimal:
         return Decimal(self.size.split()[2])
 
-    @field_validator("*", mode="before")
+    @field_validator("*")
     @classmethod
-    def empty_str_to_none(cls, v) -> str | None:
-        if isinstance(v, str):
-            v = v.strip()
+    def empty_str_to_none(cls, v):
         if v == "":
             return None
         return v
@@ -59,10 +58,22 @@ class UpdateTile(BaseModel):
         return v
 
     def custom_dump(self) -> dict:
-        if self.size is not None:
+        result = {"article": self.article}
+        if self.name is not None:
+            result["name"] = self.name
+        if self.producer_name is not None:
+            result["producer_name"] = self.producer_name
+        if self.category_name is not None:
+            result["category_name"] = self.category_name
+        if self.surface_name is not None:
+            result["surface_name"] = self.surface_name
+        if self.boxes_count is not None:
+            result["boxes_count"] = self.boxes_count
+
+        if self.size:
             try:
                 length, width, height = self.size.split()
-                size_dict = {
+                result["size"] = {
                     "length": Decimal(length),
                     "width": Decimal(width),
                     "height": Decimal(height),
@@ -70,14 +81,11 @@ class UpdateTile(BaseModel):
             except ValueError:
                 raise ValueError("Size must be in format 'length width height'")
 
-        return {
-            "article": self.article,
-            "name": self.name,
-            "size": size_dict,
-            "box": {"weight": Decimal(self.box_weight), "area": Decimal(self.box_area)},
-            "color": {"color_name": self.color_name, "feature_name": self.feature_name},
-            "producer_name": self.producer_name,
-            "category_name": self.category_name,
-            "surface_name": self.surface_name,
-            "boxes_count": int(self.boxes_count),
-        }
+        if self.box_weight is not None or self.box_area is not None:
+            result["box"] = {"weight": self.box_weight, "area": self.box_area}
+        if self.color_name is not None or self.feature_name is not None:
+            result["color"] = {
+                "color_name": self.color_name,
+                "feature_name": self.feature_name,
+            }
+        return result

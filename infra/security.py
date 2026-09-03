@@ -1,8 +1,9 @@
+import hashlib
+from uuid import uuid4
+
 import bcrypt
 
 from core import conf
-import hashlib
-from uuid import uuid4
 
 
 def normalize_input(string: str) -> bytes:

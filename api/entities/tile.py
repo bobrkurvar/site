@@ -1,16 +1,17 @@
 import logging
 from typing import Annotated
 
-from fastapi import APIRouter, File, Form, UploadFile, Depends
+from fastapi import APIRouter, Depends, File, Form, UploadFile
 from fastapi.responses import RedirectResponse
 
 from adapters.deps import DbManagerDep, HttpClientDep
-from adapters.images import ProductImagesManager, ImageGenerator
-from domain import *
-from services.tile import add_tile, delete_tile, update_tile
+from adapters.images import ImageGenerator, ProductImagesManager
 
 # from api.utils import api_input_to_params, strip_input_params
 from api.schemas import CreateTile, UpdateTile
+from api.utils import create_tile_form
+from domain import *
+from services.tile import add_tile, delete_tile, update_tile
 
 router = APIRouter(prefix="/admin/tiles")
 
@@ -33,15 +34,15 @@ async def delete_tile_by_id_or_all(
 
 @router.post("/create")
 async def admin_create_tile(
-    dto: Annotated[CreateTile, Form()],
+    dto: Annotated[CreateTile, Depends(create_tile_form)],
     main_image: Annotated[UploadFile, File()],
     images: Annotated[list[UploadFile], File()],
     manager: DbManagerDep,
     http_client: HttpClientDep,
 ):
-    # bytes_images = [await img.read() for img in images] if images else []
     bytes_main_image = await main_image.read()
     bytes_images = [bytes_main_image] + [await img.read() for img in images]
+    images = [Image(image_bytes=img) for img in bytes_images]
     tile = Tile(
         size=TileSize(length=dto.length, width=dto.width, height=dto.height),
         color=TileColor(color_name=dto.color_name, feature_name=dto.feature_name),
@@ -51,7 +52,7 @@ async def admin_create_tile(
         category=Category(name=dto.category_name),
         surface=TileSurface(name=dto.surface_name),
         boxes_count=dto.boxes_count,
-        images=bytes_images,
+        images=images,
     )
     await add_tile(
         tile,
@@ -66,29 +67,9 @@ async def admin_create_tile(
 async def admin_update_tile(
     manager: DbManagerDep,
     dto: Annotated[UpdateTile, Form()],
-    # article: Annotated[int, Form()],
-    # name: Annotated[str, Form()],
-    # size: Annotated[str, Form()],
-    # color_name: Annotated[str, Form()],
-    # producer_name: Annotated[str, Form()],
-    # box_weight: Annotated[Decimal | str, Form()],
-    # box_area: Annotated[Decimal | str, Form()],
-    # boxes_count: Annotated[int | str, Form()],
-    # category_name: Annotated[str, Form()],
-    # feature_name: Annotated[str, Form()],
-    # surface_name: Annotated[str, Form()],
 ):
-    # params = {
-    #     k: v
-    #     for k, v in locals().items()
-    #     if v not in (None, "") and k not in ("manager", "article")
-    # }
-    #
-    # params = strip_input_params(**params)
-    # params = api_input_to_params(**params)
-
     params = dto.custom_dump()
     log.debug("to update: %s", params)
     if params:
-        await update_tile(manager, dto.article, **params)
+        await update_tile(manager, **params)
     return RedirectResponse("/admin", status_code=303)

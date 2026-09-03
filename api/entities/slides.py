@@ -4,9 +4,9 @@ from typing import Annotated
 from fastapi import APIRouter, File, UploadFile
 from fastapi.responses import RedirectResponse
 
-from adapters.images import SlideImagesManager, ImageGenerator
-from services.slides import add_slides, delete_slides
 from adapters.deps import HttpClientDep
+from adapters.images import ImageGenerator, SlideImagesManager
+from services.slides import add_slides, delete_slides
 
 router = APIRouter(prefix="/admin/slides")
 log = logging.getLogger(__name__)

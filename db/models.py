@@ -1,11 +1,10 @@
 from decimal import Decimal
 
 from sqlalchemy import ForeignKey, ForeignKeyConstraint, UniqueConstraint
+from sqlalchemy.ext.associationproxy import AssociationProxy, association_proxy
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from sqlalchemy.ext.associationproxy import AssociationProxy, association_proxy
 from sqlalchemy.types import DECIMAL
-
 
 from core import conf
 
@@ -46,7 +45,7 @@ class Catalog(Base):
         secondary="collection_category",
         primaryjoin="Catalog.category_name == CollectionCategory.category_name",
         secondaryjoin="CollectionCategory.collection_id == Collection.id",
-        viewonly=True  # Только для чтения
+        viewonly=True,  # Только для чтения
     )
 
     __table_args__ = (
@@ -70,14 +69,12 @@ class Category(Base):
     )
 
 
-
 class TileImage(Base):
     __tablename__ = "tile_images"
     image_id: Mapped[int] = mapped_column(primary_key=True)
     tile_id: Mapped[int] = mapped_column(ForeignKey("catalog.id", ondelete="CASCADE"))
     image_path: Mapped[str] = mapped_column(default=conf.image_path)
     tile: Mapped["Catalog"] = relationship("Catalog", back_populates="images")
-
 
 
 class Collection(Base):
@@ -95,8 +92,9 @@ class Collection(Base):
     categories_proxy: AssociationProxy[list[str]] = association_proxy(
         "categories",
         "category_name",
-        creator=lambda cat_name: CollectionCategory(category_name=cat_name)
+        creator=lambda cat_name: CollectionCategory(category_name=cat_name),
     )
+
 
 class CollectionCategory(Base):
     __tablename__ = "collection_category"
@@ -139,7 +137,6 @@ class TileColor(Base):
     )
 
 
-
 class TileSurface(Base):
     __tablename__ = "tile_surface"
     name: Mapped[str] = mapped_column(primary_key=True)
@@ -168,15 +165,7 @@ class Box(Base):
     __table_args__ = (UniqueConstraint("weight", "area"),)
 
 
-
 class Admin(Base):
     __tablename__ = "admins"
     username: Mapped[str] = mapped_column(primary_key=True)
     password: Mapped[str]
-
-
-
-class Slug(Base):
-    __tablename__ = "slugs"
-    name: Mapped[str] = mapped_column(primary_key=True)
-    slug: Mapped[str] = mapped_column(primary_key=True)

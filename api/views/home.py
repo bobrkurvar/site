@@ -3,6 +3,7 @@ import logging
 from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
+
 from adapters.deps import DbManagerDep
 from adapters.images import SlideImagesManager
 from adapters.web import AuthCookies

@@ -1,15 +1,16 @@
 import logging
-from core import conf
-from domain import (
-    RefreshTokenDecodedError,
-    RefreshTokenMalformedError,
-    RefreshTokenExpireError,
-    AccessTokenExpireError,
-    AccessTokenDecodedError,
-    AccessTokenMalformedError
-)
+
 import jwt
 
+from core import conf
+from domain import (
+    AccessTokenDecodedError,
+    AccessTokenExpireError,
+    AccessTokenMalformedError,
+    RefreshTokenDecodedError,
+    RefreshTokenExpireError,
+    RefreshTokenMalformedError,
+)
 
 log = logging.getLogger(__name__)
 
@@ -35,7 +36,11 @@ def check_refresh_token(token: str):
         log.exception(f"ошибка декодирования refresh токена")
         raise RefreshTokenDecodedError from exc
 
-    if payload.get("type") != "refresh" or not payload.get("jti", None) or not payload.get("family_id", None):
+    if (
+        payload.get("type") != "refresh"
+        or not payload.get("jti", None)
+        or not payload.get("family_id", None)
+    ):
         raise RefreshTokenMalformedError
     return payload
 

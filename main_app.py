@@ -2,14 +2,13 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Response
 
+from adapters.db_provider import DbProvider
+from adapters.http_client import HttpClient
+from adapters.redis import RedisProvider
 from api import main_router
 from api.error_handlers import *
-from core.logger import setup_logging
-from adapters.redis import RedisProvider
-from adapters.http_client import HttpClient
-from adapters.db_provider import DbProvider
 from core import conf
-
+from core.logger import setup_logging
 
 setup_logging()
 
@@ -43,6 +42,7 @@ async def favicon_fallback():
     # Браузер успокоится, а в логах будет тишина
     return Response(status_code=204)
 
+
 @app.get("/{full_path:path}")
 async def catch_all(full_path: str):
     log.debug("ТАКОЙ URL НЕ ОБСЛУЖИВАЕТСЯ")
@@ -53,9 +53,7 @@ app.add_exception_handler(UserLoginNotFoundError, user_login_not_found_error_han
 app.add_exception_handler(NotFoundError, not_found_handler)
 app.add_exception_handler(AlreadyExistsError, already_exists_handler)
 app.add_exception_handler(ForeignKeyViolationError, foreign_key_handler)
-app.add_exception_handler(
-    UnauthorizedError, invalid_tokens_or_not_exists_handler
-)
+app.add_exception_handler(UnauthorizedError, invalid_tokens_or_not_exists_handler)
 app.add_exception_handler(CredentialsValidateError, invalid_credentials_error_handler)
 
 

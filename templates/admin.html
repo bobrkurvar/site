@@ -193,31 +193,38 @@
 
     <!-- Список товаров -->
     <section class="admin-section">
-        <h2 data-count="{{ tiles|length }} шт.">Список товаров - {{ tiles|length }} шт.</h2>
-        <div class="tile-list">
-            {% for tile in tiles %}
-            <div class="tile-item">
-                <div class="tile-info">
-                    <strong>{{ tile.article }}</strong>
-                    <strong>{{ tile.name }}</strong>
-                    <span>Размер: {{ tile.size.length }} {{ tile.size.width }} {{ tile.size.height }}</span>
+        <details>
+            <summary style="cursor: pointer; outline: none;">
+                <h2 data-count="{{ tiles|length }} шт." style="display: inline-block; margin: 0;">
+                    Список товаров — {{ tiles|length }} шт.
+                </h2>
+            </summary>
+
+            <div class="tile-list" style="margin-top: 20px;">
+                {% for tile in tiles %}
+                <div class="tile-item">
+                    <div class="tile-info">
+                        <strong>{{ tile.article }}</strong>
+                        <strong>{{ tile.name }}</strong>
+                        <span>Размер: {{ tile.size.length }} {{ tile.size.width }} {{ tile.size.height }}</span>
+                    </div>
+                    <div class="tile-actions">
+                        <form method="post" action="/admin/tiles/delete">
+                            <input type="hidden" name="token_key" value="{{ csrf_token }}">
+                            <input type="hidden" name="tile_id" value="{{ tile.article }}">
+                            <button type="submit" class="delete-btn"
+                                    onclick="return confirm('Удалить товар?')">
+                                Удалить
+                            </button>
+                        </form>
+                    </div>
                 </div>
-                <div class="tile-actions">
-                    <form method="post" action="/admin/tiles/delete">
-                        <input type="hidden" name="token_key" value="{{ csrf_token }}">
-                        <input type="hidden" name="tile_id" value="{{ tile.article }}">
-                        <button type="submit" class="delete-btn"
-                                onclick="return confirm('Удалить товар?')">
-                            Удалить
-                        </button>
-                    </form>
-                </div>
+                {% endfor %}
+                {% if not tiles %}
+                    <p class="no-items">Товаров нет</p>
+                {% endif %}
             </div>
-            {% endfor %}
-            {% if not tiles %}
-                <p class="no-items">Товаров нет</p>
-            {% endif %}
-        </div>
+        </details>
     </section>
 
     <!-- Доступные характеристики -->

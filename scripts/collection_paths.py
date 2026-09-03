@@ -4,9 +4,8 @@ from pathlib import Path
 
 from adapters.db import build_crud
 from adapters.db_provider import DbProvider
-from domain import Collection, Slug
 from core import conf
-
+from domain import Collection, Slug
 
 log = logging.getLogger(__name__)
 
@@ -68,11 +67,7 @@ async def main():
         if files_moved_successfully:
             new_db_path = str(base_dir / col_slug)
 
-            await manager.update(
-                Collection,
-                {"name": col.name},
-                image_path=new_db_path
-            )
+            await manager.update(Collection, {"name": col.name}, image_path=new_db_path)
             log.info(f"База обновлена для коллекции '{col.name}'")
 
 

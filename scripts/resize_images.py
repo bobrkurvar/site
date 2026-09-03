@@ -2,6 +2,7 @@ import logging
 from pathlib import Path
 
 from PIL import Image, ImageOps
+
 from image_worker import IMAGE_PRESETS  # твоя функция и пресеты
 
 log = logging.getLogger(__name__)
@@ -54,7 +55,7 @@ def save_image(image: Image.Image, path: Path, form: str, quality: int):
 
 
 def generate_image_variant(
-        input_path: Path | str, target: str, quality: int = 82, output_dir=None
+    input_path: Path | str, target: str, quality: int = 82, output_dir=None
 ):
     if target not in IMAGE_PRESETS:
         raise ValueError(f"Unknown image preset: {target}")
@@ -109,6 +110,8 @@ def generate_image_variant(
 
     log.info("Generated %s image: %s", target, output_path)
     return output_path
+
+
 # def generate_image_variant(
 #     input_path: Path | str, target: str, quality: int = 82, output_dir=None
 # ):

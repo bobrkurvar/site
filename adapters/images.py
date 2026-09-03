@@ -4,17 +4,17 @@ from binascii import Error
 from functools import wraps
 from pathlib import Path
 
+from adapters.file_layers import (
+    COLLECTION_IMAGE_LAYERS,
+    ORIGINAL_COLLECTION,
+    ORIGINAL_PRODUCT,
+    ORIGINAL_SLIDE,
+    PRODUCT_IMAGE_LAYERS,
+    SLIDE_IMAGE_LAYERS,
+)
 from adapters.files import FileManager
 from services.exceptions import ImageProcessingError
-from adapters.file_layers import (
-    PRODUCT_IMAGE_LAYERS,
-    COLLECTION_IMAGE_LAYERS,
-    SLIDE_IMAGE_LAYERS,
-    ORIGINAL_PRODUCT,
-    ORIGINAL_COLLECTION,
-    ORIGINAL_SLIDE,
-)
-from shared import PRODUCTS, DETAILS, SLIDES, COLLECTIONS
+from shared import COLLECTIONS, DETAILS, PRODUCTS, SLIDES
 
 # import aiofiles # type: ignore
 
@@ -126,18 +126,18 @@ class SlideImagesManager(FileManager):
         path_slides = self.resolve_path(name, SLIDES)
         return await self.get_directory(path_slides, base_path)
 
-
-
     async def get_all_slides_paths(self) -> tuple[str, ...]:
         path = self.resolve_path(layer=ORIGINAL_SLIDE)
         if not path.exists():
             return ()
 
-        return tuple([
-            await self.get_slides_image_path(file)
-            for file in path.iterdir()
-            if file.is_file()
-        ])
+        return tuple(
+            [
+                await self.get_slides_image_path(file)
+                for file in path.iterdir()
+                if file.is_file()
+            ]
+        )
 
     @property
     def slides_file_count(self) -> int:
