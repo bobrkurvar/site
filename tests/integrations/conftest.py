@@ -10,6 +10,7 @@ from db.mapper import registry
 from adapters.db_provider import DbProvider
 from adapters.images import CollectionImagesManager, ProductImagesManager
 from adapters.query_service import CatalogQueryService
+from adapters.redis import RedisService, RedisProvider
 from core import conf
 from domain import *
 from tests.fakes import FakeImageGenerator
@@ -169,3 +170,9 @@ async def products_env_with_handbooks(products_env) -> ProductsEnv:
 @pytest.fixture
 def query_service(db_provider):
     return CatalogQueryService(db_provider.session_factory)
+
+
+@pytest.fixture
+async def redis():
+    redis_provider = await RedisProvider.create(conf.redis_host)
+    return RedisService(redis=redis_provider.client)

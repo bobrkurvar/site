@@ -41,7 +41,7 @@ def test_create_refresh_token():
 
 
 @pytest.mark.asyncio
-async def test_get_new_tokens_from_refresh_success(redis, uow):
+async def test_get_new_tokens_from_refresh_success(redis, uow_fix):
     data = {"role": "user", "sub": "1"}
     family_id, jti = create_token_family_id(), create_token_jti()
     refresh_token = create_refresh_token(data, family_id=family_id, jti=jti)
@@ -49,14 +49,14 @@ async def test_get_new_tokens_from_refresh_success(redis, uow):
     await redis.set(f"rtfam:{family_id}", value=1, ttl=86400 * 7)
     await redis.set(f"rt:{jti}", value=-1, ttl=86400 * 7)
     tokens = await create_tokens_from_refresh(
-        refresh_token=refresh_token, redis=redis, uow=uow
+        refresh_token=refresh_token, redis=redis, uow=uow_fix
     )
     access_token, refresh_token = tokens["access_token"], tokens["refresh_token"]
     assert access_token and refresh_token
 
 
 @pytest.mark.asyncio
-async def test_get_new_tokens_from_refresh_fail_when_family_not_exists(redis, uow):
+async def test_get_new_tokens_from_refresh_fail_when_family_not_exists(redis, uow_fix):
     # Если в кэше нет записи о семействе, значит токен выдан не мной или запись закончилась
     # что означает что и refresh токен должен закончиться
     data = {"role": "user", "sub": "1"}
@@ -64,7 +64,7 @@ async def test_get_new_tokens_from_refresh_fail_when_family_not_exists(redis, uo
     refresh_token = create_refresh_token(data, family_id=family_id, jti=jti)
     with pytest.raises(RefreshTokenFamilyExpiredError):
         await create_tokens_from_refresh(
-            refresh_token=refresh_token, redis=redis, uow=uow
+            refresh_token=refresh_token, redis=redis, uow=uow_fix
         )
 
 

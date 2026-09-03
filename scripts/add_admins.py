@@ -1,7 +1,8 @@
 import asyncio
 import logging
 
-from adapters.db import build_crud
+from adapters.uow import UnitOfWork
+from db.mapper import registry
 from adapters.db_provider import DbProvider
 from core import conf
 from domain import Admin, AlreadyExistsError, NotFoundError
@@ -15,21 +16,22 @@ async def add_admins():
     try:
         initial_admins = conf.initial_admins_list
         log.debug("ADMINS: %s", initial_admins)
-        manager = build_crud(db_provider.session_factory)
-        try:
-            await manager.delete(Admin)
-        except NotFoundError:
-            pass
-        for admin in initial_admins:
-            log.debug("ADMIN: %s", admin)
-            password = get_hash(admin["password"])
-            log.debug("HASH PASWORD: %s,", password)
+        async with UnitOfWork(provider=db_provider, registry=registry) as uow:
             try:
-                await manager.create(
-                    Admin(username=admin["username"], password=password)
-                )
-            except AlreadyExistsError:
-                log.warning("user already exists")
+                async with uow.savepoint():
+                    await uow.db.delete(Admin)
+            except NotFoundError:
+                pass
+            for admin in initial_admins:
+                log.debug("ADMIN: %s", admin)
+                password = get_hash(admin["password"])
+                log.debug("HASH PASWORD: %s,", password)
+                try:
+                    await uow.db.create(
+                        Admin(username=admin["username"], password=password)
+                    )
+                except AlreadyExistsError:
+                    log.warning("user already exists")
     finally:
         await db_provider.close()
 
