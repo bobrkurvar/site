@@ -13,7 +13,8 @@ LOCAL_COMPOSE = "docker-compose.local.yml"
 PROJECT = PROD_PROJECT
 COMPOSE = PROD_COMPOSE
 
-def set_project(is_prod=False, is_test = False, is_local=False):
+
+def set_project(is_prod=False, is_test=False, is_local=False):
     global PROJECT, COMPOSE
     if is_prod:
         PROJECT = PROD_PROJECT
@@ -49,12 +50,15 @@ def compose_run(*args):
     ]
 
 
-def logs():
+def logs(test=False):
     services = ["app", "postgres", "nginx"]
     outs = "|".join(services)
     out = input(f"[{outs}]: ").strip()
     if out in services:
-        return run(compose_run("logs", "-f", out))
+        if test:
+            return run(compose_run("logs", out))
+        else:
+            return run(compose_run("logs", "-f", out))
 
 
 def test():
@@ -71,7 +75,7 @@ def test():
             compose_run(
                 "up",
                 "--build",
-                "-d",
+                "--wait",
                 "postgres",
                 "app",
                 "nginx",
@@ -86,7 +90,7 @@ def test():
         if tests in {"int", "all"}:
             run_or_exit(compose_run("build", "int_tests"))
             int_code = run(compose_run("run", "--rm", "int_tests"))
-        logs()
+        logs(test=True)
     finally:
         run(compose_run("down", "-v", "--remove-orphans"))
         return e2e_code or int_code
@@ -140,6 +144,7 @@ def local():
     if scripts.strip().lower() == "y":
         scripts_run()
     return run(compose_run("up", "--build", "--force-recreate"))
+
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:

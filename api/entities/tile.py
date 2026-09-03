@@ -1,14 +1,15 @@
 import logging
 from typing import Annotated
 
-from fastapi import APIRouter, File, Form, UploadFile
+from fastapi import APIRouter, File, Form, UploadFile, Depends
 from fastapi.responses import RedirectResponse
 
 from adapters.deps import DbManagerDep, HttpClientDep
 from adapters.images import ProductImagesManager, ImageGenerator
 from domain import *
 from services.tile import add_tile, delete_tile, update_tile
-from api.utils import api_input_to_params, strip_input_params
+
+# from api.utils import api_input_to_params, strip_input_params
 from api.schemas import CreateTile, UpdateTile
 
 router = APIRouter(prefix="/admin/tiles")
@@ -38,19 +39,19 @@ async def admin_create_tile(
     manager: DbManagerDep,
     http_client: HttpClientDep,
 ):
-    #bytes_images = [await img.read() for img in images] if images else []
+    # bytes_images = [await img.read() for img in images] if images else []
     bytes_main_image = await main_image.read()
     bytes_images = [bytes_main_image] + [await img.read() for img in images]
     tile = Tile(
-        size = TileSize(length=dto.length, width=dto.width, height=dto.height),
-        color = TileColor(color_name=dto.color_name, feature_name=dto.feature_name),
+        size=TileSize(length=dto.length, width=dto.width, height=dto.height),
+        color=TileColor(color_name=dto.color_name, feature_name=dto.feature_name),
         name=dto.name,
         box=Box(area=dto.box_area, weight=dto.box_weight),
         producer=Producer(name=dto.producer_name),
         category=Category(name=dto.category_name),
         surface=TileSurface(name=dto.surface_name),
         boxes_count=dto.boxes_count,
-        images=bytes_images
+        images=bytes_images,
     )
     await add_tile(
         tile,
@@ -84,7 +85,7 @@ async def admin_update_tile(
     # }
     #
     # params = strip_input_params(**params)
-    #params = api_input_to_params(**params)
+    # params = api_input_to_params(**params)
 
     params = dto.custom_dump()
     log.debug("to update: %s", params)
