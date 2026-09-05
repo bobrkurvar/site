@@ -1,5 +1,5 @@
 import sys
-from .cli import resolve, TREE, select
+from devops.cli import resolve, TREE, select
 
 def main():
     path = tuple(sys.argv[1:])

@@ -1,8 +1,7 @@
 from .perform import Compose
-from .commands import Run, Down, Up, Logs
-from .utils import failed_services
+from .commands import Run
+from .utils import execute_with_diagnostics
 
-import json
 
 prod_env = Compose(
     "docker-compose.yml",
@@ -19,35 +18,10 @@ local_env = Compose(
     project="local_site",
 )
 
-# log_service = (
-#     "app",
-#     "postgres",
-#     "nginx",
-#     "image_service",
-# )
-
-
 def integration_tests():
-    test_env.execute(Down(volumes=True))
-    try:
-        return test_env.execute(Run("int_tests", build=True), check=True)
-    except:
-        failed = failed_services(test_env)
-        if failed:
-            test_env.execute(Logs(*failed))
-        raise
-    finally:
-        test_env.execute(Down(volumes=True))
-
+    with test_env.down_before_and_after() as compose:
+        return execute_with_diagnostics(compose, Run("int_tests", build=True))
 
 def unit_tests():
-    test_env.execute(Down(volumes=True))
-    try:
-        return test_env.execute(Run("unit_tests", build=True), check=True)
-    except:
-        failed = failed_services(test_env)
-        if failed:
-            test_env.execute(Logs(*failed))
-        raise
-    finally:
-        test_env.execute(Down(volumes=True))
+    with test_env.down_before_and_after() as compose:
+        return execute_with_diagnostics(compose, Run("unit_tests", build=True))

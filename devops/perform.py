@@ -1,5 +1,8 @@
 import subprocess
 
+from contextlib import contextmanager
+from .commands import Down
+
 
 class Compose:
     def __init__(self, compose_file: str, *, project: str | None = None):
@@ -35,3 +38,12 @@ class Compose:
                 result.check_returncode()
 
         return result
+
+
+    @contextmanager
+    def down_before_and_after(self):
+        self.execute(Down(volumes=True))
+        try:
+            yield self
+        finally:
+            self.execute(Down(volumes=True))
