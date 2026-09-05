@@ -1,8 +1,7 @@
 from collections.abc import Callable
-from .scenarios import integration_tests
+from .scenarios import integration_tests, unit_tests
 
 import questionary
-
 
 
 Command = Callable[[], object]
@@ -12,6 +11,7 @@ Tree = dict[str, "Tree | Command"]
 TREE: Tree = {
     "tests": {
         "integration": integration_tests,
+        "unit": unit_tests,
     },
 }
 
@@ -21,15 +21,11 @@ def resolve(tree: Tree, path: tuple[str, ...]) -> Tree | Command:
 
     for name in path:
         if not isinstance(node, dict):
-            raise ValueError(
-                f"{' '.join(path)}: command does not accept subcommands"
-            )
+            raise ValueError(f"{' '.join(path)}: command does not accept subcommands")
 
         if name not in node:
             available = ", ".join(node)
-            raise ValueError(
-                f"Unknown command {name!r}. Available: {available}"
-            )
+            raise ValueError(f"Unknown command {name!r}. Available: {available}")
 
         node = node[name]
 

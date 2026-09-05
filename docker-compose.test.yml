@@ -1,5 +1,15 @@
 services:
+  unit_tests:
+    image: mysite/unit_test
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      target: unit_tests
+    env_file:
+      - .env
+
   e2e_tests:
+    image: mysite/e2e_test
     build:
       context: .
       dockerfile: ./Dockerfile
@@ -8,7 +18,6 @@ services:
       - .env
     environment:
       API_HOST: nginx
-      DB_NAME: ${TEST_DB_NAME}
       DB_HOST: postgres
       DB_USER: postgres
     depends_on:
@@ -22,6 +31,7 @@ services:
         condition: service_started
 
   int_tests:
+    image: mysite/int_test
     build:
       context: .
       dockerfile: ./Dockerfile
@@ -29,7 +39,6 @@ services:
     env_file:
       - .env
     environment:
-      DB_NAME: ${TEST_DB_NAME}
       DB_HOST: postgres
     depends_on:
       migrate:
@@ -40,6 +49,7 @@ services:
         condition: service_healthy
 
   app:
+    image: mysite/app
     build:
       context: .
       dockerfile: ./Dockerfile
@@ -48,7 +58,6 @@ services:
       - .env
     environment:
       IS_TEST: True
-      DB_NAME: ${TEST_DB_NAME}
       DB_HOST: postgres
       DB_USER: postgres
       API_HOST: image_service
@@ -66,6 +75,7 @@ services:
       start_period: 1s
 
   image_service:
+    image: mysite/image_service
     build:
       context: .
       dockerfile: ./Dockerfile
@@ -80,17 +90,18 @@ services:
     env_file:
       - .env
     environment:
-      POSTGRES_DB: ${TEST_DB_NAME}
+      POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d ${TEST_DB_NAME}"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ${DB_NAME}"]
       interval: 2s
       timeout: 3s
       retries: 5
       start_period: 5s
 
   migrate:
+    image: mysite/migrate
     build:
       context: .
       dockerfile: ./Dockerfile
@@ -98,7 +109,6 @@ services:
     env_file:
       - .env
     environment:
-      DB_NAME: ${TEST_DB_NAME}
       DB_HOST: postgres
       DB_USER: postgres
     depends_on:
@@ -106,6 +116,7 @@ services:
         condition: service_healthy
 
   runner:
+    image: mysite/runner
     build:
       context: .
       dockerfile: ./Dockerfile
@@ -114,7 +125,6 @@ services:
       - .env
     environment:
       DB_HOST: postgres
-      DB_NAME: ${TEST_DB_NAME}
       DB_USER: postgres
     depends_on:
       postgres:

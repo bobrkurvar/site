@@ -22,7 +22,7 @@ log = logging.getLogger(__name__)
 
 @pytest.fixture(scope="session")
 async def db_provider():
-    provider = DbProvider(conf.test_db_url)
+    provider = DbProvider(conf.db_url)
     yield provider
     await provider.close()
 

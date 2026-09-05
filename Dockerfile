@@ -77,6 +77,17 @@ COPY pytest.ini ./pytest.ini
 COPY shared.py .
 CMD ["pytest", "tests/integrations"]
 
+FROM base AS unit_tests
+COPY core ./core
+COPY tests ./tests
+COPY services ./services
+COPY domain ./domain
+COPY adapters adapters
+COPY infra ./infra
+COPY pytest.ini ./pytest.ini
+COPY shared.py .
+CMD ["pytest", "tests/unit"]
+
 
 FROM mcr.microsoft.com/playwright/python:v1.58.0-noble AS e2e_tests
 WORKDIR /pysite

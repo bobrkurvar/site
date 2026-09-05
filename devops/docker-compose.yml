@@ -1,14 +1,15 @@
 services:
   devops:
+    image: mysite/devops
     build:
-      context: ..
-      dockerfile: devops/Dockerfile
+      context: ./devops
+      dockerfile: Dockerfile
 
     stdin_open: true
     tty: true
 
-    working_dir: ${PROJECT_ROOT}
-
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ${PROJECT_ROOT}:${PROJECT_ROOT}
+      - .:/workspace
+
+    working_dir: /workspace

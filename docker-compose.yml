@@ -1,5 +1,6 @@
 services:
   app:
+    image: mysite/app
     build:
       context: .
       dockerfile: ./Dockerfile
@@ -22,6 +23,7 @@ services:
     restart: unless-stopped
 
   image_service:
+    image: mysite/image_service
     build:
       context: .
       dockerfile: ./Dockerfile
@@ -51,6 +53,7 @@ services:
 
   migrate:
     profiles: ["tools"]
+    image: mysite/migrate
     build:
       context: .
       dockerfile: ./Dockerfile
@@ -68,6 +71,7 @@ services:
 
   runner:
     profiles: ["tools"]
+    image: mysite/runner
     build:
       context: .
       dockerfile: ./Dockerfile

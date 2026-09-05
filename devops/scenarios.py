@@ -40,3 +40,14 @@ def integration_tests():
         test_env.execute(Down(volumes=True))
 
 
+def unit_tests():
+    test_env.execute(Down(volumes=True))
+    try:
+        return test_env.execute(Run("unit_tests", build=True), check=True)
+    except:
+        failed = failed_services(test_env)
+        if failed:
+            test_env.execute(Logs(*failed))
+        raise
+    finally:
+        test_env.execute(Down(volumes=True))
