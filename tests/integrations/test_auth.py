@@ -74,7 +74,8 @@ async def test_get_tokens_from_login_wrong_username(uow_fix, redis):
 
 @pytest.mark.asyncio
 async def test_get_new_tokens_from_refresh_fail_when_token_already_used(uow_fix, redis):
-    data = {"user": "user", "id": 1}
+    username, password = "username", "password"
+    data = {"user": "user", "sub": username}
     family_id, jti1, jti2 = (
         create_token_family_id(),
         create_token_jti(),
@@ -89,13 +90,14 @@ async def test_get_new_tokens_from_refresh_fail_when_token_already_used(uow_fix,
     # а этот валидный
     await redis.set(f"rt:{jti2}", value=-1, ttl=86400 * 7)
     async with uow_fix as uow:
-        with pytest.raises(RefreshTokenReusedCompromisedError):
-            await create_tokens_from_refresh(
-                refresh_token=refresh_token1, redis=redis, uow=uow
-            )
-        with pytest.raises(RefreshTokenFamilyExpiredError):
-            await create_tokens_from_refresh(
-                refresh_token=refresh_token2, redis=redis, uow=uow
-            )
+        await uow.db.create(Admin(username=username, password=password))
+    with pytest.raises(RefreshTokenReusedCompromisedError):
+        await create_tokens_from_refresh(
+            refresh_token=refresh_token1, redis=redis, uow=uow
+        )
+    with pytest.raises(RefreshTokenFamilyExpiredError):
+        await create_tokens_from_refresh(
+            refresh_token=refresh_token2, redis=redis, uow=uow
+        )
     assert not await redis.exists(f"rtfam:{family_id}")
     # даже другой токен из этого же семейства инвалидируется

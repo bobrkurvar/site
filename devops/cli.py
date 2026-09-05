@@ -16,20 +16,22 @@ TREE: Tree = {
 }
 
 
-def resolve(tree: Tree, path: tuple[str, ...]) -> Tree | Command:
+def resolve(tree: Tree, path: tuple[str, ...]):
     node = tree
 
-    for name in path:
+    for index, name in enumerate(path):
         if not isinstance(node, dict):
-            raise ValueError(f"{' '.join(path)}: command does not accept subcommands")
+            return node, path[index:]
 
         if name not in node:
             available = ", ".join(node)
-            raise ValueError(f"Unknown command {name!r}. Available: {available}")
+            raise ValueError(
+                f"Unknown command {name!r}. Available: {available}"
+            )
 
         node = node[name]
 
-    return node
+    return node, ()
 
 
 # def select(node: Tree) -> Command:

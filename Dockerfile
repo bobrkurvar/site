@@ -75,7 +75,9 @@ COPY domain ./domain
 COPY adapters adapters
 COPY pytest.ini ./pytest.ini
 COPY shared.py .
-CMD ["pytest", "tests/integrations"]
+WORKDIR /pysite/tests/integrations
+ENV PYTHONPATH=/pysite
+ENTRYPOINT ["pytest"]
 
 FROM base AS unit_tests
 COPY core ./core
@@ -86,7 +88,9 @@ COPY adapters adapters
 COPY infra ./infra
 COPY pytest.ini ./pytest.ini
 COPY shared.py .
-CMD ["pytest", "tests/unit"]
+WORKDIR /pysite/tests/unit
+ENV PYTHONPATH=/pysite
+ENTRYPOINT ["pytest"]
 
 
 FROM mcr.microsoft.com/playwright/python:v1.58.0-noble AS e2e_tests

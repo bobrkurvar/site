@@ -40,6 +40,7 @@ services:
       - .env
     environment:
       DB_HOST: postgres
+      REDIS_HOST: redis
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -47,6 +48,8 @@ services:
         condition: service_completed_successfully
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_started
 
   app:
     image: mysite/app

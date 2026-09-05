@@ -35,7 +35,8 @@ async def test_create_tile_success_when_all_handbooks_exists(
     )
     log.debug("tile: %s", record)
     # проверка всех справочников
-    await assert_handbooks_count(env.uow.db, domain_handbooks_models_for_products, 1)
+    async with env.uow as uow:
+        await assert_handbooks_count(uow.db, domain_handbooks_models_for_products, 1)
 
 
 @pytest.mark.asyncio
@@ -53,15 +54,15 @@ async def test_create_tile_success_when_handbooks_not_exists(
     assert record is not None
     tile_id = record.id
     # проверка всех справочников
-    await assert_handbooks_count(env.uow.db, domain_handbooks_models_for_products, 1)
-    async with env.uow:
-        images = await env.uow.db.read(Image, tile_id=tile_id)
+    async with env.uow as uow:
+        await assert_handbooks_count(uow.db, domain_handbooks_models_for_products, 1)
+        images = await uow.db.read(Image, tile_id=tile_id)
     assert len(images) == 3
     assert product_files_count(env.file_manager) == 9
 
 
 @pytest.mark.asyncio
-async def test_create_tile_failure(
+async def test_create_tile_failure_by_images_generator(
     products_env, domain_handbooks_models_for_products, tile
 ):
     env = products_env
@@ -78,8 +79,9 @@ async def test_create_tile_failure(
             images_generator=FakeGenerator(),
         )
 
-    domain_handbooks_models_for_products += (Tile, Image)
-    await assert_handbooks_count(env.uow.db, domain_handbooks_models_for_products, 0)
+    domain_handbooks_models_for_products |= {Tile, Image}
+    async with env.uow as uow:
+        await assert_handbooks_count(uow.db, domain_handbooks_models_for_products, 0)
     assert product_files_count(env.file_manager) == 0
 
 
@@ -101,8 +103,6 @@ async def test_update_tile_success_when_new_attributes_in_handbooks(
 
     new_filters = update_filters()
     await update_tile(uow=uow, article=article, **new_filters)
-
-    new_tile = await uow.db.read_one(Tile, id=article)
     expected_box, expected_size, color = (
         new_filters.pop("box"),
         new_filters.pop("size"),
@@ -112,16 +112,18 @@ async def test_update_tile_success_when_new_attributes_in_handbooks(
         color["color_name"],
         color["feature_name"],
     )
-    box = await uow.db.read_one(Box, id=new_tile.box.id)
-    size = await uow.db.read_one(TileSize, id=new_tile.size.id)
+    async with env.uow as uow:
+        new_tile = await uow.db.read_one(Tile, id=article, loaded=["box", "size"])
+        # box = await uow.db.read_one(Box, id=new_tile.box.id)
+        # size = await uow.db.read_one(TileSize, id=new_tile.size.id)
+        # Проверка всех справочников, поля в справочниках не должны изменятся, а должны появится новые
+        await assert_handbooks_count(uow.db, domain_handbooks_models_for_products, 2)
 
-    # 1 проверка всех новых полей с помощью функций, в которых вынесена логика assert
-    assert_size(size, expected_size)
-    assert_box(box, expected_box)
+    # проверка всех новых полей с помощью функций, в которых вынесена логика assert
+    assert_size(new_tile.size, expected_size)
+    assert_box(new_tile.box, expected_box)
     assert_tile_fields(new_tile, new_filters)
 
-    # 2. Проверка всех справочников, поля в справочниках не должны изменятся, а должны появится новые
-    await assert_handbooks_count(uow.db, domain_handbooks_models_for_products, 2)
 
 
 @pytest.mark.asyncio
@@ -145,6 +147,7 @@ async def test_update_tile_success_when_composite_half_composite_color_name_box_
         new_tile = await uow.db.read_one(Tile, id=article)
         box = await uow.db.read_one(Box, id=new_tile.box_id)
         size = await uow.db.read_one(TileSize, id=new_tile.size_id)
+        await assert_handbooks_count(uow.db, domain_handbooks_models_for_products, 2)
     # половины композитного ключа берутся из той же записи продукта
     expected_box, expected_size = dict(
         **new_filters.pop("box"), area=old_box_area
@@ -157,10 +160,7 @@ async def test_update_tile_success_when_composite_half_composite_color_name_box_
 
     assert_size(size, expected_size)
     assert_box(box, expected_box)
-    # 1 проверка всех новых полей
     assert_tile_fields(new_tile, new_filters)
-    # 2. Проверка всех справочников, поля в справочниках не должны изменятся, а должны появится новые
-    await assert_handbooks_count(env.uow.db, domain_handbooks_models_for_products, 2)
 
 
 @pytest.mark.asyncio
@@ -194,6 +194,7 @@ async def test_update_tile_success_when_input_composite_length_area_feature(
         new_tile = await uow.db.read_one(Tile, id=article)
         box = await uow.db.read_one(Box, id=new_tile.box_id)
         size = await uow.db.read_one(TileSize, id=new_tile.size_id)
+        await assert_handbooks_count(uow.db, domain_handbooks_models_for_products, 2)
     # половины композитного ключа берутся из той же записи продукта
     expected_box, expected_size = dict(
         **new_filters.pop("box"), weight=old_box_weight
@@ -206,10 +207,7 @@ async def test_update_tile_success_when_input_composite_length_area_feature(
 
     assert_size(size, expected_size)
     assert_box(box, expected_box)
-    # 1 проверка всех новых полей
     assert_tile_fields(new_tile, new_filters)
-    # 2. Проверка всех справочников, поля в справочниках не должны изменятся, а должны появится новые
-    await assert_handbooks_count(env.uow.db, domain_handbooks_models_for_products, 2)
 
 
 @pytest.mark.asyncio
@@ -229,12 +227,12 @@ async def test_delete_tile_by_article(
     for i in records:
         assert i.id == article
 
-    async with env.uow:
-        new_records = await env.uow.db.read(Tile, id=article)
+    async with env.uow as uow:
+        new_records = await uow.db.read(Tile, id=article)
         assert not new_records
         # При удалении продукта записи в связанных справочника не должны удаляться
         await assert_handbooks_count(
-            env.uow.db, domain_handbooks_models_for_products, 1
+            uow.db, domain_handbooks_models_for_products, 1
         )
         # изображение должно каскадно удалиться
         images = await env.uow.db.read(Image)

@@ -45,9 +45,8 @@ async def uow_fix(request, db_provider):
                     tile_colors,
                     collections,
                     tile_surface,
-                    slugs,
-                    collection_category
-                    
+                    collection_category,
+                    admins
                 RESTART IDENTITY CASCADE;
             """
             )
@@ -100,13 +99,13 @@ def collections_env(uow_fix) -> CollectionsEnv:
 @pytest.fixture
 async def collections_env_with_categories(collections_env):
     async def wrapper(categories_cnt: int = 1):
-        manager, file_manager = collections_env
         categories = []
         for i in range(categories_cnt):
             category = Category(name=f"category{i}")
             log.debug("category_name: %s", category.name)
             categories.append(category)
-        await manager.create(seq_data=categories)
+        async with collections_env.uow as uow:
+            await uow.db.create(seq_data=categories)
         return collections_env, [category.name for category in categories]
 
     return wrapper

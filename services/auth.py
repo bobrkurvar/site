@@ -76,9 +76,10 @@ async def create_tokens_from_refresh(uow, refresh_token: str | None, redis):
     if refresh_token is None:
         raise RefreshTokenMissingError
     payload = check_refresh_token(refresh_token)
-    user_id = int(payload["sub"])
+    #user_id = int(payload["sub"])
+    username = payload["sub"]
     async with uow:
-        await uow.db.read_one(Admin, id=user_id, with_raise=True)
+        await uow.db.read_one(Admin, username=username, with_raise=True)
     jti, family_id = await consume_refresh_token(payload, redis)
     tokens_data = {
         k: v for k, v in payload.items() if k not in {"jti", "family_id", "exp", "type"}

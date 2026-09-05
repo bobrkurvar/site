@@ -41,9 +41,9 @@ class Compose:
 
 
     @contextmanager
-    def down_before_and_after(self):
-        self.execute(Down(volumes=True))
+    def down_before_and_after(self, volumes=True):
+        self.execute(Down(volumes=volumes))
         try:
             yield self
         finally:
-            self.execute(Down(volumes=True))
+            self.execute(Down(volumes=volumes))

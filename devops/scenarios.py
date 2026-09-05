@@ -18,10 +18,10 @@ local_env = Compose(
     project="local_site",
 )
 
-def integration_tests():
+def integration_tests(*args):
     with test_env.down_before_and_after() as compose:
-        return execute_with_diagnostics(compose, Run("int_tests", build=True))
+        return execute_with_diagnostics(compose, Run("int_tests", build=True, command=args))
 
-def unit_tests():
+def unit_tests(*args):
     with test_env.down_before_and_after() as compose:
-        return execute_with_diagnostics(compose, Run("unit_tests", build=True))
+        return execute_with_diagnostics(compose, Run("unit_tests", build=True, command=args))
