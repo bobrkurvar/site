@@ -67,7 +67,8 @@ class Box:
 
 class Category:
 
-    def __init__(self, name: str):
+    def __init__(self, id: int, name: str):
+        self.id = id
         self.name = name
 
     def __str__(self):
@@ -88,13 +89,13 @@ class Tile:
         name: str,
         boxes_count: int,
         producer: Producer,
-        category: Category,
+        category_id: int,
+        category: Category | None = None,
         size: TileSize | None = None,
         size_id: int | None = None,
         box: Box | None = None,
         box_id: int | None = None,
         images: list["Image"] = None,
-        # images_bytes: list[bytes] = None,
         article: int | None = None,
         surface: TileSurface | None = None,
     ):
@@ -109,6 +110,7 @@ class Tile:
         self.box = box
         # на случай если не подгружены все данные о box
         self.box_id = box.id if box else box_id
+        self.category_id = category.id if category else category_id
         self.boxes_count = boxes_count
         # self._images_bytes = images_bytes
 
@@ -263,6 +265,6 @@ class Collection:
 
 
 class CollectionCategory:
-    def __init__(self, collection_id: int, category_name: str):
+    def __init__(self, collection_id: int, category_id: int):
         self.collection_id = collection_id
-        self.category_name = category_name
+        self.category_id = category_id

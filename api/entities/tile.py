@@ -4,10 +4,9 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, File, Form, UploadFile
 from fastapi.responses import RedirectResponse
 
-from adapters.deps import DbManagerDep, HttpClientDep
+from adapters.deps import UowDep, HttpClientDep
 from adapters.images import ImageGenerator, ProductImagesManager
 
-# from api.utils import api_input_to_params, strip_input_params
 from api.schemas import CreateTile, UpdateTile
 from api.utils import create_tile_form
 from domain import *
@@ -20,7 +19,7 @@ log = logging.getLogger(__name__)
 
 @router.post("/delete")
 async def delete_tile_by_id_or_all(
-    manager: DbManagerDep,
+    uow: UowDep,
     tile_id: Annotated[int, Form()] = None,
 ):
     params = {}
@@ -28,7 +27,7 @@ async def delete_tile_by_id_or_all(
     if tile_id is not None:
         params["id"] = tile_id
     log.debug("params: %s", params)
-    await delete_tile(manager, ProductImagesManager(), **params)
+    await delete_tile(uow=uow, file_manager=ProductImagesManager(), **params)
     return RedirectResponse("/admin", status_code=303)
 
 
@@ -37,7 +36,7 @@ async def admin_create_tile(
     dto: Annotated[CreateTile, Depends(create_tile_form)],
     main_image: Annotated[UploadFile, File()],
     images: Annotated[list[UploadFile], File()],
-    manager: DbManagerDep,
+    uow: UowDep,
     http_client: HttpClientDep,
 ):
     bytes_main_image = await main_image.read()
@@ -56,7 +55,7 @@ async def admin_create_tile(
     )
     await add_tile(
         tile,
-        manager=manager,
+        uow=uow,
         images_generator=ImageGenerator(http_client),
         file_manager=ProductImagesManager(),
     )
@@ -65,11 +64,11 @@ async def admin_create_tile(
 
 @router.post("/update")
 async def admin_update_tile(
-    manager: DbManagerDep,
+    uow: UowDep,
     dto: Annotated[UpdateTile, Form()],
 ):
     params = dto.custom_dump()
     log.debug("to update: %s", params)
     if params:
-        await update_tile(manager, **params)
+        await update_tile(uow, **params)
     return RedirectResponse("/admin", status_code=303)

@@ -25,13 +25,13 @@ async def test_get_tokens_from_login_success(uow_fix, redis):
     verify = lambda pas, hash: True
     async with uow_fix as uow:
         await uow.db.create(Admin(username=username, password=password))
-        tokens = await create_tokens_from_login(
-            manager=uow.db,
-            redis=redis,
-            username=username,
-            password=password,
-            verify=verify,
-        )
+    tokens = await create_tokens_from_login(
+        uow=uow,
+        redis=redis,
+        username=username,
+        password=password,
+        verify=verify,
+    )
     access_token, refresh_token = tokens["access_token"], tokens["refresh_token"]
     log.debug("refresh_token: %s", refresh_token)
     assert refresh_token and access_token
@@ -44,14 +44,14 @@ async def test_get_tokens_from_login_wrong_password(uow_fix, redis):
     wrong_password = "wrong_password"
     async with uow_fix as uow:
         await uow.db.create(Admin(username=username, password=password))
-        with pytest.raises(CredentialsValidateError):
-            await create_tokens_from_login(
-                manager=uow.db,
-                redis=redis,
-                username=username,
-                password=wrong_password,
-                verify=verify,
-            )
+    with pytest.raises(CredentialsValidateError):
+        await create_tokens_from_login(
+            uow=uow,
+            redis=redis,
+            username=username,
+            password=wrong_password,
+            verify=verify,
+        )
 
 
 @pytest.mark.asyncio
@@ -62,14 +62,14 @@ async def test_get_tokens_from_login_wrong_username(uow_fix, redis):
     wrong_username = "wrong_username"
     async with uow_fix as uow:
         await uow.db.create(Admin(username=username, password=password))
-        with pytest.raises(UserLoginNotFoundError):
-            await create_tokens_from_login(
-                manager=uow.db,
-                redis=redis,
-                username=wrong_username,
-                password=password,
-                verify=verify,
-            )
+    with pytest.raises(UserLoginNotFoundError):
+        await create_tokens_from_login(
+            uow=uow,
+            redis=redis,
+            username=wrong_username,
+            password=password,
+            verify=verify,
+        )
 
 
 @pytest.mark.asyncio

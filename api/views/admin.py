@@ -6,7 +6,7 @@ from fastapi import APIRouter, Form, Request
 from fastapi.templating import Jinja2Templates
 from starlette.responses import RedirectResponse
 
-from adapters.deps import DbManagerDep, RedisDep
+from adapters.deps import UowDep, RedisDep
 from adapters.web import RequireForAdminDep, authCookiesDep
 from domain import *
 from infra.security import verify
@@ -21,44 +21,45 @@ log = logging.getLogger(__name__)
 @router.get("")
 async def admin_page(
     request: Request,
-    manager: DbManagerDep,
+    uow: UowDep,
     refreshed_tokens: RequireForAdminDep,
     cookies: authCookiesDep,
 ):
-    tiles = manager.read(Tile, loaded=["images", "size", "box"])
-    tile_sizes = manager.read(TileSize)
-    colors_names = manager.read(TileColor, distinct="color_name")
-    colors_features = manager.read(TileColor, distinct="feature_name")
-    surfaces = manager.read(TileSurface)
-    boxes_weights = manager.read(Box, distinct="weight")
-    boxes_areas = manager.read(Box, distinct="area")
-    producers = manager.read(Producer)
-    boxes_count = manager.read(Tile, distinct="boxes_count")
-    categories = manager.read(Category)
-    tasks = [
-        tiles,
-        tile_sizes,
-        colors_names,
-        colors_features,
-        surfaces,
-        boxes_weights,
-        boxes_areas,
-        producers,
-        boxes_count,
-        categories,
-    ]
-    (
-        tiles,
-        tile_sizes,
-        colors_names,
-        colors_features,
-        surfaces,
-        boxes_weights,
-        boxes_areas,
-        producers,
-        boxes_count,
-        categories,
-    ) = await asyncio.gather(*tasks)
+    async with uow:
+        tiles = uow.db.read(Tile, loaded=["images", "size", "box"])
+        tile_sizes = uow.db.read(TileSize)
+        colors_names = uow.db.read(TileColor, distinct="color_name")
+        colors_features = uow.db.read(TileColor, distinct="feature_name")
+        surfaces = uow.db.read(TileSurface)
+        boxes_weights = uow.db.read(Box, distinct="weight")
+        boxes_areas = uow.db.read(Box, distinct="area")
+        producers = uow.db.read(Producer)
+        boxes_count = uow.db.read(Tile, distinct="boxes_count")
+        categories = uow.db.read(Category)
+        tasks = [
+            tiles,
+            tile_sizes,
+            colors_names,
+            colors_features,
+            surfaces,
+            boxes_weights,
+            boxes_areas,
+            producers,
+            boxes_count,
+            categories,
+        ]
+        (
+            tiles,
+            tile_sizes,
+            colors_names,
+            colors_features,
+            surfaces,
+            boxes_weights,
+            boxes_areas,
+            producers,
+            boxes_count,
+            categories,
+        ) = await asyncio.gather(*tasks)
 
     response = templates.TemplateResponse(
         "admin.html",
@@ -84,7 +85,7 @@ async def admin_page(
 
 @router.post("/login/submit")
 async def admin_login_submit(
-    manager: DbManagerDep,
+    uow: UowDep,
     username: Annotated[str, Form()],
     password: Annotated[str, Form()],
     cookies: authCookiesDep,
@@ -92,7 +93,7 @@ async def admin_login_submit(
 ):
     response = RedirectResponse("/admin", status_code=303)
     tokens = await create_tokens_from_login(
-        manager=manager,
+        uow=uow,
         redis=redis,
         username=username,
         password=password,

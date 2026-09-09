@@ -4,10 +4,10 @@ from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 
-from adapters.deps import DbManagerDep
+from adapters.deps import UowDep
 from adapters.images import SlideImagesManager
 from adapters.web import AuthCookies
-from services.views import get_categories_for_items
+from domain import Category
 
 router = APIRouter()
 templates = Jinja2Templates("templates")
@@ -16,10 +16,11 @@ log = logging.getLogger(__name__)
 
 
 @router.get("/")
-async def get_main_page(request: Request, manager: DbManagerDep):
+async def get_main_page(request: Request, uow: UowDep):
     slide_manager = SlideImagesManager()
     slide_images = await slide_manager.get_all_slides_paths()
-    categories = await get_categories_for_items(manager)
+    async with uow:
+        categories = await uow.db.read(Category)
     return templates.TemplateResponse(
         "home.html",
         {

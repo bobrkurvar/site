@@ -25,7 +25,7 @@ class Catalog(Base):
         ForeignKey("tile_surface.name"), nullable=True
     )
     producer_name: Mapped[str] = mapped_column(ForeignKey("producers.name"))
-    category_name: Mapped[str] = mapped_column(ForeignKey("categories.name"))
+    category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"))
     boxes_count: Mapped[int]
 
     color: Mapped["TileColor"] = relationship("TileColor", back_populates="tiles")
@@ -58,7 +58,8 @@ class Catalog(Base):
 
 class Category(Base):
     __tablename__ = "categories"
-    name: Mapped[str] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(unique=True, nullable=False)
     tiles: Mapped[list["Catalog"]] = relationship("Catalog", back_populates="category")
 
     collections: Mapped[list["CollectionCategory"]] = relationship(
@@ -101,8 +102,9 @@ class CollectionCategory(Base):
     collection_id: Mapped[int] = mapped_column(
         ForeignKey("collections.id", ondelete="CASCADE"), primary_key=True
     )
-    category_name: Mapped[str] = mapped_column(
-        ForeignKey("categories.name", ondelete="CASCADE"), primary_key=True
+    category_id: Mapped[int] = mapped_column(
+        ForeignKey("categories.id", ondelete="CASCADE"),
+        primary_key=True,
     )
 
     category: Mapped["Category"] = relationship(

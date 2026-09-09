@@ -29,6 +29,8 @@ services:
         condition: service_completed_successfully
       redis:
         condition: service_started
+      nginx:
+        condition: service_started
 
   int_tests:
     image: mysite/int_test

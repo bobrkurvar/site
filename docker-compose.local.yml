@@ -14,9 +14,14 @@ services:
     networks:
       - internal
     depends_on:
-      - image_service
-      - redis
-      - postgres
+      runner:
+        condition: service_completed_successfully
+      migrate:
+        condition: service_completed_successfully
+      image_service:
+        condition: service_started
+      redis:
+        condition: service_started
     volumes:
       - ./static/images:/pysite/static/images # bind mount docker compose down -v не удалит этот том
     restart: unless-stopped
@@ -46,11 +51,16 @@ services:
       - internal
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./db/init/backup.sql:/docker-entrypoint-initdb.d/01-backup.sql:ro # при пустой базе выполнит всё что в этой папке
+      - ./db/init/backup_final.sql:/docker-entrypoint-initdb.d/01-backup.sql:ro # при пустой базе выполнит всё что в этой папке
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U postgres -d ${DB_NAME}"]
+      interval: 2s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
 
   migrate:
-    profiles: ["tools"]
     build:
       context: .
       dockerfile: ./Dockerfile
@@ -62,12 +72,14 @@ services:
       DB_USER: postgres
     networks:
       - internal
+    volumes:
+      - ./migrations/versions:/pysite/migrations/versions
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     restart: "no"
 
   runner:
-    profiles: ["tools"]
     build:
       context: .
       dockerfile: ./Dockerfile
@@ -80,7 +92,10 @@ services:
     networks:
       - internal
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     restart: "no"
 
   resize-images-script:

@@ -15,7 +15,7 @@ def map_catalog_to_orm(d: domain.Tile) -> models.Catalog:
         box_id=d.box.id,
         surface_name=d.surface.name,
         producer_name=d.producer.name,
-        category_name=d.category.name,
+        category_id=d.category.id,
         boxes_count=d.boxes_count,
         images=orm_images,
     )
@@ -55,7 +55,7 @@ def map_collection_category_to_orm(
     d: domain.CollectionCategory,
 ) -> models.CollectionCategory:
     return models.CollectionCategory(
-        collection_id=d.collection_id, category_name=d.category_name
+        collection_id=d.collection_id, category_id=d.category_id
     )
 
 
@@ -63,7 +63,7 @@ def map_collection_category_to_domain(
     o: models.CollectionCategory,
 ) -> domain.CollectionCategory:
     return domain.CollectionCategory(
-        collection_id=o.collection_id, category_name=o.category_name
+        collection_id=o.collection_id, category_id=o.category_id
     )
 
 
@@ -115,11 +115,14 @@ def map_catalog_to_domain(o: models.Catalog) -> domain.Tile:
             area=o.box.area,
         )
 
+    category_obj = None
+    if "category" not in insp.unloaded:
+        category_obj = domain.Category(id=o.category_id, name=o.name)
+
     color = domain.TileColor(color_name=o.color_name, feature_name=o.feature_name)
 
     surface = domain.TileSurface(name=o.surface_name) if o.surface_name else None
     producer = domain.Producer(name=o.producer_name)
-    category = domain.Category(name=o.category_name)
 
     return domain.Tile(
         article=o.id,
@@ -128,7 +131,8 @@ def map_catalog_to_domain(o: models.Catalog) -> domain.Tile:
         color=color,
         surface=surface,
         producer=producer,
-        category=category,
+        category=category_obj,
+        category_id=o.category_id,
         size=size_obj,  # Либо готовый объект, либо None
         size_id=o.size_id,  # ID есть всегда, берем прямо из колонки плитки!
         box=box_obj,
@@ -138,7 +142,7 @@ def map_catalog_to_domain(o: models.Catalog) -> domain.Tile:
 
 
 def map_category_to_domain(o: models.Category) -> domain.Category:
-    return domain.Category(name=o.name)
+    return domain.Category(name=o.name, id=o.id)
 
 
 def map_tile_image_to_domain(o: models.TileImage) -> domain.Image:
@@ -151,7 +155,7 @@ def map_collection_to_domain(o: models.Collection) -> domain.Collection:
     insp = inspect(o)
     categories = None
     if "categories" not in insp.unloaded:
-        categories = [domain.Category(name=link.category_name) for link in o.categories]
+        categories = [domain.Category(name=link.category_name, id=link.id) for link in o.categories]
 
     return domain.Collection(
         collection_id=o.id,

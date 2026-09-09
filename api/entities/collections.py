@@ -4,7 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, File, Form, UploadFile
 from fastapi.responses import RedirectResponse
 
-from adapters.deps import DbManagerDep, HttpClientDep
+from adapters.deps import UowDep, HttpClientDep
 from adapters.images import CollectionImagesManager, ImageGenerator
 from domain import Category, Collection, Image
 from services.collections import add_collection, delete_collection
@@ -15,7 +15,7 @@ log = logging.getLogger(__name__)
 
 @router.post("/create")
 async def admin_create_collection(
-    manager: DbManagerDep,
+    uow: UowDep,
     http_client: HttpClientDep,
     collection_name: Annotated[str, Form()],
     category_name: Annotated[str, Form()],
@@ -28,8 +28,8 @@ async def admin_create_collection(
         image=Image(image_bytes=image),
     )
     await add_collection(
-        collection,
-        manager,
+        collection=collection,
+        uow=uow,
         images_generator=ImageGenerator(http_client),
         file_manager=CollectionImagesManager(),
     )
@@ -38,13 +38,13 @@ async def admin_create_collection(
 
 @router.post("/delete")
 async def admin_delete_collections(
-    manager: DbManagerDep,
+    uow: UowDep,
     collection_name: Annotated[str, Form()],
 ):
     collection_name = collection_name.strip()
     await delete_collection(
         collection_name=collection_name,
-        manager=manager,
+        uow=uow,
         file_manager=CollectionImagesManager(),
     )
     return RedirectResponse("/admin", status_code=303)

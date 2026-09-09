@@ -42,7 +42,13 @@
 
             <div class="dropdown-menu">
                 {% for category in categories %}
-                    <a href="/catalog/{{ category.slug }}/products">{{ category.name }}</a>
+                    <a href="{{ url_for(
+                        'get_catalog_tiles_page',
+                        category_slug=category.slug,
+                        category_id=category.id
+                    ) }}">
+                        {{ category.name }}
+                    </a>
                 {% endfor %}
             </div>
         </div>

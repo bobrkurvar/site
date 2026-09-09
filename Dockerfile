@@ -30,7 +30,8 @@ FROM base AS migrate
 COPY alembic.ini .
 COPY migrations migrations
 COPY db db
-CMD ["alembic", "upgrade", "head"]
+ENTRYPOINT ["alembic"]
+CMD ["upgrade", "head"]
 
 FROM base AS runner
 COPY infra/security.py infra/security.py
@@ -106,5 +107,7 @@ COPY pytest.ini pytest.ini
 COPY adapters adapters
 COPY db db
 COPY shared.py shared.py
-CMD ["pytest", "tests/e2e"]
+WORKDIR /pysite/tests/e2e
+ENV PYTHONPATH=/pysite
+ENTRYPOINT ["pytest"]
 

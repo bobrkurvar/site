@@ -103,10 +103,11 @@ async def check_user(manager, verify, username: str, password: str):
 
 
 async def create_tokens_from_login(
-    manager, redis, username: str, password: str, verify, **data
+    uow, redis, username: str, password: str, verify, **data
 ):
     log.debug("check user")
-    await check_user(manager, verify, username, password)
+    async with uow:
+        await check_user(uow.db, verify, username, password)
     log.debug("user approve")
     data.update(username=username)
     jti, family_id = create_token_jti(), create_token_family_id()
