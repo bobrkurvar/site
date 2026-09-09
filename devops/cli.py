@@ -1,5 +1,5 @@
 from collections.abc import Callable
-from .scenarios import integration_tests, unit_tests
+from .scenarios import integration_tests, unit_tests, all_tests, e2e_tests, local_deploy, create_migration, migrate
 
 import questionary
 
@@ -10,50 +10,34 @@ Tree = dict[str, "Tree | Command"]
 
 TREE: Tree = {
     "tests": {
-        "integration": integration_tests,
         "unit": unit_tests,
+        "integration": integration_tests,
+        "e2e": e2e_tests,
+        "all": all_tests,
     },
+    "local": local_deploy,
+    "create_migration": create_migration,
+    "migrate": migrate
 }
 
 
-def resolve(tree: Tree, path: tuple[str, ...]) -> Tree | Command:
+def resolve(tree: Tree, path: tuple[str, ...]):
     node = tree
 
-    for name in path:
+    for index, name in enumerate(path):
         if not isinstance(node, dict):
-            raise ValueError(f"{' '.join(path)}: command does not accept subcommands")
+            return node, path[index:]
 
         if name not in node:
             available = ", ".join(node)
-            raise ValueError(f"Unknown command {name!r}. Available: {available}")
+            raise ValueError(
+                f"Unknown command {name!r}. Available: {available}"
+            )
 
         node = node[name]
 
-    return node
+    return node, ()
 
-
-# def select(node: Tree) -> Command:
-#     while isinstance(node, dict):
-#         names = tuple(node)
-#
-#         for i, name in enumerate(names, 1):
-#             print(f"{i}. {name}")
-#
-#         choice = input("> ").strip()
-#
-#         if choice.isdigit():
-#             index = int(choice) - 1
-#
-#             if 0 <= index < len(names):
-#                 choice = names[index]
-#
-#         if choice not in node:
-#             print("Unknown command")
-#             continue
-#
-#         node = node[choice]
-#
-#     return node
 
 
 def select(node: Tree) -> Command:

@@ -44,7 +44,6 @@ def products_env(uow_fix) -> ProductsEnv:
         root="tests/images",
         storage=FakeStorage(fs),
     )
-
     return ProductsEnv(
         uow=uow_fix,
         file_manager=file_manager,

@@ -5,7 +5,7 @@ from typing import Annotated
 from fastapi import APIRouter, Form
 from fastapi.responses import RedirectResponse
 
-from adapters.deps import DbManagerDep
+from adapters.deps import UowDep
 from domain import TileSize
 
 router = APIRouter(prefix="/admin/tiles/sizes")
@@ -14,13 +14,14 @@ log = logging.getLogger(__name__)
 
 @router.post("/delete")
 async def admin_delete_tile_size(
-    manager: DbManagerDep,
+    uow: UowDep,
     height: Annotated[Decimal, Form(gt=0)] = None,
     width: Annotated[Decimal, Form(gt=0)] = None,
     length: Annotated[Decimal, Form(gt=0)] = None,
 ):
-    if height is not None and width is not None and length is not None:
-        await manager.delete(TileSize, height=height, width=width, length=length)
-    else:
-        await manager.delete(TileSize)
+    async with uow:
+        if height is not None and width is not None and length is not None:
+            await uow.db.delete(TileSize, height=height, width=width, length=length)
+        else:
+            await uow.db.delete(TileSize)
     return RedirectResponse("/admin", status_code=303)

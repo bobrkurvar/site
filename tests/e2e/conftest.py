@@ -6,14 +6,15 @@ import pytest
 from playwright.sync_api import sync_playwright
 from sqlalchemy import text
 
-from adapters.db import build_crud
+from adapters.uow import UnitOfWork
+from db.mapper import registry
 from adapters.db_provider import DbProvider
 from adapters.images import CollectionImagesManager, ProductImagesManager
 from core import conf
 from core.logger import setup_test_logging
 from domain import Category
 from tests.fakes.fs_fakes import FakeImageGenerator
-from tests.helpers import add_collection_helper, add_tile_helper
+from tests.helpers import add_collection_helper
 
 setup_test_logging()
 log = logging.getLogger(__name__)
@@ -75,15 +76,16 @@ def run_in_shared_loop(coro):
 
 
 @pytest.fixture(scope="session")
-def db_provider(shared_background_loop):
-    provider = DbProvider(conf.test_db_url)
+async def db_provider():
+    provider = DbProvider(conf.db_url)
     yield provider
-    run_in_shared_loop(provider.close())
+    await provider.close()
 
 
 @pytest.fixture(autouse=True)
 def clean_database_after_test(db_provider):
-    yield
+    uow = UnitOfWork(registry=registry, provider=db_provider)
+    yield uow
 
     async def do_truncate():
         async with db_provider.engine.begin() as conn:
@@ -93,19 +95,16 @@ def clean_database_after_test(db_provider):
                     TRUNCATE
                         tile_images, categories, producers, tile_sizes, 
                         boxes, catalog, tile_colors, collections, 
-                        tile_surface, slugs, collection_category
+                        tile_surface, collection_category
                     RESTART IDENTITY CASCADE;
                     """
                 )
             )
+        await db_provider.close()
 
     run_in_shared_loop(do_truncate())
 
 
-@pytest.fixture
-def crud(request, db_provider):
-    manager = build_crud(db_provider.session_factory)
-    yield manager
 
 
 @pytest.fixture()
@@ -118,34 +117,3 @@ def add_categories(crud):
 
     return add_categories
 
-
-@pytest.fixture()
-def add_tile(crud):
-    def add_tile(name: str):
-        tile = add_tile_helper(
-            name=name,
-            test_uow_class=False,
-            images_generator=FakeImageGenerator(),
-            manager=crud,
-            file_manager=ProductImagesManager(),
-        )
-        return run_in_shared_loop(tile)
-
-    return add_tile
-
-
-@pytest.fixture()
-def add_collection(crud, add_categories):
-    def add_collection(name: str, *categories):
-        categories = ("category1",) + categories
-        add_categories(*categories)
-        tile = add_collection_helper(
-            collection_name=name,
-            test_uow_class=False,
-            images_generator=FakeImageGenerator(),
-            manager=crud,
-            file_manager=CollectionImagesManager(),
-        )
-        return run_in_shared_loop(tile)
-
-    return add_collection

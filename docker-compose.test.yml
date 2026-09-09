@@ -29,6 +29,8 @@ services:
         condition: service_completed_successfully
       redis:
         condition: service_started
+      nginx:
+        condition: service_started
 
   int_tests:
     image: mysite/int_test
@@ -40,6 +42,7 @@ services:
       - .env
     environment:
       DB_HOST: postgres
+      REDIS_HOST: redis
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -47,6 +50,8 @@ services:
         condition: service_completed_successfully
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_started
 
   app:
     image: mysite/app

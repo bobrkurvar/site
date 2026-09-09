@@ -18,7 +18,7 @@ log = logging.getLogger(__name__)
 async def test_create_collection_and_category_relation_when_collection_not_exists(
     collections_env_with_categories,
 ):
-    env, categories = collections_env_with_categories
+    env, categories = await collections_env_with_categories()
     category_name = categories[0]
     collection = await add_collection_helper(
         uow=env.uow,

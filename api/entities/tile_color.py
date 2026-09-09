@@ -4,7 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, Form
 from fastapi.responses import RedirectResponse
 
-from adapters.deps import DbManagerDep
+from adapters.deps import UowDep
 from domain import TileColor
 
 router = APIRouter(prefix="/admin/tiles/colors")
@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 
 @router.post("/delete")
 async def admin_delete_tile_color(
-    manager: DbManagerDep,
+    uow: UowDep,
     color_name: Annotated[str, Form()] = None,
     feature_name: Annotated[str, Form()] = None,
 ):
@@ -24,5 +24,6 @@ async def admin_delete_tile_color(
     if feature_name:
         log.debug("feature_name: %s", feature_name)
         filters["feature_name"] = feature_name
-    await manager.delete(TileColor, **filters)
+    async with uow:
+        await uow.db.delete(TileColor, **filters)
     return RedirectResponse("/admin", status_code=303)

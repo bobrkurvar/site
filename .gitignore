@@ -3,5 +3,6 @@
 .idea/
 static/images/
 .env
-
+dist
+db/init
 

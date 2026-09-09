@@ -3,7 +3,7 @@ from typing import Annotated
 
 from fastapi import Depends, Request, Response
 
-from adapters.deps import RedisDep
+from adapters.deps import RedisDep, UowDep
 from core import conf
 from infra.auth import check_access_token
 from services.auth import create_tokens_from_refresh
@@ -54,7 +54,7 @@ class AuthCookies:
 authCookiesDep = Annotated[AuthCookies, Depends()]
 
 
-async def require_admin(request: Request, cookies: authCookiesDep, redis: RedisDep):
+async def require_admin(request: Request, cookies: authCookiesDep, redis: RedisDep, uow: UowDep):
     access_token = cookies.get_access_token(request)
     if access_token:
         log.debug("access token exists")
@@ -62,7 +62,7 @@ async def require_admin(request: Request, cookies: authCookiesDep, redis: RedisD
         log.debug("access token approve")
     else:
         refresh_token = cookies.get_refresh_token(request)
-        return await create_tokens_from_refresh(refresh_token, redis)
+        return await create_tokens_from_refresh(uow=uow, refresh_token=refresh_token, redis=redis)
 
 
 RequireForAdminDep = Annotated[dict | None, Depends(require_admin)]

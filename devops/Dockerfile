@@ -1,19 +1,8 @@
-FROM docker:29-cli
+FROM python:3.14 AS build
+WORKDIR /src
+RUN pip install --no-cache-dir pyinstaller questionary
+COPY . .
+RUN pyinstaller --clean --onefile --name devops ./__main__.py
 
-RUN apk add --no-cache \
-    python3 \
-    py3-pip \
-    py3-virtualenv
-
-RUN python3 -m venv /opt/venv
-
-ENV PATH="/opt/venv/bin:$PATH"
-ENV PYTHONPATH=/app
-
-RUN pip install --no-cache-dir questionary
-
-WORKDIR /app
-
-COPY . ./devops
-
-ENTRYPOINT ["python", "-m", "devops"]
+FROM scratch
+COPY --from=build /src/dist/devops /devops

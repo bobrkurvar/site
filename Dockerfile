@@ -30,7 +30,8 @@ FROM base AS migrate
 COPY alembic.ini .
 COPY migrations migrations
 COPY db db
-CMD ["alembic", "upgrade", "head"]
+ENTRYPOINT ["alembic"]
+CMD ["upgrade", "head"]
 
 FROM base AS runner
 COPY infra/security.py infra/security.py
@@ -75,7 +76,9 @@ COPY domain ./domain
 COPY adapters adapters
 COPY pytest.ini ./pytest.ini
 COPY shared.py .
-CMD ["pytest", "tests/integrations"]
+WORKDIR /pysite/tests/integrations
+ENV PYTHONPATH=/pysite
+ENTRYPOINT ["pytest"]
 
 FROM base AS unit_tests
 COPY core ./core
@@ -86,7 +89,9 @@ COPY adapters adapters
 COPY infra ./infra
 COPY pytest.ini ./pytest.ini
 COPY shared.py .
-CMD ["pytest", "tests/unit"]
+WORKDIR /pysite/tests/unit
+ENV PYTHONPATH=/pysite
+ENTRYPOINT ["pytest"]
 
 
 FROM mcr.microsoft.com/playwright/python:v1.58.0-noble AS e2e_tests
@@ -102,5 +107,7 @@ COPY pytest.ini pytest.ini
 COPY adapters adapters
 COPY db db
 COPY shared.py shared.py
-CMD ["pytest", "tests/e2e"]
+WORKDIR /pysite/tests/e2e
+ENV PYTHONPATH=/pysite
+ENTRYPOINT ["pytest"]
 

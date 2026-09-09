@@ -7,11 +7,7 @@ from adapters.deps import UowDep, QueryServiceDep
 from adapters.images import CollectionImagesManager, ProductImagesManager
 from core.config import COLLECTIONS_PER_PAGE
 from domain import Collection, CollectionCategory, DomainFilter, Category
-from services.views import (
-    build_tile_filters,
-    fetch_collections_items,
-    get_categories_for_items,
-)
+from services.views import build_tile_filters, fetch_collections_items
 import asyncio
 
 router = APIRouter(tags=["presentation"], prefix="/catalog")
@@ -54,7 +50,7 @@ async def get_collections_page(
             CollectionCategory, category_name=category_name
         )
         total_pages = max((total_count + limit - 1) // limit, 1)
-        categories = await get_categories_for_items(uow.db)
+        categories = await uow.db.read(Category)
 
     category_path = f"{category_slug}/{category_id}"
     return templates.TemplateResponse(
@@ -130,7 +126,7 @@ async def get_catalog_tiles_page(
             tile.set_images(resolved_paths)
 
         total_pages = max((total_count + limit - 1) // limit, 1)
-        categories = await get_categories_for_items(uow.db)
+        categories = await uow.db.read(Category)
 
     return templates.TemplateResponse(
         "catalog.html",

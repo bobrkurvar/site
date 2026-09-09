@@ -1,8 +1,7 @@
 from .perform import Compose
-from .commands import Run, Down, Up, Logs
-from .utils import failed_services
+from .commands import Run, Up
+from .utils import execute_with_diagnostics
 
-import json
 
 prod_env = Compose(
     "docker-compose.yml",
@@ -19,35 +18,50 @@ local_env = Compose(
     project="local_site",
 )
 
-# log_service = (
-#     "app",
-#     "postgres",
-#     "nginx",
-#     "image_service",
-# )
+
+def integration_tests(*args):
+    with test_env.down_before_and_after() as compose:
+        return execute_with_diagnostics(compose, Run("int_tests", build=True, command=args))
 
 
-def integration_tests():
-    test_env.execute(Down(volumes=True))
-    try:
-        return test_env.execute(Run("int_tests", build=True), check=True)
-    except:
-        failed = failed_services(test_env)
-        if failed:
-            test_env.execute(Logs(*failed))
-        raise
-    finally:
-        test_env.execute(Down(volumes=True))
+def unit_tests(*args):
+    with test_env.down_before_and_after() as compose:
+        return execute_with_diagnostics(compose, Run("unit_tests", build=True, command=args))
 
 
-def unit_tests():
-    test_env.execute(Down(volumes=True))
-    try:
-        return test_env.execute(Run("unit_tests", build=True), check=True)
-    except:
-        failed = failed_services(test_env)
-        if failed:
-            test_env.execute(Logs(*failed))
-        raise
-    finally:
-        test_env.execute(Down(volumes=True))
+def e2e_tests(*args):
+    with test_env.down_before_and_after() as compose:
+        return execute_with_diagnostics(compose, Run("e2e_tests", build=True, command=args))
+
+
+def all_tests():
+    with test_env.down_before_and_after() as compose:
+        execute_with_diagnostics(
+            compose,
+            Run("unit_tests", build=True),
+            Run("int_tests", build=True),
+            Run("e2e_tests", build=True),
+        )
+
+
+def local_deploy():
+    with local_env.down_before_and_after() as compose:
+        execute_with_diagnostics(compose, Up(build=True))
+
+
+def create_migration(name: str | None = None):
+    if name is None:
+        name = input("Введите имя для миграции: ")
+
+    return execute_with_diagnostics(
+        local_env,
+        Run(
+            "migrate",
+            build=True,
+            command=("revision", "--autogenerate", "-m", name),
+        )
+    )
+
+
+def migrate():
+    return execute_with_diagnostics(local_env,Run("migrate"))
