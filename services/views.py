@@ -1,7 +1,15 @@
 import logging
 from decimal import Decimal
 
-from domain import Operation, Tile, Size, Operations, Collection, Category, CollectionCategory
+from domain import (
+    Operation,
+    Tile,
+    Size,
+    Operations,
+    Collection,
+    Category,
+    CollectionCategory,
+)
 
 log = logging.getLogger(__name__)
 
@@ -11,39 +19,43 @@ async def build_tile_filters(
     producer: str | None,
     size: str | None,
     color: str | None,
-    category: str | None = None,
 ) -> dict:
     filters = {}
     if producer:
         filters["producer_name"] = producer
-    if category:
-        filters["category_name"] = category
     if color:
         filters["color_name"] = color
     if size:
         length, width, height = (Decimal(i) for i in size.split())
-        tile_size_id = await manager.read_one(
-            Size, length=length, width=width, height=height
-        )
-        if tile_size_id:
-            filters["size_id"] = tile_size_id.id
+        size = await manager.read_one(Size, length=length, width=width, height=height)
+        filters["size_id"] = size.id
 
     return filters
 
 
-async def fetch_items(manager, limit, offset, **filters):
-    total_items = await manager.read(Tile, loaded=["images", "size", "box"], **filters)
-    items = await manager.read(
-        Tile, loaded=["images", "size", "box"], limit=limit, offset=offset, **filters
+async def fetch_items(manager, limit, offset, category_id: int, **filters):
+    total_count = await manager.count(
+        Tile,
+        category_id=category_id,
+        **filters,
     )
-    filters.pop("category_name", None)
-    total_count = len(total_items)
+
+    items = await manager.read(
+        Tile,
+        loaded=["images", "size", "box"],
+        category_id=category_id,
+        limit=limit,
+        offset=offset,
+        **filters,
+    )
+
     return items, total_count
 
 
 async def fetch_collections_items(
     manager,
     collection_name: str,
+    category_id: int,
     limit: int,
     offset: int,
     **filters,
@@ -60,10 +72,11 @@ async def fetch_collections_items(
         loaded=["images", "size", "box"],
         limit=limit,
         offset=offset,
+        category_id=category_id,
         **filters,
     )
 
-    total_count = await manager.count(Tile, **filters)
+    total_count = await manager.count(Tile, category_id=category_id, **filters)
 
     return items, total_count
 
@@ -103,9 +116,10 @@ async def get_catalog(
     limit: int,
     offset: int,
     collection_id: int | None = None,
-    producer: str | None = None,
-    size: str | None = None,
-    color: str | None = None,
+    **filters,
+    # producer: str | None = None,
+    # size: str | None = None,
+    # color: str | None = None,
 ):
     context = await read_catalog_context(
         db,
@@ -119,13 +133,13 @@ async def get_catalog(
         category = context
         collection = None
 
-    filters = await build_tile_filters(
-        db,
-        producer=producer,
-        size=size,
-        color=color,
-        category=category.name,
-    )
+    # filters = await build_tile_filters(
+    #     db,
+    #     producer=producer,
+    #     size=size,
+    #     color=color,
+    #     category=category.name,
+    # )
 
     if collection is not None:
         tiles, total_count = await fetch_collections_items(
@@ -137,9 +151,10 @@ async def get_catalog(
         )
     else:
         tiles, total_count = await fetch_items(
-            db,
-            limit,
-            offset,
+            db=db,
+            limit=limit,
+            offset=offset,
+            category_id=category_id,
             **filters,
         )
 
