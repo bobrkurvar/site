@@ -6,7 +6,7 @@ from fastapi import APIRouter, Form
 from fastapi.responses import RedirectResponse
 
 from adapters.deps import UowDep
-from domain import TileSize
+from domain import Size
 
 router = APIRouter(prefix="/admin/tiles/sizes")
 log = logging.getLogger(__name__)
@@ -21,7 +21,7 @@ async def admin_delete_tile_size(
 ):
     async with uow:
         if height is not None and width is not None and length is not None:
-            await uow.db.delete(TileSize, height=height, width=width, length=length)
+            await uow.db.delete(Size, height=height, width=width, length=length)
         else:
-            await uow.db.delete(TileSize)
+            await uow.db.delete(Size)
     return RedirectResponse("/admin", status_code=303)

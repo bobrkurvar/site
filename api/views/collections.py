@@ -7,7 +7,7 @@ from adapters.deps import UowDep, QueryServiceDep
 from adapters.images import CollectionImagesManager, ProductImagesManager
 from core.config import COLLECTIONS_PER_PAGE
 from domain import Collection, CollectionCategory, DomainFilter, Category
-from services.views import build_tile_filters, fetch_collections_items
+from services.views import build_tile_filters, fetch_collections_items, read_catalog_context
 import asyncio
 
 router = APIRouter(tags=["presentation"], prefix="/catalog")
@@ -68,7 +68,7 @@ async def get_collections_page(
 
 
 @router.get(
-    "/{category_slug}/{category_id:int}/collections/{collection_slug}/{collection_id:int}"
+    "/{category_slug}/{category_id:int}/{collection_slug}/{collection_id:int}"
 )
 async def get_catalog_tiles_page(
     request: Request,
@@ -86,25 +86,26 @@ async def get_catalog_tiles_page(
     limit = COLLECTIONS_PER_PAGE
     offset = (page - 1) * limit
     async with uow:
-        category = await uow.db.read_one(
-            Category,
-            id=category_id,
-            with_raise=True,
-        )
-
-        collection = await uow.db.read_one(
-            Collection,
-            id=collection_id,
-            with_raise=True,
-        )
-
-        # Проверяем, что эта коллекция действительно открыта внутри этой категории
-        await uow.db.read_one(
-            CollectionCategory,
-            collection_id=collection_id,
-            category_name=category.name,
-            with_raise=True,
-        )
+        # category = await uow.db.read_one(
+        #     Category,
+        #     id=category_id,
+        #     with_raise=True,
+        # )
+        #
+        # collection = await uow.db.read_one(
+        #     Collection,
+        #     id=collection_id,
+        #     with_raise=True,
+        # )
+        #
+        # # Проверяем, что эта коллекция действительно открыта внутри этой категории
+        # await uow.db.read_one(
+        #     CollectionCategory,
+        #     collection_id=collection_id,
+        #     category_name=category.name,
+        #     with_raise=True,
+        # )
+        category, collection = await read_catalog_context(db=uow.db, category_id=category_id, collection_id=collection_id)
 
         filters = await build_tile_filters(uow.db, producer, size, color, category.name)
 

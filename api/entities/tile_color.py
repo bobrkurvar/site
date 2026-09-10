@@ -5,7 +5,7 @@ from fastapi import APIRouter, Form
 from fastapi.responses import RedirectResponse
 
 from adapters.deps import UowDep
-from domain import TileColor
+from domain import Color
 
 router = APIRouter(prefix="/admin/tiles/colors")
 log = logging.getLogger(__name__)
@@ -25,5 +25,5 @@ async def admin_delete_tile_color(
         log.debug("feature_name: %s", feature_name)
         filters["feature_name"] = feature_name
     async with uow:
-        await uow.db.delete(TileColor, **filters)
+        await uow.db.delete(Color, **filters)
     return RedirectResponse("/admin", status_code=303)

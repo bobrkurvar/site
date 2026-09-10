@@ -7,6 +7,7 @@ from infra.security import calculate_file_hash
 log = logging.getLogger(__name__)
 
 
+
 async def add_items(domain_obj, manager, **filters):
     item = await manager.read_one(type(domain_obj), **filters)
     if not item:
@@ -36,8 +37,8 @@ async def add_tile(
             color_name=tile.color.color_name,
             feature_name=tile.color.feature_name,
         )
-        await add_items(tile.producer, uow.db, name=tile.producer.name)
-        await add_items(tile.category, uow.db, name=tile.category.name)
+        tile.producer = await add_items(tile.producer, uow.db, name=tile.producer.name)
+        tile.category = await add_items(tile.category, uow.db, name=tile.category.name)
         tile.box = await add_items(
             tile.box, uow.db, weight=tile.box.weight, area=tile.box.area
         )
@@ -85,16 +86,16 @@ def dict_for_update_model(tile_field: str, value):
 
 
 def model_to_update_values(model, domain_obj, **values):
-    if model is TileSize:
+    if model is Size:
         res = {"size_id": domain_obj.id}
     elif model is Box:
         res = {"box_id": domain_obj.id}
-    elif model is TileSurface:
+    elif model is Surface:
         res = {"surface_name": domain_obj.name}
     elif model is Producer:
         res = {"producer_name": domain_obj.name}
     elif model is Category:
-        res = {"category_name": domain_obj.name}
+        res = {"category_id": domain_obj.id}
     else:
         res = values
     return res
@@ -107,22 +108,32 @@ def set_values_from_db(values: dict, key: str, value_from_db):
 
 def extract_composite_fields(tile: Tile) -> dict:
     return {
-        "id": tile.article,
-        "name": tile.name,
-        "boxes_count": tile.boxes_count,
-        "category_name": tile.category_name,
-        "producer_name": tile.producer_name,
-        "surface_name": tile.surface_name,
         "size_length": tile.size.length if tile.size else None,
         "size_width": tile.size.width if tile.size else None,
         "size_height": tile.size.height if tile.size else None,
-        "size_id": tile.size_id,
         "box_area": tile.box.area if tile.box else None,
         "box_weight": tile.box.weight if tile.box else None,
-        "box_id": tile.box_id,
         "color_name": tile.color_name,
         "feature_name": tile.feature_name,
     }
+# def extract_composite_fields(tile: Tile) -> dict:
+#     return {
+#         "id": tile.article,
+#         "name": tile.name,
+#         "boxes_count": tile.boxes_count,
+#         "category_name": tile.category_name,
+#         "producer_name": tile.producer_name,
+#         "surface_name": tile.surface_name,
+#         "size_length": tile.size.length if tile.size else None,
+#         "size_width": tile.size.width if tile.size else None,
+#         "size_height": tile.size.height if tile.size else None,
+#         "size_id": tile.size_id,
+#         "box_area": tile.box.area if tile.box else None,
+#         "box_weight": tile.box.weight if tile.box else None,
+#         "box_id": tile.box_id,
+#         "color_name": tile.color_name,
+#         "feature_name": tile.feature_name,
+#     }
 
 
 async def create_composite(
@@ -152,7 +163,7 @@ def map_tile_param_to_model_param(tile_param: str):
 
 
 async def create_new_model(db, article: int, model, **values):
-    if model is TileSize:
+    if model is Size:
         await create_composite(
             db,
             article,
@@ -168,7 +179,7 @@ async def create_new_model(db, article: int, model, **values):
             ("box_area", "box_weight"),
             "box",
         )
-    elif model is TileColor:
+    elif model is Color:
         await create_composite(
             db,
             article,
@@ -189,12 +200,12 @@ def map_param_to_domain_model(param_name: str):
     mapper = {
         "name": Tile,
         "boxes_count": Tile,
-        "size": TileSize,
-        "color": TileColor,
+        "size": Size,
+        "color": Color,
         "producer_name": Producer,
         "box": Box,
         "category_name": Category,
-        "surface_name": TileSurface,
+        "surface_name": Surface,
     }
     return mapper[param_name]
 

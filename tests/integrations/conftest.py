@@ -31,27 +31,29 @@ async def db_provider():
 async def uow_fix(request, db_provider):
     uow = UnitOfWork(registry=registry, provider=db_provider)
     yield uow
-    async with db_provider.engine.begin() as conn:
-        await conn.execute(
-            text(
+    try:
+        async with db_provider.engine.begin() as conn:
+            await conn.execute(
+                text(
+                    """
+                    TRUNCATE
+                        tile_images,
+                        categories,
+                        producers,
+                        tile_sizes,
+                        boxes,
+                        tiles,
+                        tile_colors,
+                        collections,
+                        tile_surface,
+                        collection_category,
+                        admins
+                    RESTART IDENTITY CASCADE;
                 """
-                TRUNCATE
-                    tile_images,
-                    categories,
-                    producers,
-                    tile_sizes,
-                    boxes,
-                    catalog,
-                    tile_colors,
-                    collections,
-                    tile_surface,
-                    collection_category,
-                    admins
-                RESTART IDENTITY CASCADE;
-            """
+                )
             )
-        )
-    await db_provider.close()
+    finally:
+        await db_provider.close()
 
 
 @pytest.fixture(autouse=True)
@@ -117,11 +119,11 @@ async def products_env_with_handbooks(products_env) -> ProductsEnv:
     async with uow:
         await uow.db.create(
             seq_data=[
-                TileSize(length=300, width=200, height=10),
-                TileColor(color_name="color", feature_name="feature"),
+                Size(length=300, width=200, height=10),
+                Color(color_name="color", feature_name="feature"),
                 Producer(name="producer"),
                 Box(weight=30, area=1),
-                TileSurface(name="surface"),
+                Surface(name="surface"),
                 Category(name="category"),
             ]
         )

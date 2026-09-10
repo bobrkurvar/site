@@ -7,7 +7,7 @@ from adapters.deps import UowDep, QueryServiceDep
 from adapters.images import ProductImagesManager
 from core.config import ITEMS_PER_PAGE
 from domain import Tile, Category
-from services.views import build_tile_filters, fetch_items
+from services.views import build_tile_filters, fetch_items, read_catalog_context
 import asyncio
 
 router = APIRouter(tags=["presentation"], prefix="/catalog")
@@ -25,11 +25,6 @@ async def get_tile_page(request: Request, article: int, uow: UowDep):
             id=article,
         )
         if tile:
-            # images = [
-            #     await product_manager.get_product_details_image_path(i.image_path)
-            #     for i in tile.images
-            # ]
-            # tile.set_images(images)
             images = await asyncio.gather(
                 *(
                     product_manager.get_product_details_image_path(image.image_path)
@@ -64,12 +59,12 @@ async def get_catalog_tiles_page(
     offset = (page - 1) * limit
 
     async with uow:
-        category = await uow.db.read_one(
-            Category,
-            id=category_id,
-            with_raise=True,
-        )
-
+        # category = await uow.db.read_one(
+        #     Category,
+        #     id=category_id,
+        #     with_raise=True,
+        # )
+        category = await read_catalog_context(db=uow.db, category_id=category_id)
         tile_filters = await build_tile_filters(
             uow.db,
             producer,

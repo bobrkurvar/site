@@ -5,9 +5,9 @@ from domain import (
     Image,
     Producer,
     Tile,
-    TileColor,
-    TileSize,
-    TileSurface,
+    Color,
+    Size,
+    Surface,
 )
 from services.collections import add_collection
 from services.tile import add_tile

@@ -43,13 +43,13 @@ async def admin_create_tile(
     bytes_images = [bytes_main_image] + [await img.read() for img in images]
     images = [Image(image_bytes=img) for img in bytes_images]
     tile = Tile(
-        size=TileSize(length=dto.length, width=dto.width, height=dto.height),
-        color=TileColor(color_name=dto.color_name, feature_name=dto.feature_name),
+        size=Size(length=dto.length, width=dto.width, height=dto.height),
+        color=Color(color_name=dto.color_name, feature_name=dto.feature_name),
         name=dto.name,
         box=Box(area=dto.box_area, weight=dto.box_weight),
         producer=Producer(name=dto.producer_name),
         category=Category(name=dto.category_name),
-        surface=TileSurface(name=dto.surface_name),
+        surface=Surface(name=dto.surface_name),
         boxes_count=dto.boxes_count,
         images=images,
     )
