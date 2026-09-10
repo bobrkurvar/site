@@ -13,8 +13,8 @@ class Base(AsyncAttrs, DeclarativeBase):
     pass
 
 
-class Catalog(Base):
-    __tablename__ = "catalog"
+class Tile(Base):
+    __tablename__ = "tiles"
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column()
     color_name: Mapped[str]
@@ -40,13 +40,13 @@ class Catalog(Base):
         passive_deletes=True,
     )
     category: Mapped["Category"] = relationship("Category", back_populates="tiles")
-    collections: Mapped[list["Collection"]] = relationship(
-        "Collection",
-        secondary="collection_category",
-        primaryjoin="Catalog.category_name == CollectionCategory.category_name",
-        secondaryjoin="CollectionCategory.collection_id == Collection.id",
-        viewonly=True,  # Только для чтения
-    )
+    # collections: Mapped[list["Collection"]] = relationship(
+    #     "Collection",
+    #     secondary="collection_category",
+    #     primaryjoin="Catalog.category_id == CollectionCategory.category_id",
+    #     secondaryjoin="CollectionCategory.collection_id == Collection.id",
+    #     viewonly=True,  # Только для чтения
+    # )
 
     __table_args__ = (
         ForeignKeyConstraint(
@@ -60,7 +60,7 @@ class Category(Base):
     __tablename__ = "categories"
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(unique=True, nullable=False)
-    tiles: Mapped[list["Catalog"]] = relationship("Catalog", back_populates="category")
+    tiles: Mapped[list["Tile"]] = relationship("Tile", back_populates="category")
 
     collections: Mapped[list["CollectionCategory"]] = relationship(
         "CollectionCategory",
@@ -73,9 +73,9 @@ class Category(Base):
 class TileImage(Base):
     __tablename__ = "tile_images"
     image_id: Mapped[int] = mapped_column(primary_key=True)
-    tile_id: Mapped[int] = mapped_column(ForeignKey("catalog.id", ondelete="CASCADE"))
+    tile_id: Mapped[int] = mapped_column(ForeignKey("tiles.id", ondelete="CASCADE"))
     image_path: Mapped[str] = mapped_column(default=conf.image_path)
-    tile: Mapped["Catalog"] = relationship("Catalog", back_populates="images")
+    tile: Mapped["Tile"] = relationship("Tile", back_populates="images")
 
 
 class Collection(Base):
@@ -121,8 +121,8 @@ class TileSize(Base):
     length: Mapped[Decimal] = mapped_column(DECIMAL(7, 2))
     height: Mapped[Decimal] = mapped_column(DECIMAL(7, 2))
     width: Mapped[Decimal] = mapped_column(DECIMAL(7, 2))
-    tiles: Mapped[list["Catalog"]] = relationship(
-        "Catalog",
+    tiles: Mapped[list["Tile"]] = relationship(
+        "Tile",
         back_populates="size",
     )
 
@@ -133,8 +133,8 @@ class TileColor(Base):
     __tablename__ = "tile_colors"
     color_name: Mapped[str] = mapped_column(primary_key=True)
     feature_name: Mapped[str] = mapped_column(primary_key=True, default="")
-    tiles: Mapped[list["Catalog"]] = relationship(
-        "Catalog",
+    tiles: Mapped[list["Tile"]] = relationship(
+        "Tile",
         back_populates="color",
     )
 
@@ -142,8 +142,8 @@ class TileColor(Base):
 class TileSurface(Base):
     __tablename__ = "tile_surface"
     name: Mapped[str] = mapped_column(primary_key=True)
-    tiles: Mapped[list["Catalog"]] = relationship(
-        "Catalog",
+    tiles: Mapped[list["Tile"]] = relationship(
+        "Tile",
         back_populates="surface",
     )
 
@@ -151,8 +151,8 @@ class TileSurface(Base):
 class Producer(Base):
     __tablename__ = "producers"
     name: Mapped[str] = mapped_column(primary_key=True)
-    tiles: Mapped[list["Catalog"]] = relationship(
-        "Catalog",
+    tiles: Mapped[list["Tile"]] = relationship(
+        "Tile",
         back_populates="producer",
     )
 
@@ -162,7 +162,7 @@ class Box(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     weight: Mapped[Decimal] = mapped_column(DECIMAL(8, 2))
     area: Mapped[Decimal] = mapped_column(DECIMAL(8, 2))
-    tiles: Mapped[list["Catalog"]] = relationship("Catalog", back_populates="box")
+    tiles: Mapped[list["Tile"]] = relationship("Tile", back_populates="box")
 
     __table_args__ = (UniqueConstraint("weight", "area"),)
 

@@ -51,7 +51,7 @@ services:
       - internal
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./db/init/backup_final.sql:/docker-entrypoint-initdb.d/01-backup.sql:ro # при пустой базе выполнит всё что в этой папке
+      #- ./db/init/backup_final.sql:/docker-entrypoint-initdb.d/01-backup.sql:ro # при пустой базе выполнит всё что в этой папке
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U postgres -d ${DB_NAME}"]

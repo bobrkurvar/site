@@ -27,10 +27,10 @@ async def admin_page(
 ):
     async with uow:
         tiles = uow.db.read(Tile, loaded=["images", "size", "box"])
-        tile_sizes = uow.db.read(TileSize)
-        colors_names = uow.db.read(TileColor, distinct="color_name")
-        colors_features = uow.db.read(TileColor, distinct="feature_name")
-        surfaces = uow.db.read(TileSurface)
+        tile_sizes = uow.db.read(Size)
+        colors_names = uow.db.read(Color, distinct="color_name")
+        colors_features = uow.db.read(Color, distinct="feature_name")
+        surfaces = uow.db.read(Surface)
         boxes_weights = uow.db.read(Box, distinct="weight")
         boxes_areas = uow.db.read(Box, distinct="area")
         producers = uow.db.read(Producer)

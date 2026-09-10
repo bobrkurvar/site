@@ -2,7 +2,7 @@ import logging
 
 import pytest
 
-from domain import Box, Image, Tile, TileSize
+from domain import Box, Image, Tile, Size
 from services.exceptions import ImageProcessingError
 from services.tile import delete_tile, update_tile, add_tile
 from tests.helpers import (
@@ -113,7 +113,7 @@ async def test_update_tile_success_when_new_attributes_in_handbooks(
         color["feature_name"],
     )
     async with env.uow as uow:
-        new_tile = await uow.db.read_one(Tile, id=article, loaded=["box", "size"])
+        new_tile = await uow.db.read_one(Tile, id=article, loaded=["box", "size", "category"])
         # box = await uow.db.read_one(Box, id=new_tile.box.id)
         # size = await uow.db.read_one(TileSize, id=new_tile.size.id)
         # Проверка всех справочников, поля в справочниках не должны изменятся, а должны появится новые
@@ -144,9 +144,9 @@ async def test_update_tile_success_when_composite_half_composite_color_name_box_
     old_color_feature, old_box_area = record.feature_name, tile.box.area
     await update_tile(uow=env.uow, article=article, **new_filters)
     async with env.uow as uow:
-        new_tile = await uow.db.read_one(Tile, id=article)
+        new_tile = await uow.db.read_one(Tile, id=article, loaded="category")
         box = await uow.db.read_one(Box, id=new_tile.box_id)
-        size = await uow.db.read_one(TileSize, id=new_tile.size_id)
+        size = await uow.db.read_one(Size, id=new_tile.size_id)
         await assert_handbooks_count(uow.db, domain_handbooks_models_for_products, 2)
     # половины композитного ключа берутся из той же записи продукта
     expected_box, expected_size = dict(
@@ -191,9 +191,9 @@ async def test_update_tile_success_when_input_composite_length_area_feature(
     )
     await update_tile(uow=env.uow, article=article, **new_filters)
     async with env.uow as uow:
-        new_tile = await uow.db.read_one(Tile, id=article)
+        new_tile = await uow.db.read_one(Tile, id=article, loaded="category")
         box = await uow.db.read_one(Box, id=new_tile.box_id)
-        size = await uow.db.read_one(TileSize, id=new_tile.size_id)
+        size = await uow.db.read_one(Size, id=new_tile.size_id)
         await assert_handbooks_count(uow.db, domain_handbooks_models_for_products, 2)
     # половины композитного ключа берутся из той же записи продукта
     expected_box, expected_size = dict(

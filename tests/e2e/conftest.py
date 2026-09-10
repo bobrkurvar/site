@@ -88,19 +88,21 @@ def clean_database_after_test(db_provider):
     yield uow
 
     async def do_truncate():
-        async with db_provider.engine.begin() as conn:
-            await conn.execute(
-                text(
-                    """
-                    TRUNCATE
-                        tile_images, categories, producers, tile_sizes, 
-                        boxes, catalog, tile_colors, collections, 
-                        tile_surface, collection_category
-                    RESTART IDENTITY CASCADE;
-                    """
+        try:
+            async with db_provider.engine.begin() as conn:
+                await conn.execute(
+                    text(
+                        """
+                        TRUNCATE
+                            tile_images, categories, producers, tile_sizes, 
+                            boxes, tiles, tile_colors, collections, 
+                            tile_surface, collection_category
+                        RESTART IDENTITY CASCADE;
+                        """
+                    )
                 )
-            )
-        await db_provider.close()
+        finally:
+            await db_provider.close()
 
     run_in_shared_loop(do_truncate())
 

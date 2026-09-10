@@ -3,7 +3,7 @@ from collections.abc import Collection as AbcCol
 from slugify import slugify
 
 
-class TileSize:
+class Size:
     def __init__(
         self,
         width: Decimal | int,
@@ -27,7 +27,7 @@ class TileSize:
         return f"{as_float:g}"
 
 
-class TileColor:
+class Color:
     def __init__(self, color_name: str, feature_name: str = ""):
         self.color_name = color_name.strip()
         self.feature_name = feature_name
@@ -36,7 +36,7 @@ class TileColor:
         return f"{self.color_name} {self.feature_name}"
 
 
-class TileSurface:
+class Surface:
     def __init__(self, name: str):
         self.name = name
 
@@ -67,7 +67,7 @@ class Box:
 
 class Category:
 
-    def __init__(self, id: int, name: str):
+    def __init__(self, name: str, id: int | None = None):
         self.id = id
         self.name = name
 
@@ -85,19 +85,19 @@ class Category:
 class Tile:
     def __init__(
         self,
-        color: TileColor,
+        color: Color,
         name: str,
         boxes_count: int,
         producer: Producer,
-        category_id: int,
+        category_id: int | None = None,
         category: Category | None = None,
-        size: TileSize | None = None,
+        size: Size | None = None,
         size_id: int | None = None,
         box: Box | None = None,
         box_id: int | None = None,
         images: list["Image"] = None,
         article: int | None = None,
-        surface: TileSurface | None = None,
+        surface: Surface | None = None,
     ):
         self.id = article
         self.article = article
@@ -127,6 +127,11 @@ class Tile:
         if self.box is None and self.box_id is None:
             raise ValueError(
                 "Плитка не может существовать без коробки (box или box_id)"
+            )
+
+        if self.category is None and self.category_id is None:
+            raise ValueError(
+                "Плитка не может существовать без коробки (category или category_id)"
             )
 
     def __str__(self):
@@ -161,6 +166,8 @@ class Tile:
 
     @property
     def category_name(self):
+        if not self.category:
+            raise ValueError("Нет экземпляра категории (self.category)")
         return self.category.name
 
     @property

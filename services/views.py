@@ -1,7 +1,7 @@
 import logging
 from decimal import Decimal
 
-from domain import Operation, Tile, TileSize, Operations
+from domain import Operation, Tile, Size, Operations, Collection, Category, CollectionCategory
 
 log = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ async def build_tile_filters(
     if size:
         length, width, height = (Decimal(i) for i in size.split())
         tile_size_id = await manager.read_one(
-            TileSize, length=length, width=width, height=height
+            Size, length=length, width=width, height=height
         )
         if tile_size_id:
             filters["size_id"] = tile_size_id.id
@@ -66,3 +66,32 @@ async def fetch_collections_items(
     total_count = await manager.count(Tile, **filters)
 
     return items, total_count
+
+
+async def read_catalog_context(
+    db,
+    category_id: int,
+    collection_id: int | None = None,
+) -> tuple[Category, Collection] | Category:
+    category = await db.read_one(
+        Category,
+        id=category_id,
+        with_raise=True,
+    )
+    if collection_id is not None:
+        collection = await db.read_one(
+            Collection,
+            id=collection_id,
+            with_raise=True,
+        )
+
+        await db.read_one(
+            CollectionCategory,
+            collection_id=collection_id,
+            category_id=category_id,
+            with_raise=True,
+        )
+
+        return category, collection
+
+    return category
