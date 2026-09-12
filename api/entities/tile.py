@@ -4,8 +4,8 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, File, Form, UploadFile
 from fastapi.responses import RedirectResponse
 
-from adapters.deps import UowDep, HttpClientDep
-from adapters.images import ImageGenerator, ProductImagesManager
+from adapters.deps import UowDep, ImageHttpClientDep
+from adapters.images import ProductImagesManager
 
 from api.schemas import CreateTile, UpdateTile
 from api.utils import create_tile_form
@@ -37,7 +37,7 @@ async def admin_create_tile(
     main_image: Annotated[UploadFile, File()],
     images: Annotated[list[UploadFile], File()],
     uow: UowDep,
-    http_client: HttpClientDep,
+    images_generator: ImageHttpClientDep,
 ):
     bytes_main_image = await main_image.read()
     bytes_images = [bytes_main_image] + [await img.read() for img in images]
@@ -56,7 +56,7 @@ async def admin_create_tile(
     await add_tile(
         tile,
         uow=uow,
-        images_generator=ImageGenerator(http_client),
+        images_generator=images_generator,
         file_manager=ProductImagesManager(),
     )
     return RedirectResponse("/admin", status_code=303)

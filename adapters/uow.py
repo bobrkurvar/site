@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 
 from adapters.db_provider import DbProvider
 from adapters.db import GenericRepository
+from adapters.query_service import CatalogQueryService
 
 log = logging.getLogger(__name__)
 
@@ -26,6 +27,7 @@ class UnitOfWork:
         self.session = await self.session_ctx.__aenter__()
 
         self.db = GenericRepository(session=self.session, registry=self._registry)
+        self.query_service = CatalogQueryService(session=self.session)
 
         return self
 

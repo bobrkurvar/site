@@ -1,7 +1,10 @@
 from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict, field_validator
-
+from domain import Collection, Tile
+from adapters.images import CollectionImagesManager, ProductImagesManager
+from dataclasses import dataclass
+from functools import cached_property
 
 class CreateTile(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -89,3 +92,101 @@ class UpdateTile(BaseModel):
                 "feature_name": self.feature_name,
             }
         return result
+
+@dataclass
+class ImageOut:
+    image_url: str
+    fallback_url: str
+
+
+@dataclass
+class ProductDetailsOut:
+    tile: Tile
+
+    @cached_property
+    def images(self) -> list[ImageOut]:
+        manager = ProductImagesManager()
+
+        return [
+            ImageOut(
+                image_url="/" + manager.get_product_details_image_path(path),
+                fallback_url="/" + path,
+            )
+            for path in self.tile.images_paths
+        ]
+
+    def __getattr__(self, name):
+        return getattr(self.tile, name)
+
+
+# @dataclass
+# class ProductDetailsOut:
+#     tile: Tile
+#
+#
+#     @property
+#     def image_url(self) -> str | None:
+#         path = self.tile.main_image_path
+#         if not path:
+#             return None
+#
+#         return "/" + ProductImagesManager().get_product_details_image_path(path)
+#
+#     @property
+#     def fallback_url(self) -> str | None:
+#         path = self.tile.main_image_path
+#         if not path:
+#             return None
+#
+#         return "/" + path
+#
+#     def __getattr__(self, name):
+#         return getattr(self.tile, name)
+
+
+@dataclass
+class ProductCatalogOut:
+    tile: Tile
+
+    @property
+    def image_url(self) -> str | None:
+        path = self.tile.main_image_path
+        if not path:
+            return None
+
+        return "/" + ProductImagesManager().get_product_catalog_image_path(path)
+
+    @property
+    def fallback_url(self) -> str | None:
+        path = self.tile.main_image_path
+        if not path:
+            return None
+
+        return "/" + path
+
+    def __getattr__(self, name):
+        return getattr(self.tile, name)
+
+
+@dataclass
+class CollectionCatalogOut:
+    collection: Collection
+
+    @property
+    def image_url(self) -> str | None:
+        if not self.collection.image_path:
+            return None
+
+        return "/" + CollectionImagesManager().get_collections_image_path(
+            self.collection.image_path
+        )
+
+    @property
+    def fallback_url(self) -> str | None:
+        if not self.collection.image_path:
+            return None
+
+        return "/" + self.collection.image_path
+
+    def __getattr__(self, name):
+        return getattr(self.collection, name)

@@ -21,29 +21,35 @@
             </div>
 
             <div class="tile-image-main">
-                {% if tile.images_paths %}
-                    <img id="main-image"
-                         src="/{{ tile.main_image_path }}"
-                         alt="{{ tile.name }}"
-                         class="tile-detail-image"
-                         loading="eager">
+                {% if tile.images %}
+                    <img
+                        id="main-image"
+                        src="{{ tile.images[0].image_url }}"
+                        data-fallback="{{ tile.images[0].fallback_url }}"
+                        alt="{{ tile.name }}"
+                        class="tile-detail-image"
+                        loading="eager"
+                    >
                 {% else %}
-                <div class="no-image-large">
-                    <div class="no-image-icon">🖼️</div>
-                    <p>Изображение отсутствует</p>
-                </div>
+                    <div class="no-image-large">
+                        <div class="no-image-icon">🖼️</div>
+                        <p>Изображение отсутствует</p>
+                    </div>
                 {% endif %}
             </div>
 
             <div class="tile-thumbnails">
-                {% if images and images|length > 1 %}
-                    {% for img in tile.images_paths %}
-                    <div class="thumbnail {% if loop.first %}active-thumb{% endif %}">
-                        <img src="/{{ img }}"
-                             alt="{{ tile.name }}"
-                             class="thumbnail-image"
-                             data-index="{{ loop.index0 }}">
-                    </div>
+                {% if tile.images|length > 1 %}
+                    {% for image in tile.images %}
+                        <div class="thumbnail {% if loop.first %}active-thumb{% endif %}">
+                            <img
+                                src="{{ image.image_url }}"
+                                data-fallback="{{ image.fallback_url }}"
+                                alt="{{ tile.name }}"
+                                class="thumbnail-image"
+                                data-index="{{ loop.index0 }}"
+                            >
+                        </div>
                     {% endfor %}
                 {% endif %}
             </div>

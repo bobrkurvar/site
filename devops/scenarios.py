@@ -45,7 +45,7 @@ def all_tests():
 
 
 def local_deploy():
-    with local_env.down_before_and_after() as compose:
+    with local_env.down_before_and_after(volumes=False) as compose:
         execute_with_diagnostics(compose, Up(build=True))
 
 

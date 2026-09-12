@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Response
 
 from adapters.db_provider import DbProvider
-from adapters.http_client import HttpClient
+from adapters.images_http_client import ImageHttpClient
 from adapters.redis import RedisProvider
 from api import main_router
 from api.error_handlers import *
@@ -16,7 +16,7 @@ setup_logging()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     app.state.redis = await RedisProvider.create(conf.redis_host)
-    app.state.image_api = HttpClient(url=f"http://{conf.image_service_url}/")
+    app.state.image_api = ImageHttpClient(url=f"http://{conf.image_service_url}/")
     app.state.db_provider = DbProvider(conf.db_url)
     try:
         yield

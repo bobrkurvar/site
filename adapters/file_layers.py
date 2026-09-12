@@ -1,4 +1,4 @@
-from shared import COLLECTIONS, DETAILS, PRODUCTS, SLIDES
+from contracts.layers import COLLECTIONS, DETAILS, PRODUCTS, SLIDES
 
 ORIGINAL_PRODUCT = "original_product"
 ORIGINAL_COLLECTION = "original_collection"

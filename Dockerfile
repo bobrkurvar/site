@@ -16,13 +16,13 @@ COPY services ./services
 COPY static/js ./static/js
 COPY static/css ./static/css
 COPY templates ./templates
-COPY shared.py .
+COPY contracts ./contracts
 CMD ["uvicorn", "main_app:app", "--host", "0.0.0.0", "--port", "8000"]
 
 
 FROM base AS image
 COPY image_worker.py .
-COPY shared.py .
+COPY contracts ./contracts
 CMD ["sh", "-c", "uvicorn image_worker:app --host 0.0.0.0 --port ${PORT}"]
 
 
@@ -40,6 +40,8 @@ COPY adapters/uow.py adapters/uow.py
 COPY adapters/db_provider.py adapters/db_provider.py
 COPY domain domain
 COPY db db
+COPY adapters/query_service.py adapters/query_service.py
+COPY services services
 COPY scripts/add_admins.py ./add_admins.py
 CMD ["python", "-m", "add_admins"]
 

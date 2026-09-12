@@ -71,10 +71,16 @@
                     <a href="/catalog/products/{{ tile.article }}" class="tile-card-link">
                         <div class="tile-card">
                             <div class="tile-image-container">
-                                {% if tile.main_image_path %}
-                                <img src="/{{ tile.main_image_path }}" alt="{{ tile.name }}" class="tile-image" loading="lazy">
+                                {% if tile.image_url %}
+                                    <img
+                                        src="{{ tile.image_url }}"
+                                        data-fallback="{{ tile.fallback_url }}"
+                                        alt="{{ tile.name }}"
+                                        class="tile-image"
+                                        loading="lazy"
+                                    >
                                 {% else %}
-                                <div class="no-image">Нет изображения</div>
+                                    <div class="no-image">Нет изображения</div>
                                 {% endif %}
                             </div>
                             <div class="tile-header">
@@ -97,10 +103,16 @@
                         <a href="/catalog/{{ category_path }}/collections/{{ col.slug }}/{{ col.id }}" class="collection-item-link">
                         <div class="collection-item">
                             <div class="tile-image-container">
-                                {% if col.image_path %}
-                                <img src="/{{ col.image_path }}" alt="{{ col.name }}" class="tile-image" loading="lazy">
+                                {% if col.image_url %}
+                                    <img
+                                        src="{{ col.image_url }}"
+                                        data-fallback="{{ col.fallback_url }}"
+                                        alt="{{ col.name }}"
+                                        class="tile-image"
+                                        loading="lazy"
+                                    >
                                 {% else %}
-                                <div class="no-image">Нет изображения</div>
+                                    <div class="no-image">Нет изображения</div>
                                 {% endif %}
                             </div>
                             <div class="tile-header">

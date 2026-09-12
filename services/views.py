@@ -9,10 +9,19 @@ from domain import (
     Collection,
     Category,
     CollectionCategory,
+    DomainFilter
 )
+from dataclasses import dataclass
 
 log = logging.getLogger(__name__)
 
+
+@dataclass
+class CatalogPage:
+    tiles: list[Tile]
+    total_count: int
+    category: Category
+    collection: Collection | None
 
 async def build_tile_filters(
     manager,
@@ -33,14 +42,14 @@ async def build_tile_filters(
     return filters
 
 
-async def fetch_items(manager, limit, offset, category_id: int, **filters):
-    total_count = await manager.count(
+async def fetch_items(db, limit, offset, category_id: int, **filters):
+    total_count = await db.count(
         Tile,
         category_id=category_id,
         **filters,
     )
 
-    items = await manager.read(
+    items = await db.read(
         Tile,
         loaded=["images", "size", "box"],
         category_id=category_id,
@@ -53,7 +62,7 @@ async def fetch_items(manager, limit, offset, category_id: int, **filters):
 
 
 async def fetch_collections_items(
-    manager,
+    db,
     collection_name: str,
     category_id: int,
     limit: int,
@@ -66,17 +75,24 @@ async def fetch_collections_items(
         value=search_pattern,
         op=Operations.ilike,
     )
-
-    items = await manager.read(
-        Tile,
-        loaded=["images", "size", "box"],
+    items, total_count = await fetch_items(
+        db=db,
+        category_id=category_id,
         limit=limit,
         offset=offset,
-        category_id=category_id,
-        **filters,
+        **filters
     )
 
-    total_count = await manager.count(Tile, category_id=category_id, **filters)
+    # items = await manager.read(
+    #     Tile,
+    #     loaded=["images", "size", "box"],
+    #     limit=limit,
+    #     offset=offset,
+    #     category_id=category_id,
+    #     **filters,
+    # )
+    #
+    # total_count = await manager.count(Tile, category_id=category_id, **filters)
 
     return items, total_count
 
@@ -85,7 +101,8 @@ async def read_catalog_context(
     db,
     category_id: int,
     collection_id: int | None = None,
-) -> tuple[Category, Collection] | Category:
+) -> tuple[Category, Collection | None]:
+    collection = None
     category = await db.read_one(
         Category,
         id=category_id,
@@ -105,57 +122,74 @@ async def read_catalog_context(
             with_raise=True,
         )
 
-        return category, collection
-
-    return category
+    return category, collection
 
 
 async def get_catalog(
-    db,
+    uow,
     category_id: int,
     limit: int,
     offset: int,
     collection_id: int | None = None,
     **filters,
-    # producer: str | None = None,
-    # size: str | None = None,
-    # color: str | None = None,
-):
-    context = await read_catalog_context(
-        db,
-        category_id=category_id,
-        collection_id=collection_id,
+) -> CatalogPage:
+    async with uow:
+        context = await read_catalog_context(
+            uow.db,
+            category_id=category_id,
+            collection_id=collection_id,
+        )
+        category, collection = context
+
+
+        if collection is not None:
+            tiles, total_count = await fetch_collections_items(
+                uow.db,
+                collection.name,
+                limit,
+                offset,
+                **filters,
+            )
+        else:
+            tiles, total_count = await fetch_items(
+                db=uow.db,
+                limit=limit,
+                offset=offset,
+                category_id=category_id,
+                **filters,
+            )
+
+    return CatalogPage(tiles, total_count, category, collection)
+
+
+async def get_collections_filtered_by_category(
+    db,
+    category_id: int,
+    offset: int,
+    limit: int,
+) -> tuple[tuple[Collection, ...], int]:
+    await db.read_one(
+        Category,
+        id=category_id,
+        with_raise=True,
     )
 
-    if collection_id is not None:
-        category, collection = context
-    else:
-        category = context
-        collection = None
+    collections = await db.read(
+        Collection,
+        domain_filters=[
+            DomainFilter(
+                model=CollectionCategory,
+                field="category_id",
+                value=category_id,
+            )
+        ],
+        offset=offset,
+        limit=limit,
+    )
 
-    # filters = await build_tile_filters(
-    #     db,
-    #     producer=producer,
-    #     size=size,
-    #     color=color,
-    #     category=category.name,
-    # )
+    total_count = await db.count(
+        CollectionCategory,
+        category_id=category_id,
+    )
 
-    if collection is not None:
-        tiles, total_count = await fetch_collections_items(
-            db,
-            collection.name,
-            limit,
-            offset,
-            **filters,
-        )
-    else:
-        tiles, total_count = await fetch_items(
-            db=db,
-            limit=limit,
-            offset=offset,
-            category_id=category_id,
-            **filters,
-        )
-
-    return tiles, total_count, category, collection
+    return collections, total_count

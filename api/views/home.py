@@ -18,7 +18,7 @@ log = logging.getLogger(__name__)
 @router.get("/")
 async def get_main_page(request: Request, uow: UowDep):
     slide_manager = SlideImagesManager()
-    slide_images = await slide_manager.get_all_slides_paths()
+    slide_images = slide_manager.get_all_slides_paths()
     async with uow:
         categories = await uow.db.read(Category)
     return templates.TemplateResponse(

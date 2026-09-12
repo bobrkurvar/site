@@ -4,8 +4,8 @@ from typing import Annotated
 from fastapi import APIRouter, File, Form, UploadFile
 from fastapi.responses import RedirectResponse
 
-from adapters.deps import UowDep, HttpClientDep
-from adapters.images import CollectionImagesManager, ImageGenerator
+from adapters.deps import UowDep, ImageHttpClientDep
+from adapters.images import CollectionImagesManager
 from domain import Category, Collection, Image
 from services.collections import add_collection, delete_collection
 
@@ -16,7 +16,7 @@ log = logging.getLogger(__name__)
 @router.post("/create")
 async def admin_create_collection(
     uow: UowDep,
-    http_client: HttpClientDep,
+    images_generator: ImageHttpClientDep,
     collection_name: Annotated[str, Form()],
     category_name: Annotated[str, Form()],
     image: Annotated[UploadFile, File()],
@@ -30,7 +30,7 @@ async def admin_create_collection(
     await add_collection(
         collection=collection,
         uow=uow,
-        images_generator=ImageGenerator(http_client),
+        images_generator=images_generator,
         file_manager=CollectionImagesManager(),
     )
     return RedirectResponse("/admin", status_code=303)

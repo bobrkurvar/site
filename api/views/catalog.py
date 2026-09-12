@@ -3,12 +3,11 @@ import logging
 from fastapi import APIRouter, Request
 from fastapi.templating import Jinja2Templates
 
-from adapters.deps import UowDep, QueryServiceDep
-from adapters.images import ProductImagesManager
+from adapters.deps import UowDep
 from core.config import ITEMS_PER_PAGE
 from domain import Tile, Category
-from services.views import build_tile_filters, fetch_items, get_catalog
-import asyncio
+from services.views import build_tile_filters, get_catalog, CatalogPage
+from api.schemas import ProductCatalogOut, ProductDetailsOut
 
 router = APIRouter(tags=["presentation"], prefix="/catalog")
 templates = Jinja2Templates("templates")
@@ -17,22 +16,24 @@ log = logging.getLogger(__name__)
 
 @router.get("/products/{article:int}")
 async def get_tile_page(request: Request, article: int, uow: UowDep):
-    product_manager = ProductImagesManager()
+    #product_manager = ProductImagesManager()
     async with uow:
         tile = await uow.db.read_one(
             Tile,
             loaded=["images", "size", "box"],
             id=article,
+            with_raise=True
         )
-        if tile:
-            images = await asyncio.gather(
-                *(
-                    product_manager.get_product_details_image_path(image.image_path)
-                    for image in tile.images
-                )
-            )
-            tile.set_images(images)
+        # if tile:
+        #     images = await asyncio.gather(
+        #         *(
+        #             product_manager.get_product_details_image_path(image.image_path)
+        #             for image in tile.images
+        #         )
+        #     )
+        #     tile.set_images(images)
         categories = await uow.db.read(Category)
+    tile = ProductDetailsOut(tile=tile)
     return templates.TemplateResponse(
         "tile_detail.html",
         {
@@ -43,76 +44,6 @@ async def get_tile_page(request: Request, article: int, uow: UowDep):
     )
 
 
-# @router.get("/{category_slug}/{category_id:int}/products")
-# async def get_catalog_tiles_page(
-#     request: Request,
-#     category_slug: str,
-#     category_id: int,
-#     uow: UowDep,
-#     query_service: QueryServiceDep,
-#     producer: str | None = None,
-#     size: str | None = None,
-#     color: str | None = None,
-#     page: int = 1,
-# ):
-#     limit = ITEMS_PER_PAGE
-#     offset = (page - 1) * limit
-#
-#     async with uow:
-#         category = await uow.db.read_one(
-#             Category,
-#             id=category_id,
-#             with_raise=True,
-#         )
-#         tile_filters = await build_tile_filters(
-#             uow.db,
-#             producer,
-#             size,
-#             color,
-#             category.name,
-#         )
-#
-#         tiles, total_count = await fetch_items(
-#             uow.db,
-#             limit,
-#             offset,
-#             **tile_filters,
-#         )
-#
-#         categories = await uow.db.read(Category, order_by="name")
-#
-#     filter_options = await query_service.get_catalog_filters(
-#         category_name=category.name,
-#     )
-#
-#     product_manager = ProductImagesManager()
-#     for tile in tiles:
-#         resolved_paths = await asyncio.gather(
-#             *(
-#                 product_manager.get_product_catalog_image_path(path)
-#                 for path in tile.images_paths
-#             )
-#         )
-#         tile.set_images(resolved_paths)
-#
-#     total_pages = max((total_count + limit - 1) // limit, 1)
-#     category_path = f"{category_slug}/{category_id}"
-#
-#     return templates.TemplateResponse(
-#         "catalog.html",
-#         {
-#             "request": request,
-#             "tiles": tiles,
-#             "page": page,
-#             "total_pages": total_pages,
-#             "total_count": total_count,
-#             "categories": categories,
-#             "category_path": category_path,
-#             "filters": filter_options,
-#             "active_tab": "products",
-#         },
-#     )
-
 
 @router.get("/{category_slug}/{category_id:int}/products")
 async def get_catalog_tiles_page(
@@ -120,7 +51,7 @@ async def get_catalog_tiles_page(
     category_slug: str,
     category_id: int,
     uow: UowDep,
-    query_service: QueryServiceDep,
+    #query_service: QueryServiceDep,
     producer: str | None = None,
     size: str | None = None,
     color: str | None = None,
@@ -133,26 +64,27 @@ async def get_catalog_tiles_page(
             producer=producer, color=color, size=size, manager=uow.db
         )
         categories = await uow.db.read(Category, order_by="name")
+        filter_options = await uow.query_service.get_catalog_filters(
+            category_id=category_id,
+        )
 
-    tiles, total_count, category, collection = await get_catalog(
+    catalog_page: CatalogPage = await get_catalog(
         uow=uow, category_id=category_id, limit=limit, offset=offset, **filters
     )
 
-    filter_options = await query_service.get_catalog_filters(
-        category_name=category.name,
-    )
 
-    product_manager = ProductImagesManager()
-    for tile in tiles:
-        resolved_paths = await asyncio.gather(
-            *(
-                product_manager.get_product_catalog_image_path(path)
-                for path in tile.images_paths
-            )
-        )
-        tile.set_images(resolved_paths)
+    # product_manager = ProductImagesManager()
+    # for tile in page.tiles:
+    #     resolved_paths = await asyncio.gather(
+    #         *(
+    #             product_manager.get_product_catalog_image_path(path)
+    #             for path in tile.images_paths
+    #         )
+    #     )
+    #     tile.set_images(resolved_paths)
+    tiles = [ProductCatalogOut(tile=tile) for tile in catalog_page.tiles]
 
-    total_pages = max((total_count + limit - 1) // limit, 1)
+    total_pages = max((catalog_page.total_count + limit - 1) // limit, 1)
     category_path = f"{category_slug}/{category_id}"
 
     return templates.TemplateResponse(
@@ -162,7 +94,7 @@ async def get_catalog_tiles_page(
             "tiles": tiles,
             "page": page,
             "total_pages": total_pages,
-            "total_count": total_count,
+            "total_count": catalog_page.total_count,
             "categories": categories,
             "category_path": category_path,
             "filters": filter_options,

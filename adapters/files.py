@@ -21,12 +21,12 @@ class FileSystemStorage:
         path = Path(path)
         await asyncio.to_thread(path.unlink, missing_ok=True)
 
-    @staticmethod
-    async def get_directory(main_path: str | Path, other_path: str | Path) -> str:
-        path_exists = await asyncio.to_thread(Path(main_path).exists)
-        if path_exists:
-            return Path(main_path).as_posix()
-        return Path(other_path).as_posix()
+    # @staticmethod
+    # async def get_directory(main_path: str | Path, other_path: str | Path) -> str:
+    #     path_exists = await asyncio.to_thread(Path(main_path).exists)
+    #     if path_exists:
+    #         return Path(main_path).as_posix()
+    #     return Path(other_path).as_posix()
 
 
 class FileManager:
