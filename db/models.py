@@ -62,10 +62,16 @@ class Category(Base):
     name: Mapped[str] = mapped_column(unique=True, nullable=False)
     tiles: Mapped[list["Tile"]] = relationship("Tile", back_populates="category")
 
-    collections: Mapped[list["CollectionCategory"]] = relationship(
-        "CollectionCategory",
-        back_populates="category",
-        cascade="all, delete-orphan",
+    # collections: Mapped[list["CollectionCategory"]] = relationship(
+    #     "CollectionCategory",
+    #     back_populates="category",
+    #     cascade="all, delete-orphan",
+    #     passive_deletes=True,
+    # )
+    collections: Mapped[list["Collection"]] = relationship(
+        "Collection",
+        back_populates="categories",
+        secondary=lambda: CollectionCategory.__table__,
         passive_deletes=True,
     )
 
@@ -83,18 +89,24 @@ class Collection(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(unique=True)
     image_path: Mapped[str] = mapped_column(unique=True, nullable=True)
-    categories: Mapped[list["CollectionCategory"]] = relationship(
-        "CollectionCategory",
-        back_populates="collection",
-        cascade="all, delete-orphan",
+    # categories: Mapped[list["CollectionCategory"]] = relationship(
+    #     "CollectionCategory",
+    #     back_populates="collection",
+    #     cascade="all, delete-orphan",
+    #     passive_deletes=True,
+    # )
+    categories: Mapped[list["Category"]] = relationship(
+        "Category",
+        back_populates="collections",
+        secondary=lambda: CollectionCategory.__table__,
         passive_deletes=True,
     )
     # noinspection PyTypeChecker
-    categories_proxy: AssociationProxy[list[str]] = association_proxy(
-        "categories",
-        "category_name",
-        creator=lambda cat_name: CollectionCategory(category_name=cat_name),
-    )
+    # categories_proxy: AssociationProxy[list[int]] = association_proxy(
+    #     "categories",
+    #     "category_id",
+    #     creator=lambda cat_id: CollectionCategory(category_id=cat_id),
+    # )
 
 
 class CollectionCategory(Base):
@@ -107,12 +119,12 @@ class CollectionCategory(Base):
         primary_key=True,
     )
 
-    category: Mapped["Category"] = relationship(
-        "Category", back_populates="collections"
-    )
-    collection: Mapped["Collection"] = relationship(
-        "Collection", back_populates="categories"
-    )
+    # category: Mapped["Category"] = relationship(
+    #     "Category", back_populates="collections"
+    # )
+    # collection: Mapped["Collection"] = relationship(
+    #     "Collection", back_populates="categories"
+    # )
 
 
 class TileSize(Base):

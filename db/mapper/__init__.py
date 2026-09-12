@@ -33,9 +33,7 @@ class MapperRegistry:
 
 
 registry = MapperRegistry()
-registry.register(
-    domain.Tile, models.Tile, map_tile_to_orm, map_tile_to_domain
-)
+registry.register(domain.Tile, models.Tile, map_tile_to_orm, map_tile_to_domain)
 registry.register(
     domain.Category, models.Category, map_category_to_orm, map_category_to_domain
 )
@@ -45,16 +43,8 @@ registry.register(
     map_collection_to_orm,
     map_collection_to_domain,
 )
-registry.register(
-    domain.CollectionCategory,
-    models.CollectionCategory,
-    map_collection_category_to_orm,
-    map_collection_category_to_domain,
-)
 registry.register(domain.Size, models.TileSize, map_size_to_orm, map_size_to_domain)
-registry.register(
-    domain.Color, models.TileColor, map_color_to_orm, map_color_to_domain
-)
+registry.register(domain.Color, models.TileColor, map_color_to_orm, map_color_to_domain)
 registry.register(
     domain.Surface, models.TileSurface, map_surface_to_orm, map_surface_to_domain
 )
@@ -66,9 +56,3 @@ registry.register(
     domain.Image, models.TileImage, map_tile_image_to_orm, map_tile_image_to_domain
 )
 registry.register(domain.Admin, models.Admin, map_admin_to_orm, map_admin_to_domain)
-registry.register(
-    domain.CollectionCategory,
-    models.CollectionCategory,
-    map_collection_category_to_orm,
-    map_collection_category_to_domain,
-)

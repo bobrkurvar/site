@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from shared import COLLECTIONS, DETAILS, PRODUCTS
+from contracts.layers import COLLECTIONS, DETAILS, PRODUCTS
 
 
 @pytest.mark.asyncio

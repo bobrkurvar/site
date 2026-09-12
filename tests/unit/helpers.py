@@ -1,4 +1,4 @@
-from shared import COLLECTIONS, DETAILS, PRODUCTS
+from contracts.layers import COLLECTIONS, DETAILS, PRODUCTS
 
 
 def collection_catalog_path(manager):

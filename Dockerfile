@@ -77,7 +77,7 @@ COPY infra ./infra
 COPY domain ./domain
 COPY adapters adapters
 COPY pytest.ini ./pytest.ini
-COPY shared.py .
+COPY contracts ./contracts
 WORKDIR /pysite/tests/integrations
 ENV PYTHONPATH=/pysite
 ENTRYPOINT ["pytest"]
@@ -90,7 +90,7 @@ COPY domain ./domain
 COPY adapters adapters
 COPY infra ./infra
 COPY pytest.ini ./pytest.ini
-COPY shared.py .
+COPY contracts ./contracts
 WORKDIR /pysite/tests/unit
 ENV PYTHONPATH=/pysite
 ENTRYPOINT ["pytest"]

@@ -2,7 +2,6 @@ import logging
 import pytest
 
 from domain import (
-    AlreadyExistsError,
     Collection,
     CollectionCategory,
     NotFoundError,
@@ -19,12 +18,11 @@ async def test_create_collection_and_category_relation_when_collection_not_exist
     collections_env_with_categories,
 ):
     env, categories = await collections_env_with_categories()
-    category_name = categories[0]
     collection = await add_collection_helper(
         uow=env.uow,
         file_manager=env.file_manager,
         images_generator=env.images_generator,
-        category_name=category_name,
+        category=categories[0],
     )
     # сервисная функция должна вернуть запись
     assert collection is not None
@@ -45,12 +43,12 @@ async def test_create_collection_category_when_collection_exists_success(
     # когда создаётся раздел коллекции-категории и коллекция в таблице коллекций есть, коллекция не создаётся
     env, categories = await collections_env_with_categories(2)
     collection = None
-    for category_name in categories:
+    for category in categories:
         collection = await add_collection_helper(
             uow=env.uow,
             file_manager=env.file_manager,
             images_generator=env.images_generator,
-            category_name=category_name,
+            category=category,
         )
     async with env.uow as uow:
         collection_in_db = await uow.db.read(
@@ -69,13 +67,12 @@ async def test_create_collection_category_when_collection_exists_success(
 @pytest.mark.asyncio
 async def test_create_collection_category_idempotency(collections_env_with_categories):
     env, categories = await collections_env_with_categories()
-
     # Добавляем первый раз
     collection = await add_collection_helper(
         uow=env.uow,
         file_manager=env.file_manager,
         images_generator=env.images_generator,
-        category_name=categories[0],
+        category=categories[0],
     )
 
     # Добавляем ТОЙ ЖЕ коллекции ТУ ЖЕ категорию второй раз
@@ -83,7 +80,7 @@ async def test_create_collection_category_idempotency(collections_env_with_categ
         uow=env.uow,
         file_manager=env.file_manager,
         images_generator=env.images_generator,
-        category_name=categories[0],
+        category=categories[0],
     )
     async with env.uow as uow:
         collection_category = await uow.db.read(
@@ -99,12 +96,11 @@ async def test_create_collection_category_idempotency(collections_env_with_categ
 @pytest.mark.asyncio
 async def test_delete_collection_success(collections_env_with_categories):
     env, categories = await collections_env_with_categories(1)
-    category_name = categories[0]
     collection = await add_collection_helper(
         uow=env.uow,
         file_manager=env.file_manager,
         images_generator=env.images_generator,
-        category_name=category_name,
+        category=categories[0],
     )
     await delete_collection(
         collection_name="collection1",

@@ -107,8 +107,8 @@ async def collections_env_with_categories(collections_env):
             log.debug("category_name: %s", category.name)
             categories.append(category)
         async with collections_env.uow as uow:
-            await uow.db.create(seq_data=categories)
-        return collections_env, [category.name for category in categories]
+            categories = await uow.db.create(seq_data=categories)
+        return collections_env, categories
 
     return wrapper
 
