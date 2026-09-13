@@ -16,7 +16,8 @@ setup_logging()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     app.state.redis = await RedisProvider.create(conf.redis_host)
-    app.state.image_api = ImageHttpClient(url=f"http://{conf.image_service_url}/")
+    #app.state.image_api = ImageHttpClient(base_url=f"http://{conf.image_service_url}/")
+    app.state.image_api = ImageHttpClient(conf.image_service_url)
     app.state.db_provider = DbProvider(conf.db_url)
     try:
         yield

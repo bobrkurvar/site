@@ -1,16 +1,18 @@
 import domain
 from db import models
 from sqlalchemy import inspect
+from .tile import map_category_to_orm, map_category_to_domain
 
 
 def map_collection_to_domain(o: models.Collection) -> domain.Collection:
     insp = inspect(o)
     categories = None
     if "categories" not in insp.unloaded:
-        categories = [
-            domain.Category(name=link.category.name, id=link.category_id)
-            for link in o.categories
-        ]
+        categories = [map_category_to_domain(category) for category in o.categories]
+        # categories = [
+        #     domain.Category(name=link.name, id=link.id)
+        #     for link in o.categories
+        # ]
 
     return domain.Collection(
         collection_id=o.id,
@@ -25,8 +27,9 @@ def map_collection_to_orm(d: domain.Collection) -> models.Collection:
         id=d.id,
         name=d.name,
         image_path=d.image.image_path,
+        categories = [map_category_to_orm(category) for category in d.categories]
         # Маппер сливает строки в прокси
-        categories_proxy=[c.id for c in d.categories],
+        #categories_proxy=[c.id for c in d.categories],
     )
 
 

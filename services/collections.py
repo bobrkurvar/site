@@ -2,6 +2,7 @@ import logging
 import asyncio
 from domain import Collection
 from infra.security import calculate_file_hash
+from .dto import GeneratedVariants
 
 log = logging.getLogger(__name__)
 
@@ -28,11 +29,11 @@ async def add_collection(
                 async with file_manager.session() as files:
                     img_bytes = collection.image.consume_bytes()
                     await files.save(image_path, img_bytes)
-                    miniatures = await images_generator.generate_collection_variants(
+                    miniatures: GeneratedVariants = await images_generator.generate_collection_variants(
                         img_bytes
                     )
-                    for layer, miniature in miniatures.items():
-                        await files.save_by_layer(file_name, miniature, layer)
+                    for miniature in miniatures:
+                        await files.save_by_layer(file_name, miniature.data, miniature.layer)
             except TypeError:
                 log.debug(
                     "generate_image_variant_callback или save_files не получили нужную функцию"

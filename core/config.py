@@ -35,7 +35,7 @@ class Settings(BaseSettings):
 
     @property
     def image_service_url(self):
-        return f"{self.api_host}:{self.image_port}"
+        return f"http://{self.api_host}:{self.image_port}"
 
     @property
     def initial_admins_list(self):

@@ -30,7 +30,7 @@ document.getElementById('update-btn').addEventListener('click', () => {
 
 const collectionForm = document.getElementById('collection-form');
 const imageInput = document.getElementById('collection_image');
-const categorySelect = document.getElementById('category_name');
+const categorySelect = document.getElementById('category_id');
 
 document.getElementById('create-collection-btn').addEventListener('click', () => {
     collectionForm.action = "/admin/tiles/collections/create";

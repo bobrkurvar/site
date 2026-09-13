@@ -56,3 +56,9 @@ registry.register(
     domain.Image, models.TileImage, map_tile_image_to_orm, map_tile_image_to_domain
 )
 registry.register(domain.Admin, models.Admin, map_admin_to_orm, map_admin_to_domain)
+registry.register(
+    domain.CollectionCategory,
+    models.CollectionCategory,
+    map_collection_category_to_orm,
+    map_collection_category_to_domain,
+)

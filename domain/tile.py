@@ -230,18 +230,12 @@ class Collection:
     def __init__(
         self,
         name: str,
-        # image_bytes: bytes | None = None,
-        # image_path: str | None = None,
         image: Image,
         categories: list[Category] | Category | None = None,
         collection_id: int | None = None,
     ):
-        # if not image_path and not image_bytes:
-        #     raise ValueError(f"Коллекция '{name}' не может существовать без изображения")
         self.id = collection_id
         self.name = name.strip()
-        # self.image_path = image_path
-        # self.image_bytes = image_bytes
         self.image = image
 
         if isinstance(categories, list):
@@ -250,6 +244,11 @@ class Collection:
             self.categories = [categories]
         else:
             self.categories = []
+
+        if self.id is None and not self.categories:
+            raise ValueError(
+                "Новая коллекция должна принадлежать хотя бы одной категории"
+            )
 
     def assign_image_path(self, path: str):
         self.image = Image(

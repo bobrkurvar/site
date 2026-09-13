@@ -21,26 +21,45 @@ from domain import (
 log = logging.getLogger(__name__)
 
 
+
 @asynccontextmanager
 async def handle_integrity_errors():
     try:
         yield
+
     except IntegrityError as err:
-        diag = getattr(err.orig, "diag", None)
-        table_name = (
-            getattr(diag, "table_name", "unknown_table") if diag else "unknown_table"
-        )
         pgcode = getattr(err.orig, "pgcode", None)
 
+        original = err.orig.__cause__ or err.orig
+        message = str(original)
+
         if pgcode == "23505":
-            constraint_name = (
-                getattr(diag, "constraint_name", "unknown") if diag else "unknown"
-            )
-            raise AlreadyExistsError(table_name, constraint_name)
-        elif pgcode == "23503":
-            detail = getattr(diag, "message_detail", str(err)) if diag else str(err)
-            raise ForeignKeyViolationError(table_name, detail)
+            raise AlreadyExistsError(message) from err
+
+        if pgcode == "23503":
+            raise ForeignKeyViolationError(message) from err
+
         raise
+# @asynccontextmanager
+# async def handle_integrity_errors():
+#     try:
+#         yield
+#     except IntegrityError as err:
+#         diag = getattr(err.orig, "diag", None)
+#         table_name = (
+#             getattr(diag, "table_name", "unknown_table") if diag else "unknown_table"
+#         )
+#         pgcode = getattr(err.orig, "pgcode", None)
+#
+#         if pgcode == "23505":
+#             constraint_name = (
+#                 getattr(diag, "constraint_name", "unknown") if diag else "unknown"
+#             )
+#             raise AlreadyExistsError(table_name, constraint_name) from err
+#         elif pgcode == "23503":
+#             detail = getattr(diag, "message_detail", str(err)) if diag else str(err)
+#             raise ForeignKeyViolationError(table_name, detail) from err
+#         raise
 
 
 class GenericRepository:

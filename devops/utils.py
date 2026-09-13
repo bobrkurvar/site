@@ -20,6 +20,7 @@ def failed_services(compose_env: Compose) -> tuple[str, ...]:
 def execute_with_diagnostics(
     compose: Compose,
     *commands,
+    diagnostic_services=(),
     **execute_kwargs,
 ):
     execute_kwargs["check"] = True
@@ -30,7 +31,7 @@ def execute_with_diagnostics(
             **execute_kwargs,
         )
     except Exception:
-        failed = failed_services(compose)
+        failed = diagnostic_services + failed_services(compose)
         if failed:
             compose.execute(Logs(*failed))
         raise

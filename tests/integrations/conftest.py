@@ -15,6 +15,7 @@ from core import conf
 from domain import *
 from tests.fakes import FakeImageGenerator
 from dataclasses import dataclass
+from adapters.images_http_client import ImageHttpClient
 
 
 log = logging.getLogger(__name__)
@@ -31,30 +32,26 @@ async def db_provider():
 async def uow_fix(request, db_provider):
     uow = UnitOfWork(registry=registry, provider=db_provider)
     yield uow
-    try:
-        async with db_provider.engine.begin() as conn:
-            await conn.execute(
-                text(
-                    """
-                    TRUNCATE
-                        tile_images,
-                        categories,
-                        producers,
-                        tile_sizes,
-                        boxes,
-                        tiles,
-                        tile_colors,
-                        collections,
-                        tile_surface,
-                        collection_category,
-                        admins
-                    RESTART IDENTITY CASCADE;
+    async with db_provider.engine.begin() as conn:
+        await conn.execute(
+            text(
                 """
-                )
+                TRUNCATE
+                    tile_images,
+                    categories,
+                    producers,
+                    tile_sizes,
+                    boxes,
+                    tiles,
+                    tile_colors,
+                    collections,
+                    tile_surface,
+                    collection_category,
+                    admins
+                RESTART IDENTITY CASCADE;
+            """
             )
-    finally:
-        await db_provider.close()
-
+        )
 
 @pytest.fixture(autouse=True)
 def clean_fs_after_test(request):
@@ -69,6 +66,7 @@ class ProductsEnv:
     uow: UnitOfWork
     file_manager: ProductImagesManager
     images_generator: FakeImageGenerator
+    #images_generator: ImageHttpClient
 
 
 @dataclass
@@ -76,6 +74,7 @@ class CollectionsEnv:
     uow: UnitOfWork
     file_manager: CollectionImagesManager
     images_generator: FakeImageGenerator
+    #images_generator: ImageHttpClient
 
 
 @pytest.fixture
@@ -85,6 +84,7 @@ def products_env(uow_fix) -> ProductsEnv:
         uow=uow_fix,
         file_manager=file_manager,
         images_generator=FakeImageGenerator(),
+        #images_generator=ImageHttpClient(base_url=conf.image_service_url)
     )
 
 
@@ -94,6 +94,7 @@ def collections_env(uow_fix) -> CollectionsEnv:
     return CollectionsEnv(
         uow=uow_fix,
         file_manager=file_manager,
+        #images_generator=ImageHttpClient(base_url=conf.image_service_url)
         images_generator=FakeImageGenerator(),
     )
 
@@ -129,43 +130,6 @@ async def products_env_with_handbooks(products_env) -> ProductsEnv:
         )
     return products_env
 
-
-# @pytest.fixture
-# async def products_env_with_tiles(crud):
-#     async def wrapper(categories: dict, category_with_collection: dict = None):
-#         manager, product_file_manager, collection_file_manager = (
-#             crud,
-#             ProductImagesManager(root="tests/images", storage=FakeStorage()),
-#             CollectionImagesManager(root="tests/images", storage=FakeStorage()),
-#         )
-#         category_with_collection = (
-#             category_with_collection if category_with_collection else {}
-#         )
-#         for category_name, tiles_count in categories.items():
-#             collection_name = category_with_collection.get(category_name, False)
-#             for i in range(tiles_count):
-#                 await add_tile_helper(
-#                     manager=manager,
-#                     file_manager=product_file_manager,
-#                     images_generator=FakeImageGenerator(),
-#                     test_uow_class=False,
-#                     category_name=category_name,
-#                     size=TileSize(length=i, width=i, height=i),
-#                     color=TileColor(color_name=f"color{i}", feature_name=f"feature{i}"),
-#                     producer_name=f"producer{i}",
-#                 )
-#             if category_with_collection.get(category_name, False):
-#                 await add_collection_helper(
-#                     manager=manager,
-#                     file_manager=collection_file_manager,
-#                     images_generator=FakeImageGenerator(),
-#                     collection_name=collection_name,
-#                     category_name=category_name,
-#                     test_uow_class=False,
-#                 )
-#         return manager
-#
-#     return wrapper
 
 
 @pytest.fixture

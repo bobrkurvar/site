@@ -42,7 +42,7 @@ async def build_tile_filters(
     return filters
 
 
-async def fetch_items(db, limit, offset, category_id: int, **filters):
+async def fetch_items(db, limit:int, offset: int, category_id: int, **filters):
     total_count = await db.count(
         Tile,
         category_id=category_id,
@@ -144,10 +144,11 @@ async def get_catalog(
 
         if collection is not None:
             tiles, total_count = await fetch_collections_items(
-                uow.db,
-                collection.name,
-                limit,
-                offset,
+                db=uow.db,
+                collection_name=collection.name,
+                category_id=category_id,
+                limit=limit,
+                offset=offset,
                 **filters,
             )
         else:

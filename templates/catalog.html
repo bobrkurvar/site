@@ -100,7 +100,7 @@
             {% else %}
                 <div class="collection-grid">
                     {% for col in collections %}
-                        <a href="/catalog/{{ category_path }}/collections/{{ col.slug }}/{{ col.id }}" class="collection-item-link">
+                        <a href="/catalog/{{ category_path }}/{{ col.slug }}/{{ col.id }}" class="collection-item-link">
                         <div class="collection-item">
                             <div class="tile-image-container">
                                 {% if col.image_url %}

@@ -109,7 +109,7 @@ async def create_tokens_from_login(
     async with uow:
         await check_user(uow.db, verify, username, password)
     log.debug("user approve")
-    data.update(username=username)
+    data.update(sub=username)
     jti, family_id = create_token_jti(), create_token_family_id()
     await redis.set(f"rtfam:{family_id}", value=1, ttl=86400 * 7)
     await redis.set(f"rt:{jti}", value=-1, ttl=86400 * 7)

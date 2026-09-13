@@ -9,14 +9,14 @@ log = logging.getLogger(__name__)
 
 class ImageHttpClient:
 
-    def __init__(self, url=None, app=None):
+    def __init__(self, base_url, app=None):
         self._client = (
             AsyncClient(
                 transport=ASGITransport(app=app),
-                base_url=url,
+                base_url=base_url,
             )
             if app
-            else AsyncClient(base_url=url)
+            else AsyncClient(base_url=base_url)
         )
 
 

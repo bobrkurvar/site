@@ -18,13 +18,16 @@ async def admin_create_collection(
     uow: UowDep,
     images_generator: ImageHttpClientDep,
     collection_name: Annotated[str, Form()],
-    category_name: Annotated[str, Form()],
+    #category_name: Annotated[str, Form()],
+    category_id: Annotated[int, Form()],
     image: Annotated[UploadFile, File()],
 ):
     image = await image.read()
+    async with uow:
+        category = await uow.db.read_one(Category, id=category_id, with_raise=True)
     collection = Collection(
         name=collection_name,
-        categories=Category(category_name),
+        categories=category,
         image=Image(image_bytes=image),
     )
     await add_collection(

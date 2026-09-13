@@ -2,15 +2,15 @@ import logging
 import sys
 
 
-class IgnoreFilter(logging.Filter):
-    def filter(self, record):
-        ignore = {"asyncio", "python_multipart", "multipart"}
-        if record.levelno >= logging.WARNING:
-            return True
-        pocket = record.name.split(".")[0]
-        if pocket in ignore:
-            return False
-        return True
+# class IgnoreFilter(logging.Filter):
+#     def filter(self, record):
+#         ignore = {"asyncio", "python_multipart", "multipart"}
+#         if record.levelno >= logging.WARNING:
+#             return True
+#         pocket = record.name.split(".")[0]
+#         if pocket in ignore:
+#             return False
+#         return True
 
 
 def setup_logging():
@@ -28,8 +28,10 @@ def setup_logging():
         # console_handler.addFilter(IgnoreFilter())
         logger.addHandler(console_handler)
 
-    logger.addFilter(IgnoreFilter())
+    #logger.addFilter(IgnoreFilter())
     logging.getLogger("asyncio").setLevel(logging.WARNING)
+    logging.getLogger("httpx").setLevel(logging.WARNING)
+    logging.getLogger("httpcore").setLevel(logging.WARNING)
     logging.getLogger("multipart").setLevel(logging.WARNING)
     logging.getLogger("python_multipart").setLevel(logging.WARNING)
 
@@ -38,7 +40,7 @@ def setup_test_logging():
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
     # Не добавляем StreamHandler
-    logger.addFilter(IgnoreFilter())
+    #logger.addFilter(IgnoreFilter())
     logging.getLogger("asyncio").setLevel(logging.WARNING)
     logging.getLogger("multipart").setLevel(logging.WARNING)
     logging.getLogger("python_multipart").setLevel(logging.WARNING)

@@ -21,7 +21,11 @@ local_env = Compose(
 
 def integration_tests(*args):
     with test_env.down_before_and_after() as compose:
-        return execute_with_diagnostics(compose, Run("int_tests", build=True, command=args))
+        return execute_with_diagnostics(
+            compose,
+            Run("int_tests", build=True, command=args),
+            #diagnostic_services=("image_service", )
+        )
 
 
 def unit_tests(*args):
@@ -31,7 +35,11 @@ def unit_tests(*args):
 
 def e2e_tests(*args):
     with test_env.down_before_and_after() as compose:
-        return execute_with_diagnostics(compose, Run("e2e_tests", build=True, command=args))
+        return execute_with_diagnostics(
+            compose,
+            Run("e2e_tests", build=True, command=args),
+            diagnostic_services=("app", "nginx"),
+        )
 
 
 def all_tests():

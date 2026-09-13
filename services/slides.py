@@ -1,4 +1,5 @@
 import logging
+from .dto import GeneratedVariants
 
 log = logging.getLogger(__name__)
 
@@ -12,9 +13,9 @@ async def add_slides(images: list[bytes], images_generator, file_manager):
             image_path = base_slide_path / file_name
             async with file_manager.session() as files:
                 await files.save(image_path, image)
-                miniatures = await images_generator.generate_slide_variants(image)
-                for layer, miniature in miniatures.items():
-                    await files.save_by_layer(file_name, miniature, layer)
+                miniatures: GeneratedVariants = await images_generator.generate_slide_variants(image)
+                for miniature in miniatures:
+                    await files.save_by_layer(file_name, miniature.data, miniature.layer)
         except TypeError:
             log.debug(
                 "generate_image_variant_callback  или save_files не получили нужную функцию"

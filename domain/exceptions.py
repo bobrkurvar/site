@@ -23,20 +23,20 @@ class NotFoundError(RepositoryError):
 
 class AlreadyExistsError(RepositoryError):
     """Запись с таким атрибутом уже существует в базе"""
-
-    def __init__(self, model_name: str, constraint: str):
-        self.model_name = model_name
-        self.constraint = constraint
-        super().__init__(f"{model_name} already exists (constraint: {constraint})")
+    pass
+    # def __init__(self, model_name: str, constraint: str):
+    #     self.model_name = model_name
+    #     self.constraint = constraint
+    #     super().__init__(f"{model_name} already exists (constraint: {constraint})")
 
 
 class ForeignKeyViolationError(RepositoryError):
     """Ошибка внешнего ключа"""
-
-    def __init__(self, model_name: str, detail: str):
-        self.model_name = model_name
-        self.detail = detail
-        super().__init__(f"Foreign key violation in {model_name}: {detail}")
+    pass
+    # def __init__(self, model_name: str, detail: str):
+    #     self.model_name = model_name
+    #     self.detail = detail
+    #     super().__init__(f"Foreign key violation in {model_name}: {detail}")
 
 
 # БАЗОВЫЕ ОШИБКИ АВТОРИЗАЦИИ
