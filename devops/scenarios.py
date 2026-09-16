@@ -73,3 +73,12 @@ def create_migration(name: str | None = None):
 
 def migrate():
     return execute_with_diagnostics(local_env,Run("migrate"))
+
+
+def generate_miniatures():
+    return execute_with_diagnostics(prod_env, Run("generate_miniatures", build=True))
+
+
+def rename_collections():
+    with prod_env.down_before_and_after(volumes=False) as compose:
+        return execute_with_diagnostics(compose, Run("rename_collections", build=True))

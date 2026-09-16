@@ -1,5 +1,5 @@
 from collections.abc import Callable
-from .scenarios import integration_tests, unit_tests, all_tests, e2e_tests, local_deploy, create_migration, migrate
+from .scenarios import integration_tests, unit_tests, all_tests, e2e_tests, local_deploy, create_migration, migrate, generate_miniatures, rename_collections
 
 import questionary
 
@@ -17,7 +17,9 @@ TREE: Tree = {
     },
     "local": local_deploy,
     "create_migration": create_migration,
-    "migrate": migrate
+    "migrate": migrate,
+    "generate_miniatures": generate_miniatures,
+    "rename_collections": rename_collections
 }
 
 

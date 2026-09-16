@@ -15,8 +15,8 @@ from core import conf
 from domain import *
 from tests.fakes import FakeImageGenerator
 from dataclasses import dataclass
-from adapters.images_http_client import ImageHttpClient
 
+from tests.helpers import make_default_tile
 
 log = logging.getLogger(__name__)
 
@@ -116,16 +116,17 @@ async def collections_env_with_categories(collections_env):
 
 @pytest.fixture
 async def products_env_with_handbooks(products_env) -> ProductsEnv:
+    default_tile = make_default_tile()
     uow = products_env.uow
     async with uow:
         await uow.db.create(
             seq_data=[
-                Size(length=300, width=200, height=10),
-                Color(color_name="color", feature_name="feature"),
-                Producer(name="producer"),
-                Box(weight=30, area=1),
-                Surface(name="surface"),
-                Category(name="category"),
+                default_tile.size,
+                default_tile.color,
+                default_tile.producer,
+                default_tile.box,
+                default_tile.surface,
+                default_tile.category,
             ]
         )
     return products_env

@@ -1,6 +1,7 @@
 import asyncio
 import logging
 from pathlib import Path
+from contracts.layers import LAYERS_IMAGE_EXTENSION
 
 import aiofiles  # type: ignore
 
@@ -21,12 +22,6 @@ class FileSystemStorage:
         path = Path(path)
         await asyncio.to_thread(path.unlink, missing_ok=True)
 
-    # @staticmethod
-    # async def get_directory(main_path: str | Path, other_path: str | Path) -> str:
-    #     path_exists = await asyncio.to_thread(Path(main_path).exists)
-    #     if path_exists:
-    #         return Path(main_path).as_posix()
-    #     return Path(other_path).as_posix()
 
 
 class FileManager:
@@ -40,6 +35,14 @@ class FileManager:
     def session(self):
         return FileSession(self)
 
+    @staticmethod
+    def _layer_file_name(base_path: str | Path) -> str:
+        return Path(base_path).with_suffix(LAYERS_IMAGE_EXTENSION).name
+
+    def get_layer_path(self, base_path: str | Path, layer: str) -> str:
+        file_name = self._layer_file_name(base_path)
+        return str(self.resolve_path(file_name, layer))
+
     def resolve_path(self, file_name: str = "", layer: str | None = None) -> Path:
         if layer not in self._layers:
             raise ValueError(f"Unknown layer: {layer}")
@@ -50,7 +53,8 @@ class FileManager:
         return image_path
 
     async def save_by_layer(self, file_name: str, img: bytes, layer: str):
-        path = self.resolve_path(file_name, layer)
+        name = self._layer_file_name(file_name)
+        path = self.resolve_path(name, layer)
         await self.save(path, img)
         return path
 
@@ -61,7 +65,8 @@ class FileManager:
 
     async def delete_by_layers(self, base_path: str | Path, layers: list[str]) -> int:
         log.debug("deleted by layers: %s", layers)
-        file_name = Path(base_path).name
+        file_name = self._layer_file_name(base_path)
+        #file_name = Path(base_path).name
         paths = [self.resolve_path(file_name, layer) for layer in layers]
         paths.append(base_path)  # type: ignore
         # return await self.delete_async(paths)
@@ -75,9 +80,6 @@ class FileManager:
             await self._storage.delete(path)
             deleted += 1
         return deleted
-
-    async def get_directory(self, main_path: str | Path, other_path: str | Path) -> str:
-        return await self._storage.get_directory(main_path, other_path)
 
 
 class FileSession:

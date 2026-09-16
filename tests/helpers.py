@@ -2,8 +2,28 @@ from domain import (
     Category,
     Collection,
     Image,
+    Tile,
+    Size,
+    Surface,
+    Producer,
+    Box,
+    Color
 )
 from services.collections import add_collection
+
+
+def make_default_tile():
+    return Tile(
+        name="Tile",
+        size=Size(length=300, width=200, height=10),
+        color=Color("color", "feature"),
+        producer=Producer("producer"),
+        box=Box(area=1, weight=30),
+        boxes_count=3,
+        images=[Image(b"MAIN"), Image(b"A"), Image(b"B")],
+        surface=Surface("surface"),
+        category=Category("category"),
+    )
 
 
 async def add_collection_helper(
@@ -28,16 +48,16 @@ def assert_tile_fields(tile, expected):
         assert actual == v, f"{k}: expected {v}, got {actual}"
 
 
-def assert_size(size, expected: dict):
-    assert size.length == expected["length"]
-    assert size.width == expected["width"]
-    assert size.height == expected["height"]
-
-
-def assert_box(box, expected):
-    # функция для вынесения логики проверки размеров данных о коробке
-    assert box.weight == expected["weight"]
-    assert box.area == expected["area"]
+# def assert_size(size, expected: dict):
+#     assert size.length == expected["length"]
+#     assert size.width == expected["width"]
+#     assert size.height == expected["height"]
+#
+#
+# def assert_box(box, expected):
+#     # функция для вынесения логики проверки размеров данных о коробке
+#     assert box.weight == expected["weight"]
+#     assert box.area == expected["area"]
 
 
 async def assert_handbooks_count(db, models, expected_count):
@@ -49,6 +69,7 @@ async def assert_handbooks_count(db, models, expected_count):
 
 
 def update_filters(
+    tile: Tile,
     length_missing: bool = False,
     width_missing: bool = False,
     height_missing: bool = False,
@@ -58,30 +79,94 @@ def update_filters(
     feature_name_missing: bool = False,
 ):
     # новые данные для обновления tile с возможностью пропускать половины ключей
-    new_size = {"length": 500, "width": 300, "height": 20}
+    size = {"length": 500, "width": 300, "height": 20}
+    box = {"weight": 50, "area": 50}
+    color = {"color_name": "NewColor", "feature_name": "NewFeature"}
+
     if length_missing:
-        del new_size["length"]
+        del size["length"]
     if width_missing:
-        del new_size["width"]
+        del size["width"]
     if height_missing:
-        del new_size["height"]
-    new_color = {"color_name": "NewColor", "feature_name": "NewFeature"}
-    if color_name_missing:
-        del new_color["color_name"]
-    if feature_name_missing:
-        del new_color["feature_name"]
-    new_box = {"weight": 50, "area": 50}
-    if area_missing:
-        del new_box["area"]
+        del size["height"]
+
     if weight_missing:
-        del new_box["weight"]
-    return dict(
-        name="NewTile",
-        size=new_size,
-        color=new_color,
-        box=new_box,
-        producer_name="NewProducer",
-        boxes_count=5,
-        category_name="NewCategory",
-        surface_name="NewSurface",
-    )
+        del box["weight"]
+    if area_missing:
+        del box["area"]
+
+    if color_name_missing:
+        del color["color_name"]
+    if feature_name_missing:
+        del color["feature_name"]
+
+    service_values = {
+        "name": "NewTile",
+        "size": size,
+        "color": color,
+        "box": box,
+        "producer_name": "NewProducer",
+        "boxes_count": 5,
+        "category_name": "NewCategory",
+        "surface_name": "NewSurface",
+    }
+
+    expected = {
+        "name": "NewTile",
+        "boxes_count": 5,
+
+        "producer": Producer("NewProducer"),
+        "category": Category("NewCategory"),
+        "surface": Surface("NewSurface"),
+
+        "size": Size(
+            length=size.get("length", tile.size.length),
+            width=size.get("width", tile.size.width),
+            height=size.get("height", tile.size.height),
+        ),
+        "box": Box(
+            weight=box.get("weight", tile.box.weight),
+            area=box.get("area", tile.box.area),
+        ),
+        "color": Color(
+            name=color.get("color_name", tile.color.name),
+            feature=color.get("feature_name", tile.color.feature),
+        ),
+    }
+
+    return service_values, expected
+
+
+async def create_tiles(uow, category_id: int | None = None, collection_name: str | None = None, count: int = 1, handbooks = None):
+    async with uow:
+        if handbooks is None:
+            size = await uow.db.create(Size(length=300, width=200, height=10))
+            box = await uow.db.create(Box(area=1, weight=30))
+            producer = await uow.db.create(Producer(f"producer"))
+            color = await uow.db.create(Color(f"color", f"feature"))
+            handbooks = size, box, producer, color
+        else:
+            size, box, producer, color = handbooks
+        about_category = {}
+        if category_id is None:
+            category = await uow.db.create(Category("category"))
+            about_category["category"] = category
+        else:
+            about_category["category_id"] = category_id
+
+        tiles = []
+        for i in range(count):
+            name = f"Tile{i}" if collection_name is None else f"Tile{i} \"{collection_name}\""
+            tile = Tile(
+                name=name,
+                size=size,
+                color=color,
+                producer=producer,
+                box=box,
+                boxes_count=3,
+                images=[Image(b"MAIN"), Image(b"A"), Image(b"B")],
+                **about_category
+            )
+            tile = await uow.db.create(tile)
+            tiles.append(tile)
+        return tiles, handbooks

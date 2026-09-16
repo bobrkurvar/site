@@ -19,6 +19,11 @@ class Size:
     def __str__(self):
         return f"{self.format_decimal(self.length)}×{self.format_decimal(self.width)}×{self.format_decimal(self.height)}"
 
+    def __eq__(self, other):
+        if not isinstance(other, Size):
+            return NotImplemented
+        return self.width == other.width and self.length == other.length and self.height == other.height
+
     @staticmethod
     def format_decimal(value: Decimal) -> str:
         as_float = float(value)
@@ -28,17 +33,33 @@ class Size:
 
 
 class Color:
-    def __init__(self, color_name: str, feature_name: str = ""):
-        self.color_name = color_name.strip()
-        self.feature_name = feature_name
+    def __init__(self, name: str, feature: str = ""):
+        self.name = name.strip()
+        self.feature = feature
+
+    def __eq__(self, other):
+        if not isinstance(other, Color):
+            return NotImplemented
+        return (
+            self.name,
+            self.feature,
+        ) == (
+            other.name,
+            other.feature,
+        )
 
     def __str__(self):
-        return f"{self.color_name} {self.feature_name}"
+        return f"{self.name} {self.feature}"
 
 
 class Surface:
     def __init__(self, name: str):
         self.name = name
+
+    def __eq__(self, other):
+        if not isinstance(other, Surface):
+            return NotImplemented
+        return self.name == other.name
 
     def __str__(self):
         return f"{self.name}"
@@ -47,6 +68,11 @@ class Surface:
 class Producer:
     def __init__(self, name: str):
         self.name = name
+
+    def __eq__(self, other):
+        if not isinstance(other, Producer):
+            return NotImplemented
+        return self.name == other.name
 
     def __str__(self):
         return f"{self.name}"
@@ -64,12 +90,29 @@ class Box:
     def __str__(self):
         return str(self.weight.normalize())
 
+    def __eq__(self, other):
+        if not isinstance(other, Box):
+            return NotImplemented
+
+        return (
+            self.weight,
+            self.area,
+        ) == (
+            other.weight,
+            other.area,
+        )
+
 
 class Category:
 
     def __init__(self, name: str, id: int | None = None):
         self.id = id
         self.name = name
+
+    def __eq__(self, other):
+        if not isinstance(other, Category):
+            return NotImplemented
+        return self.name == other.name
 
     def __str__(self):
         return self.name
@@ -104,18 +147,18 @@ class Tile:
         self.name = name
         self.color = color
         self.surface = surface
-        self.size = size
-        # на случай если не подгружены все данные о size
-        self.size_id = size.id if size else size_id
-        self.box = box
-        # на случай если не подгружены все данные о box
-        self.box_id = box.id if box else box_id
-        self.category_id = category.id if category else category_id
-        self.boxes_count = boxes_count
-        # self._images_bytes = images_bytes
 
-        self.producer = producer
+        self.box = box
+        self.size = size
         self.category = category
+
+        self._size_id = size_id
+        self._box_id = box_id
+        self._category_id = category_id
+
+        self.boxes_count = boxes_count
+        self.producer = producer
+
         # Первый элемент в images - main image
         self._images = images
 
@@ -131,7 +174,7 @@ class Tile:
 
         if self.category is None and self.category_id is None:
             raise ValueError(
-                "Плитка не может существовать без коробки (category или category_id)"
+                "Плитка не может существовать без категории (category или category_id)"
             )
 
     def __str__(self):
@@ -171,34 +214,52 @@ class Tile:
         return self.category.name
 
     @property
-    def surface_name(self):
-        return self.surface.name
+    def category_id(self) -> int | None:
+        if self.category is not None:
+            return self.category.id
+        return self._category_id
 
     @property
-    def color_name(self):
-        return self.color.color_name
+    def size_id(self) -> int | None:
+        if self.size is not None:
+            return self.size.id
+        return self._size_id
 
     @property
-    def feature_name(self):
-        return self.color.feature_name
+    def box_id(self) -> int | None:
+        if self.box is not None:
+            return self.box.id
+        return self._box_id
 
-    @property
-    def size_height(self):
-        if not self.size:
-            raise ValueError("Size нет")
-        return self.size.height
-
-    @property
-    def size_width(self):
-        if not self.size:
-            raise ValueError("Size нет")
-        return self.size.width
-
-    @property
-    def size_length(self):
-        if not self.size:
-            raise ValueError("Size нет")
-        return self.size.length
+    # @property
+    # def surface_name(self):
+    #     return self.surface.name
+    #
+    # @property
+    # def color_name(self):
+    #     return self.color.color_name
+    #
+    # @property
+    # def feature_name(self):
+    #     return self.color.feature_name
+    #
+    # @property
+    # def size_height(self):
+    #     if not self.size:
+    #         raise ValueError("Size нет")
+    #     return self.size.height
+    #
+    # @property
+    # def size_width(self):
+    #     if not self.size:
+    #         raise ValueError("Size нет")
+    #     return self.size.width
+    #
+    # @property
+    # def size_length(self):
+    #     if not self.size:
+    #         raise ValueError("Size нет")
+    #     return self.size.length
 
 
 class Image:

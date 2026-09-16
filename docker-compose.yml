@@ -48,8 +48,14 @@ services:
       - internal
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./db/init/backup.sql:/docker-entrypoint-initdb.d/01-backup.sql:ro # при пустой базе выполнит всё что в этой папке
+      - ./db/init/backup_final.sql:/docker-entrypoint-initdb.d/01-backup.sql:ro # при пустой базе выполнит всё что в этой папке
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U postgres -d ${DB_NAME}"]
+      interval: 2s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
 
   migrate:
     profiles: ["tools"]
@@ -87,55 +93,38 @@ services:
       - postgres
     restart: "no"
 
-  resize-images-script:
+  generate_miniatures:
+    image: mysite/generate_miniatures
     profiles: [ "tools" ]
     build:
       context: .
       dockerfile: ./Dockerfile
-      target: resize-images-script
+      target: generate_miniatures
     env_file:
       - .env
     volumes:
       - ./static/images:/pysite/static/images # bind mount docker compose down -v не удалит этот том
     restart: "no"
 
-  migrate-collection-paths:
+  rename_collections:
+    image: mysite/rename_collections
     profiles: [ "tools" ]
     build:
       context: .
       dockerfile: ./Dockerfile
-      target: migrate_paths_script
+      target: rename_collections
     env_file:
       - .env
     environment:
       DB_HOST: postgres
       DB_USER: postgres
+    volumes:
+      - ./static/images/base/collections:/pysite/static/images/base/collections # bind mount docker compose down -v не удалит этот том
     networks:
       - internal
     depends_on:
-      - postgres
-    volumes:
-      - ./static/images:/pysite/static/images
-    restart: "no"
-
-  fix-extensions-script:
-    profiles: [ "tools" ]
-    build:
-      context: .
-      dockerfile: ./Dockerfile
-      target: fix-extensions-script
-    env_file:
-      - .env
-    environment:
-      DB_HOST: postgres
-      DB_USER: postgres
-      DB_PASSWORD: ${DB_PASSWORD}
-    depends_on:
-      - postgres
-    networks:
-      - internal
-    volumes:
-      - ./static/images:/pysite/static/images
+      postgres:
+        condition: service_healthy
     restart: "no"
 
   nginx:

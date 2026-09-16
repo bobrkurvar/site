@@ -65,8 +65,8 @@ async def fetch_collections_items(
     db,
     collection_name: str,
     category_id: int,
-    limit: int,
-    offset: int,
+    limit: int | None = None,
+    offset: int | None = None,
     **filters,
 ):
     search_pattern = f'%"{collection_name}"%'
@@ -128,8 +128,8 @@ async def read_catalog_context(
 async def get_catalog(
     uow,
     category_id: int,
-    limit: int,
-    offset: int,
+    limit: int | None = None,
+    offset: int | None = None,
     collection_id: int | None = None,
     **filters,
 ) -> CatalogPage:
@@ -166,8 +166,8 @@ async def get_catalog(
 async def get_collections_filtered_by_category(
     db,
     category_id: int,
-    offset: int,
-    limit: int,
+    offset: int | None = None,
+    limit: int | None = None,
 ) -> tuple[tuple[Collection, ...], int]:
     await db.read_one(
         Category,

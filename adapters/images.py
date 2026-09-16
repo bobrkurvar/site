@@ -35,35 +35,6 @@ def generate_image_with_exc(generate):
     return wrapper
 
 
-# class ImageGenerator:
-#     def __init__(self, api_client):
-#         self._api_client = api_client
-#
-#     @generate_image_with_exc
-#     async def generate_product_variants(self, img: bytes):
-#         img = base64.b64encode(img).decode("utf-8")
-#         response = await self._api_client.generate_images(
-#             data=img, targets=(PRODUCTS, DETAILS)
-#         )
-#         response[PRODUCTS] = base64.b64decode(response[PRODUCTS])
-#         response[DETAILS] = base64.b64decode(response[DETAILS])
-#         return response
-#
-#     @generate_image_with_exc
-#     async def generate_collection_variants(self, img: bytes):
-#         img = base64.b64encode(img).decode("utf-8")
-#         response = await self._api_client.generate_images(
-#             data=img, targets=(COLLECTIONS,)
-#         )
-#         response[COLLECTIONS] = base64.b64decode(response[COLLECTIONS])
-#         return response
-#
-#     @generate_image_with_exc
-#     async def generate_slide_variant(self, img: bytes):
-#         img = base64.b64encode(img).decode("utf-8")
-#         response = await self._api_client.generate_images(data=img, targets=(SLIDES,))
-#         response[SLIDES] = base64.b64decode(response[SLIDES])
-#         return response
 
 
 class ProductImagesManager(FileManager):
@@ -78,16 +49,16 @@ class ProductImagesManager(FileManager):
         return self.resolve_path(file_name, ORIGINAL_PRODUCT)
 
     def get_product_catalog_image_path(self, base_path: str) -> str:
-        base_path = Path(base_path)
-        name = base_path.name
-        return str(self.resolve_path(name, PRODUCTS))
-        #return await self.get_directory(path_catalog, base_path)
+        # base_path = Path(base_path)
+        # name = base_path.name
+        # return str(self.resolve_path(name, PRODUCTS))
+        return self.get_layer_path(base_path, PRODUCTS)
 
     def get_product_details_image_path(self, base_path: str) -> str:
-        base_path = Path(base_path)
-        name = base_path.name
-        return str(self.resolve_path(name, DETAILS))
-        #return await self.get_directory(path_details, base_path)
+        # base_path = Path(base_path)
+        # name = base_path.name
+        #return str(self.resolve_path(name, DETAILS))
+        return self.get_layer_path(base_path, DETAILS)
 
 
 class CollectionImagesManager(FileManager):
@@ -101,9 +72,9 @@ class CollectionImagesManager(FileManager):
         return self.resolve_path(file_name, ORIGINAL_COLLECTION)
 
     def get_collections_image_path(self, base_path: str) -> str:
-        name = Path(base_path).name
-        return str(self.resolve_path(name, COLLECTIONS))
-        #return await self.get_directory(path_collections, base_path)
+        # name = Path(base_path).name
+        # return str(self.resolve_path(name, COLLECTIONS))
+        return self.get_layer_path(base_path, COLLECTIONS)
 
 
 class SlideImagesManager(FileManager):
@@ -121,9 +92,9 @@ class SlideImagesManager(FileManager):
         return self.resolve_path(file_name, ORIGINAL_SLIDE)
 
     def get_slides_image_path(self, base_path: str | Path) -> str:
-        name = Path(base_path).name
-        return str(self.resolve_path(name, SLIDES))
-        #return await self.get_directory(path_slides, base_path)
+        # name = Path(base_path).name
+        # return str(self.resolve_path(name, SLIDES))
+        return self.get_layer_path(base_path, SLIDES)
 
     def get_all_slides_paths(self) -> tuple[str, ...]:
         path = self.resolve_path(layer=ORIGINAL_SLIDE)

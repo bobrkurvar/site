@@ -30,7 +30,7 @@ def map_tile_to_domain(o: models.Tile) -> domain.Tile:
         #category_obj = domain.Category(id=o.category.id, name=o.category.name)
         category_obj = map_category_to_domain(o.category)
 
-    color = domain.Color(color_name=o.color_name, feature_name=o.feature_name)
+    color = domain.Color(name=o.color_name, feature=o.feature_name)
 
     surface = domain.Surface(name=o.surface_name) if o.surface_name else None
     producer = domain.Producer(name=o.producer_name)
@@ -57,13 +57,13 @@ def map_tile_to_orm(d: domain.Tile) -> models.Tile:
     return models.Tile(
         id=d.id,
         name=d.name,
-        color_name=d.color.color_name,
-        feature_name=d.color.feature_name,
+        color_name=d.color.name,
+        feature_name=d.color.feature,
         size_id=d.size.id,
         box_id=d.box.id,
-        surface_name=d.surface.name,
+        surface_name=d.surface.name if d.surface else None,
         producer_name=d.producer.name,
-        category_id=d.category.id,
+        category_id=d.category_id,
         boxes_count=d.boxes_count,
         images=orm_images,
     )
@@ -79,10 +79,10 @@ def map_size_to_orm(d: domain.Size) -> models.TileSize:
 
 
 def map_color_to_domain(o: models.TileColor) -> domain.Color:
-    return domain.Color(color_name=o.color_name, feature_name=o.feature_name)
+    return domain.Color(name=o.color_name, feature=o.feature_name)
 
 def map_color_to_orm(d: domain.Color) -> models.TileColor:
-    return models.TileColor(color_name=d.color_name, feature_name=d.feature_name)
+    return models.TileColor(color_name=d.name, feature_name=d.feature)
 
 
 def map_surface_to_domain(o: models.TileSurface) -> domain.Surface:

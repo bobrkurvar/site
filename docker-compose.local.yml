@@ -99,37 +99,6 @@ services:
         condition: service_completed_successfully
     restart: "no"
 
-  resize-images-script:
-    profiles: [ "tools" ]
-    build:
-      context: .
-      dockerfile: ./Dockerfile
-      target: resize-images-script
-    env_file:
-      - .env
-    volumes:
-      - ./static/images:/pysite/static/images # bind mount docker compose down -v не удалит этот том
-    restart: "no"
-
-  migrate-collection-paths:
-    profiles: [ "tools" ]
-    build:
-      context: .
-      dockerfile: ./Dockerfile
-      target: migrate_paths_script
-    env_file:
-      - .env
-    environment:
-      DB_HOST: postgres
-      DB_USER: postgres
-    networks:
-      - internal
-    depends_on:
-      - postgres
-    volumes:
-      - ./static/images:/pysite/static/images
-    restart: "no"
-
   nginx:
     image: nginx:1.27-alpine
     depends_on:
@@ -149,24 +118,6 @@ services:
     networks:
       - internal
 
-  fix-extensions-script:
-    profiles: [ "tools" ]
-    build:
-      context: .
-      dockerfile: ./Dockerfile
-      target: fix-extensions-script
-    env_file:
-      - .env
-    environment:
-      DB_HOST: postgres
-      DB_USER: postgres
-    depends_on:
-      - postgres
-    networks:
-      - internal
-    volumes:
-      - ./static/images:/pysite/static/images # Пробрасываем картинки для переименования
-    restart: "no"
 
 networks:
   internal:

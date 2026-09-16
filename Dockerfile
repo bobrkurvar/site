@@ -45,27 +45,22 @@ COPY services services
 COPY scripts/add_admins.py ./add_admins.py
 CMD ["python", "-m", "add_admins"]
 
-FROM base AS resize-images-script
+FROM base AS generate_miniatures
 COPY image_worker.py .
-COPY shared.py .
-COPY scripts/resize_images.py ./resize_images.py
-CMD ["python", "-m", "resize_images"]
+COPY contracts ./contracts
+COPY scripts/generate_miniatures.py ./generate_miniatures.py
+CMD ["python", "-m", "generate_miniatures"]
 
-FROM base AS migrate_paths_script
-COPY scripts/collection_paths.py .
-COPY domain domain
-COPY adapters/db.py adapters/db.py
-COPY db db
-COPY adapters/db_provider.py adapters/db_provider.py
-CMD ["python", "collection_paths.py"]
 
-FROM base AS fix-extensions-script
-COPY scripts/fix_extensions.py ./fix_extensions.py
-COPY adapters adapters
-COPY domain domain
-COPY db db
-COPY infra infra
-CMD ["python", "fix_extensions.py"]
+FROM base AS rename_collections
+COPY scripts/rename_collections.py ./rename_collections.py
+COPY adapters ./adapters
+COPY db ./db
+COPY domain ./ domain
+COPY services ./services
+COPY contracts ./contracts
+COPY infra ./infra
+CMD ["python", "-m", "rename_collections"]
 
 
 FROM base AS int_tests
@@ -108,7 +103,7 @@ COPY domain domain
 COPY pytest.ini pytest.ini
 COPY adapters adapters
 COPY db db
-COPY shared.py shared.py
+COPY contracts contracts
 WORKDIR /pysite/tests/e2e
 ENV PYTHONPATH=/pysite
 ENTRYPOINT ["pytest"]

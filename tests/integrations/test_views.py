@@ -1,54 +1,53 @@
-# import pytest
-#
-# # from services.views import build_data_for_filters
-#
-#
-# @pytest.mark.asyncio
-# async def test_build_data_for_filters_catalog_with_categories_when_exists_handbooks_not_exists_items(
-#     products_env, query_service
-# ):
-#     manager, _ = products_env
-#     slug = await manager.create(Slug(name="category"))
-#     # sizes, colors, producers = await build_data_for_filters(
-#     #     manager, category=slug.slug
-#     # )
-#     filters = await query_service.get_catalog_filters(category_slug=slug.slug)
-#     assert not filters.sizes and not filters.colors and not filters.producers
-#
-#
-# @pytest.mark.asyncio
-# async def test_build_data_for_filters_with_category(
-#     products_env_with_tiles, query_service
-# ):
-#     categories = {"category1": 3, "category2": 4}
-#     manager = await products_env_with_tiles(categories)
-#     slug = await manager.read_one(Slug, name="category2")
-#     # sizes, colors, producers = await build_data_for_filters(
-#     #     manager, category=category2_slug
-#     # )
-#     filters = await query_service.get_catalog_filters(category_slug=slug.slug)
-#     assert len(filters.sizes) == len(filters.colors) == len(filters.producers) == 4
-#
-#
-# @pytest.mark.asyncio
-# async def test_build_data_for_filters_with_category_and_collection(
-#     products_env_with_tiles, query_service
-# ):
-#     categories = {"category1": 7, "category2": 4}
-#     categories_with_collections = {
-#         "category1": "collection1",
-#         "category2": "collection2",
-#     }
-#     manager = await products_env_with_tiles(categories, categories_with_collections)
-#     category1_slug = (await manager.read_one(Slug, name="category1")).slug
-#     category2_slug = (await manager.read_one(Slug, name="category2")).slug
-#     # sizes1, colors1, producers1 = await build_data_for_filters(
-#     #     manager, category=category1_slug
-#     # )
-#     # sizes2, colors2, producers2 = await build_data_for_filters(
-#     #     manager, category=category2_slug
-#     # )
-#     filters1 = await query_service.get_catalog_filters(category_slug=category1_slug)
-#     filters2 = await query_service.get_catalog_filters(category_slug=category2_slug)
-#     assert len(filters1.sizes) == len(filters1.colors) == len(filters1.producers) == 7
-#     assert len(filters2.sizes) == len(filters2.colors) == len(filters2.producers) == 4
+from services.views import get_collections_filtered_by_category, get_catalog, CatalogPage
+import pytest
+from domain import NotFoundError
+
+
+async def test_get_collections_from_category(uow_fix, make_categories, make_collections):
+    category1, category2 = await make_categories(2)
+    expected = await make_collections(categories=category1, count=2)
+    await make_collections(categories=category2, count=3)
+
+    async with uow_fix as uow:
+        collections, total_count = await get_collections_filtered_by_category(
+            db=uow.db,
+            category_id=category1.id,
+        )
+
+    assert {c.id for c in collections} == {c.id for c in expected}
+    assert total_count == 2
+
+
+async def test_get_product_catalog_from_category(uow_fix, make_categories, make_tiles):
+    category1, category2 = await make_categories(2)
+    expected = await make_tiles(category_id=category1.id, count=3)
+    await make_tiles(category_id=category2.id, count=2)
+
+    page: CatalogPage = await get_catalog(uow=uow_fix, category_id=category1.id)
+
+    assert {tile.id for tile in page.tiles} == {tile.id for tile in expected}
+    assert page.total_count == 3
+
+
+async def test_get_product_catalog_from_category_and_collection(uow_fix, make_categories, make_collections, make_tiles):
+    category1, category2 = await make_categories(2)
+    collection1, collection2 = await make_collections(count=2, categories=category1)
+    expected = await make_tiles(category_id=category1.id, collection_name=collection1.name, count=3)
+    # та же коллекция, но другая категория
+    await make_tiles(category_id=category2.id, collection_name=collection1.name, count=2)
+    # та же категория, но другая коллекция
+    await make_tiles(category_id=category1.id, collection_name=collection2.name, count=2)
+
+    page: CatalogPage = await get_catalog(uow=uow_fix, category_id=category1.id, collection_id=collection1.id)
+
+    assert {tile.id for tile in page.tiles} == {tile.id for tile in expected}
+    assert all(tile.category_id == category1.id for tile in page.tiles)
+    assert all(f'"{collection1.name}"' in tile.name for tile in page.tiles)
+    assert page.total_count == 3
+
+
+async def test_get_product_catalog_from_category_and_collection_without_relation(uow_fix, make_categories, make_collections, make_tiles):
+    category1, category2 = await make_categories(2)
+    collection1, = await make_collections(categories=category1)
+    with pytest.raises(NotFoundError):
+        await get_catalog(uow=uow_fix, category_id=category2.id, collection_id=collection1.id)

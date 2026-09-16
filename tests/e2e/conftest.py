@@ -1,4 +1,3 @@
-
 import logging
 
 import pytest
@@ -88,13 +87,6 @@ async def collection(uow_fix):
     async with uow_fix as uow:
         return await uow.db.create(Collection(name="category", image=Image(image_path="path"), categories=Category(name="category")))
 
-
-# @pytest.fixture()
-# async def created_tile(uow_fix, tile, category):
-#     tile.size.id = tile.box.id = 1
-#     tile.category = category
-#     async with uow_fix as uow:
-#         return await uow.db.create(tile)
 
 @pytest.fixture()
 async def created_tile(uow_fix, tile):

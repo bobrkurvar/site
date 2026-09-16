@@ -35,8 +35,8 @@ async def add_tile(
         await add_items(
             tile.color,
             uow.db,
-            color_name=tile.color.color_name,
-            feature_name=tile.color.feature_name,
+            color_name=tile.color.name,
+            feature_name=tile.color.feature,
         )
         tile.producer = await add_items(tile.producer, uow.db, name=tile.producer.name)
         tile.category = await add_items(tile.category, uow.db, name=tile.category.name)
@@ -114,8 +114,8 @@ def extract_composite_fields(tile: Tile) -> dict:
         "size_height": tile.size.height if tile.size else None,
         "box_area": tile.box.area if tile.box else None,
         "box_weight": tile.box.weight if tile.box else None,
-        "color_name": tile.color_name,
-        "feature_name": tile.feature_name,
+        "color_name": tile.color.name,
+        "feature_name": tile.color.feature,
     }
 # def extract_composite_fields(tile: Tile) -> dict:
 #     return {
@@ -162,6 +162,14 @@ def map_tile_param_to_model_param(tile_param: str):
     else:
         return tile_param
 
+def to_domain_values(model, values: dict) -> dict:
+    if model is Color:
+        return {
+            "name": values["color_name"],
+            "feature": values["feature_name"],
+        }
+
+    return values
 
 async def create_new_model(db, article: int, model, **values):
     if model is Size:
@@ -191,7 +199,7 @@ async def create_new_model(db, article: int, model, **values):
 
     log.debug("model: %s values: %s", model, values)
 
-    new_instance = model(**values)
+    new_instance = model(**to_domain_values(model, values))
     domain_obj = await add_items(new_instance, db, **values)
 
     return model_to_update_values(model, domain_obj, **values)

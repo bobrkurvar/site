@@ -6,9 +6,7 @@ from domain import Box, Image, Tile, Size
 from services.exceptions import ImageProcessingError
 from services.tile import delete_tile, update_tile, add_tile
 from tests.helpers import (
-    assert_box,
     assert_handbooks_count,
-    assert_size,
     assert_tile_fields,
     update_filters,
 )
@@ -101,28 +99,15 @@ async def test_update_tile_success_when_new_attributes_in_handbooks(
     log.debug("old_tile: %s", record)
     article = record.id  # фильтр для обновления по артикулу
 
-    new_filters = update_filters()
+    new_filters, expected = update_filters(tile)
     await update_tile(uow=uow, article=article, **new_filters)
-    expected_box, expected_size, color = (
-        new_filters.pop("box"),
-        new_filters.pop("size"),
-        new_filters.pop("color"),
-    )
-    new_filters["color_name"], new_filters["feature_name"] = (
-        color["color_name"],
-        color["feature_name"],
-    )
     async with env.uow as uow:
         new_tile = await uow.db.read_one(Tile, id=article, loaded=["box", "size", "category"])
-        # box = await uow.db.read_one(Box, id=new_tile.box.id)
-        # size = await uow.db.read_one(TileSize, id=new_tile.size.id)
         # Проверка всех справочников, поля в справочниках не должны изменятся, а должны появится новые
         await assert_handbooks_count(uow.db, domain_handbooks_models_for_products, 2)
 
     # проверка всех новых полей с помощью функций, в которых вынесена логика assert
-    assert_size(new_tile.size, expected_size)
-    assert_box(new_tile.box, expected_box)
-    assert_tile_fields(new_tile, new_filters)
+    assert_tile_fields(new_tile, expected)
 
 
 
@@ -138,29 +123,17 @@ async def test_update_tile_success_when_composite_half_composite_color_name_box_
         images_generator=env.images_generator,
     )
     # получил также параметры создания, что бы получить часть композитного ключа без join read иначе из add_tile связанные данные box_area не подтянется
-    article = record.id  # фильтр для обновления по артикулу
     # новые данные color_feature и box_area остаются старыми
-    new_filters = update_filters(feature_name_missing=True, area_missing=True)
-    old_color_feature, old_box_area = record.feature_name, tile.box.area
-    await update_tile(uow=env.uow, article=article, **new_filters)
+    new_filters, expected = update_filters(feature_name_missing=True, area_missing=True, tile=tile)
+    await update_tile(uow=env.uow, article=record.id, **new_filters)
     async with env.uow as uow:
-        new_tile = await uow.db.read_one(Tile, id=article, loaded="category")
-        box = await uow.db.read_one(Box, id=new_tile.box_id)
-        size = await uow.db.read_one(Size, id=new_tile.size_id)
+        new_tile = await uow.db.read_one(
+            Tile,
+            id=record.id,
+            loaded=["category", "size", "box"],
+        )
         await assert_handbooks_count(uow.db, domain_handbooks_models_for_products, 2)
-    # половины композитного ключа берутся из той же записи продукта
-    expected_box, expected_size = dict(
-        **new_filters.pop("box"), area=old_box_area
-    ), new_filters.pop("size")
-    new_filters["color_name"], new_filters["feature_name"] = (
-        new_tile.color_name,
-        record.feature_name,
-    )
-    del new_filters["color"]
-
-    assert_size(size, expected_size)
-    assert_box(box, expected_box)
-    assert_tile_fields(new_tile, new_filters)
+    assert_tile_fields(new_tile, expected)
 
 
 @pytest.mark.asyncio
@@ -175,39 +148,24 @@ async def test_update_tile_success_when_input_composite_length_area_feature(
         images_generator=env.images_generator,
     )
     # получил также параметры создания, что бы получить часть композитного ключа без join read иначе из add_tile связанные данные box_area не подтянется
-    article = record.id  # фильтр для обновления по артикулу
     # меняются только size_length, box_area, color_feature
-    new_filters = update_filters(
+    new_filters, expected = update_filters(
         color_name_missing=True,
         weight_missing=True,
         width_missing=True,
         height_missing=True,
+        tile=tile,
     )
-    old_color_name, old_box_weight, old_width, old_height = (
-        record.color_name,
-        tile.box.weight,
-        tile.size.width,
-        tile.size.height,
-    )
-    await update_tile(uow=env.uow, article=article, **new_filters)
+    await update_tile(uow=env.uow, article=record.id, **new_filters)
     async with env.uow as uow:
-        new_tile = await uow.db.read_one(Tile, id=article, loaded="category")
-        box = await uow.db.read_one(Box, id=new_tile.box_id)
-        size = await uow.db.read_one(Size, id=new_tile.size_id)
+        new_tile = await uow.db.read_one(
+            Tile,
+            id=record.id,
+            loaded=["category", "size", "box"],
+        )
         await assert_handbooks_count(uow.db, domain_handbooks_models_for_products, 2)
-    # половины композитного ключа берутся из той же записи продукта
-    expected_box, expected_size = dict(
-        **new_filters.pop("box"), weight=old_box_weight
-    ), dict(**new_filters.pop("size"), width=old_width, height=old_height)
-    new_filters["color_name"], new_filters["feature_name"] = (
-        record.color_name,
-        new_tile.feature_name,
-    )
-    del new_filters["color"]
 
-    assert_size(size, expected_size)
-    assert_box(box, expected_box)
-    assert_tile_fields(new_tile, new_filters)
+    assert_tile_fields(new_tile, expected)
 
 
 @pytest.mark.asyncio
