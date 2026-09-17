@@ -1,19 +1,26 @@
 from .perform import Compose
 from .commands import Run, Up
 from .utils import execute_with_diagnostics
+import shlex
 
+
+base = "docker-compose.base.yml"
 
 prod_env = Compose(
-    "docker-compose.yml",
+    base,
+    "docker-compose.prod.yml",
     project="site",
+    allow_build=False
 )
 
 test_env = Compose(
+    base,
     "docker-compose.test.yml",
     project="tests",
 )
 
 local_env = Compose(
+    base,
     "docker-compose.local.yml",
     project="local_site",
 )
@@ -52,9 +59,9 @@ def all_tests():
         )
 
 
-def local_deploy():
-    with local_env.down_before_and_after(volumes=False) as compose:
-        execute_with_diagnostics(compose, Up(build=True))
+def deploy(compose: Compose, build=True):
+    with compose.down_before_and_after(volumes=False):
+        execute_with_diagnostics(compose, Up(build=build))
 
 
 def create_migration(name: str | None = None):
@@ -71,14 +78,35 @@ def create_migration(name: str | None = None):
     )
 
 
-def migrate():
-    return execute_with_diagnostics(local_env,Run("migrate"))
+def migrate(compose: Compose, build=True):
+     return execute_with_diagnostics(compose,Run("migrate", build=build))
 
 
-def generate_miniatures():
-    return execute_with_diagnostics(prod_env, Run("generate_miniatures", build=True))
+
+def generate_miniatures(compose: Compose, build=True):
+    return execute_with_diagnostics(compose, Run("generate_miniatures", build=build))
 
 
-def rename_collections():
-    with prod_env.down_before_and_after(volumes=False) as compose:
-        return execute_with_diagnostics(compose, Run("rename_collections", build=True))
+def rename_collections(compose: Compose, build=True):
+    with compose.down_before_and_after(volumes=False):
+        return execute_with_diagnostics(compose, Run("rename_collections", build=build))
+
+
+def interactive(env: Compose, *args):
+    if args:
+        return env.execute(args)
+
+    while True:
+        try:
+            command = input("compose> ").strip()
+        except (KeyboardInterrupt, EOFError):
+            print()
+            return
+
+        if not command:
+            continue
+
+        if command in {"exit", "quit"}:
+            return
+
+        env.execute(shlex.split(command))

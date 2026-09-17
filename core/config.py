@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     cookie_secret: str
     is_test: bool
     redis_host: str
+    server: str
 
     @property
     def db_url(self):

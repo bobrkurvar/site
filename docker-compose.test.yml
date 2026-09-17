@@ -1,3 +1,157 @@
+#services:
+#  unit_tests:
+#    image: mysite/unit_test
+#    build:
+#      context: .
+#      dockerfile: ./Dockerfile
+#      target: unit_tests
+#    env_file:
+#      - .env
+#
+#  e2e_tests:
+#    image: mysite/e2e_test
+#    build:
+#      context: .
+#      dockerfile: ./Dockerfile
+#      target: e2e_tests
+#    env_file:
+#      - .env
+#    environment:
+#      API_HOST: nginx
+#      DB_HOST: postgres
+#      DB_USER: postgres
+#    depends_on:
+#      app:
+#        condition: service_healthy
+#      migrate:
+#        condition: service_completed_successfully
+#      runner:
+#        condition: service_completed_successfully
+#      redis:
+#        condition: service_started
+#      nginx:
+#        condition: service_started
+#
+#  int_tests:
+#    image: mysite/int_test
+#    build:
+#      context: .
+#      dockerfile: ./Dockerfile
+#      target: int_tests
+#    env_file:
+#      - .env
+#    environment:
+#      DB_HOST: postgres
+#      REDIS_HOST: redis
+#    depends_on:
+#      migrate:
+#        condition: service_completed_successfully
+#      runner:
+#        condition: service_completed_successfully
+#      postgres:
+#        condition: service_healthy
+#      redis:
+#        condition: service_started
+#
+#  app:
+#    image: mysite/app
+#    build:
+#      context: .
+#      dockerfile: ./Dockerfile
+#      target: main_app
+#    env_file:
+#      - .env
+#    environment:
+#      IS_TEST: True
+#      DB_HOST: postgres
+#      DB_USER: postgres
+#      API_HOST: image_service
+#      REDIS_HOST: redis
+#    depends_on:
+#      postgres:
+#        condition: service_healthy
+#      image_service:
+#        condition: service_started
+#    healthcheck:
+#      test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" ]
+#      interval: 1s
+#      timeout: 2s
+#      retries: 5
+#      start_period: 1s
+#
+#  image_service:
+#    image: mysite/image_service
+#    build:
+#      context: .
+#      dockerfile: ./Dockerfile
+#      target: image
+#    env_file:
+#      - .env
+#    environment:
+#      PORT: ${IMAGE_PORT}
+#
+#  postgres:
+#    image: postgres:16-alpine
+#    env_file:
+#      - .env
+#    environment:
+#      POSTGRES_DB: ${DB_NAME}
+#      POSTGRES_USER: postgres
+#      POSTGRES_PASSWORD: ${DB_PASSWORD}
+#    healthcheck:
+#      test: ["CMD-SHELL", "pg_isready -U postgres -d ${DB_NAME}"]
+#      interval: 2s
+#      timeout: 3s
+#      retries: 5
+#      start_period: 5s
+#
+#  migrate:
+#    image: mysite/migrate
+#    build:
+#      context: .
+#      dockerfile: ./Dockerfile
+#      target: migrate
+#    env_file:
+#      - .env
+#    environment:
+#      DB_HOST: postgres
+#      DB_USER: postgres
+#    depends_on:
+#      postgres:
+#        condition: service_healthy
+#
+#  runner:
+#    image: mysite/runner
+#    build:
+#      context: .
+#      dockerfile: ./Dockerfile
+#      target: runner
+#    env_file:
+#      - .env
+#    environment:
+#      DB_HOST: postgres
+#      DB_USER: postgres
+#    depends_on:
+#      postgres:
+#        condition: service_healthy
+#      migrate:
+#        condition: service_completed_successfully
+#
+#  nginx:
+#    container_name: site_nginx
+#    image: nginx:1.27-alpine
+#    depends_on:
+#      app:
+#        condition: service_healthy
+#    volumes:
+#      - ./nginx/site.conf:/etc/nginx/conf.d/default.conf:ro
+#      - ./nginx/snippets:/etc/nginx/snippets:ro
+#      - ./static:/var/www/static:ro
+#
+#
+#  redis:
+#    image: redis:7-alpine
+
 services:
   unit_tests:
     image: mysite/unit_test
@@ -7,6 +161,29 @@ services:
       target: unit_tests
     env_file:
       - .env
+
+  int_tests:
+    image: mysite/int_test
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      target: int_tests
+    env_file:
+      - .env
+    environment:
+      DB_HOST: postgres
+      REDIS_HOST: redis
+    networks:
+      internal: {}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      runner:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
 
   e2e_tests:
     image: mysite/e2e_test
@@ -20,6 +197,8 @@ services:
       API_HOST: nginx
       DB_HOST: postgres
       DB_USER: postgres
+    networks:
+      internal: {}
     depends_on:
       app:
         condition: service_healthy
@@ -32,122 +211,53 @@ services:
       nginx:
         condition: service_started
 
-  int_tests:
-    image: mysite/int_test
-    build:
-      context: .
-      dockerfile: ./Dockerfile
-      target: int_tests
-    env_file:
-      - .env
-    environment:
-      DB_HOST: postgres
-      REDIS_HOST: redis
-    depends_on:
-      migrate:
-        condition: service_completed_successfully
-      runner:
-        condition: service_completed_successfully
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_started
-
   app:
-    image: mysite/app
-    build:
-      context: .
-      dockerfile: ./Dockerfile
-      target: main_app
-    env_file:
-      - .env
     environment:
-      IS_TEST: True
-      DB_HOST: postgres
-      DB_USER: postgres
-      API_HOST: image_service
-      REDIS_HOST: redis
+      IS_TEST: "True"
+
+    # В base есть bind mount реальных static/images.
+    # В старом test compose его не было.
+    volumes: !reset []
+
+    restart: "no"
+
     depends_on:
       postgres:
         condition: service_healthy
       image_service:
         condition: service_started
+
     healthcheck:
-      test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" ]
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"
+        ]
       interval: 1s
       timeout: 2s
       retries: 5
       start_period: 1s
 
   image_service:
-    image: mysite/image_service
-    build:
-      context: .
-      dockerfile: ./Dockerfile
-      target: image
-    env_file:
-      - .env
-    environment:
-      PORT: ${IMAGE_PORT}
+    restart: "no"
 
   postgres:
-    image: postgres:16-alpine
-    env_file:
-      - .env
-    environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d ${DB_NAME}"]
-      interval: 2s
-      timeout: 3s
-      retries: 5
-      start_period: 5s
+    # Убираем:
+    # - pgdata
+    # - backup_final.sql
+    volumes: !reset []
 
-  migrate:
-    image: mysite/migrate
-    build:
-      context: .
-      dockerfile: ./Dockerfile
-      target: migrate
-    env_file:
-      - .env
-    environment:
-      DB_HOST: postgres
-      DB_USER: postgres
-    depends_on:
-      postgres:
-        condition: service_healthy
+    restart: "no"
 
   runner:
-    image: mysite/runner
-    build:
-      context: .
-      dockerfile: ./Dockerfile
-      target: runner
-    env_file:
-      - .env
-    environment:
-      DB_HOST: postgres
-      DB_USER: postgres
     depends_on:
-      postgres:
-        condition: service_healthy
       migrate:
         condition: service_completed_successfully
 
   nginx:
-    container_name: site_nginx
-    image: nginx:1.27-alpine
+    restart: "no"
     depends_on:
       app:
         condition: service_healthy
-    volumes:
-      - ./nginx/site.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./nginx/snippets:/etc/nginx/snippets:ro
-      - ./static:/var/www/static:ro
-
-
-  redis:
-    image: redis:7-alpine

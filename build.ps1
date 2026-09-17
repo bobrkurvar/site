@@ -11,4 +11,4 @@ Remove-Item -Force devops.spec
 docker build `
     -f devops/Dockerfile `
     -o dist/linux `
-    devops
+    .

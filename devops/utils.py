@@ -1,6 +1,7 @@
 import json
 from .commands import Ps, Logs
 from .perform import Compose
+from functools import partial
 
 def failed_services(compose_env: Compose) -> tuple[str, ...]:
     result = compose_env.execute(Ps(all=True, format="json"), capture_output=True)
@@ -35,3 +36,7 @@ def execute_with_diagnostics(
         if failed:
             compose.execute(Logs(*failed))
         raise
+
+
+def put_compose(compose: Compose, **funcs):
+    return {k: partial(func, compose) for k, func in funcs.items()}

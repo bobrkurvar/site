@@ -1,5 +1,6 @@
 #services:
 #  app:
+#    image: mysite/app
 #    build:
 #      context: .
 #      dockerfile: ./Dockerfile
@@ -14,19 +15,15 @@
 #    networks:
 #      - internal
 #    depends_on:
-#      runner:
-#        condition: service_completed_successfully
-#      migrate:
-#        condition: service_completed_successfully
-#      image_service:
-#        condition: service_started
-#      redis:
-#        condition: service_started
+#      - image_service
+#      - redis
+#      - postgres
 #    volumes:
 #      - ./static/images:/pysite/static/images # bind mount docker compose down -v не удалит этот том
 #    restart: unless-stopped
 #
 #  image_service:
+#    image: mysite/image_service
 #    build:
 #      context: .
 #      dockerfile: ./Dockerfile
@@ -52,7 +49,6 @@
 #    volumes:
 #      - pgdata:/var/lib/postgresql/data
 #      - ./db/init/backup_final.sql:/docker-entrypoint-initdb.d/01-backup.sql:ro # при пустой базе выполнит всё что в этой папке
-#      #- ./db_archive/backup/backup2.sql:/docker-entrypoint-initdb.d/01-backup.sql:ro
 #    restart: unless-stopped
 #    healthcheck:
 #      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U postgres -d ${DB_NAME}"]
@@ -62,6 +58,8 @@
 #      start_period: 5s
 #
 #  migrate:
+#    profiles: ["tools"]
+#    image: mysite/migrate
 #    build:
 #      context: .
 #      dockerfile: ./Dockerfile
@@ -73,14 +71,13 @@
 #      DB_USER: postgres
 #    networks:
 #      - internal
-#    volumes:
-#      - ./migrations/versions:/pysite/migrations/versions
 #    depends_on:
-#      postgres:
-#        condition: service_healthy
+#      - postgres
 #    restart: "no"
 #
 #  runner:
+#    profiles: ["tools"]
+#    image: mysite/runner
 #    build:
 #      context: .
 #      dockerfile: ./Dockerfile
@@ -93,10 +90,41 @@
 #    networks:
 #      - internal
 #    depends_on:
+#      - postgres
+#    restart: "no"
+#
+#  generate_miniatures:
+#    image: mysite/generate_miniatures
+#    profiles: [ "tools" ]
+#    build:
+#      context: .
+#      dockerfile: ./Dockerfile
+#      target: generate_miniatures
+#    env_file:
+#      - .env
+#    volumes:
+#      - ./static/images:/pysite/static/images # bind mount docker compose down -v не удалит этот том
+#    restart: "no"
+#
+#  rename_collections:
+#    image: mysite/rename_collections
+#    profiles: [ "tools" ]
+#    build:
+#      context: .
+#      dockerfile: ./Dockerfile
+#      target: rename_collections
+#    env_file:
+#      - .env
+#    environment:
+#      DB_HOST: postgres
+#      DB_USER: postgres
+#    volumes:
+#      - ./static/images/base/collections:/pysite/static/images/base/collections # bind mount docker compose down -v не удалит этот том
+#    networks:
+#      - internal
+#    depends_on:
 #      postgres:
 #        condition: service_healthy
-#      migrate:
-#        condition: service_completed_successfully
 #    restart: "no"
 #
 #  nginx:
@@ -108,41 +136,64 @@
 #      - ./nginx/snippets:/etc/nginx/snippets:ro
 #      - ./static:/var/www/static:ro
 #    restart: unless-stopped
+#
 #    networks:
 #      - internal
-#    ports:
-#        - "80:80"
+#      - traefik-public
+#
+#    labels:
+#      - traefik.enable=true
+#
+#      # домен проекта
+#      - traefik.http.routers.project1.rule=Host(`keramovibor.ru`) || Host(`www.keramovibor.ru`)
+#      - traefik.http.routers.project1.entrypoints=websecure
+#      - traefik.http.routers.project1.tls.certresolver=le
+#
+#      # какой внутренний порт слушает nginx в контейнере
+#      - traefik.http.services.project1.loadbalancer.server.port=80
+#
+#      # в какой docker-сети traefik должен найти контейнер
+#      - traefik.docker.network=traefik-public
 #
 #  redis:
 #    image: redis:7-alpine
 #    networks:
 #      - internal
 #
-#
 #networks:
 #  internal:
 #    driver: bridge
+#
+#  traefik-public:
+#    external: true
 #
 #volumes:
 #  pgdata:
 
 services:
-  app:
-    depends_on:
-      migrate:
-        condition: service_completed_successfully
-      runner:
-        condition: service_completed_successfully
-
   migrate:
+    profiles: ["tools"]
     volumes:
-      - ./migrations/versions:/pysite/migrations/versions
+      - ./migrations:/pysite/migrations/versions:ro
 
   runner:
-    depends_on:
-      migrate:
-        condition: service_completed_successfully
+    profiles: ["tools"]
 
   nginx:
-    ports:
-      - "80:80"
+    networks:
+      traefik-public: {}
+
+    labels:
+      - traefik.enable=true
+
+      - traefik.http.routers.project1.rule=Host(`keramovibor.ru`) || Host(`www.keramovibor.ru`)
+      - traefik.http.routers.project1.entrypoints=websecure
+      - traefik.http.routers.project1.tls.certresolver=le
+
+      - traefik.http.services.project1.loadbalancer.server.port=80
+
+      - traefik.docker.network=traefik-public
+
+networks:
+  traefik-public:
+    external: true

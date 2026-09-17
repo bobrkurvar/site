@@ -5,17 +5,29 @@ from .commands import Down
 
 
 class Compose:
-    def __init__(self, compose_file: str, *, project: str | None = None):
-        self.compose_file = compose_file
+    def __init__(self, *compose_files, project: str | None = None, allow_build = True):
+        self.compose_files = compose_files
         self.project = project
+        self.allow_build = allow_build
 
     def make_command(self, command) -> list[str]:
+        command = list(command)
+
+        if not self.allow_build:
+            command = [
+                arg
+                for arg in command
+                if arg != "--build"
+            ]
+
         args = ["docker", "compose"]
 
         if self.project:
             args.extend(("-p", self.project))
 
-        args.extend(("-f", self.compose_file))
+        for compose_file in self.compose_files:
+            args.extend(("-f", compose_file))
+
         args.extend(command)
 
         return args
