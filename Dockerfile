@@ -108,3 +108,10 @@ WORKDIR /pysite/tests/e2e
 ENV PYTHONPATH=/pysite
 ENTRYPOINT ["pytest"]
 
+FROM nginx:1.27-alpine AS custom_nginx
+
+COPY nginx/site.conf /etc/nginx/conf.d/default.conf
+COPY nginx/snippets /etc/nginx/snippets
+
+COPY static/css /var/www/static/css
+COPY static/js /var/www/static/js

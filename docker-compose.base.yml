@@ -137,14 +137,20 @@ services:
     restart: "no"
 
   nginx:
-    image: nginx:1.27-alpine
+    image: bobrkurva111/nginx
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      target: custom_nginx
+    volumes:
+      - ./static/images:/var/www/static/images:ro
     depends_on:
       app:
         condition: service_started
-    volumes:
-      - ./nginx/site.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./nginx/snippets:/etc/nginx/snippets:ro
-      - ./static:/var/www/static:ro
+#    volumes:
+#      - ./nginx/site.conf:/etc/nginx/conf.d/default.conf:ro
+#      - ./nginx/snippets:/etc/nginx/snippets:ro
+#      - ./static:/var/www/static:ro
     networks:
       internal: {}
     restart: unless-stopped
