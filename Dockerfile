@@ -56,7 +56,7 @@ FROM base AS rename_collections
 COPY scripts/rename_collections.py ./rename_collections.py
 COPY adapters ./adapters
 COPY db ./db
-COPY domain ./ domain
+COPY domain ./domain
 COPY services ./services
 COPY contracts ./contracts
 COPY infra ./infra

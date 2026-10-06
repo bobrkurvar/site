@@ -49,15 +49,9 @@ class ProductImagesManager(FileManager):
         return self.resolve_path(file_name, ORIGINAL_PRODUCT)
 
     def get_product_catalog_image_path(self, base_path: str) -> str:
-        # base_path = Path(base_path)
-        # name = base_path.name
-        # return str(self.resolve_path(name, PRODUCTS))
         return self.get_layer_path(base_path, PRODUCTS)
 
     def get_product_details_image_path(self, base_path: str) -> str:
-        # base_path = Path(base_path)
-        # name = base_path.name
-        #return str(self.resolve_path(name, DETAILS))
         return self.get_layer_path(base_path, DETAILS)
 
 
@@ -72,8 +66,6 @@ class CollectionImagesManager(FileManager):
         return self.resolve_path(file_name, ORIGINAL_COLLECTION)
 
     def get_collections_image_path(self, base_path: str) -> str:
-        # name = Path(base_path).name
-        # return str(self.resolve_path(name, COLLECTIONS))
         return self.get_layer_path(base_path, COLLECTIONS)
 
 

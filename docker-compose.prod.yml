@@ -171,15 +171,30 @@
 #  pgdata:
 
 services:
+  app:
+    pull_policy: always
+
+  image_service:
+    pull_policy: always
+
   migrate:
+    pull_policy: always
     profiles: ["tools"]
     volumes:
       - ./migrations:/pysite/migrations/versions:ro
 
+  generate_miniatures:
+    pull_policy: always
+
+  rename_collections:
+    pull_policy: always
+
   runner:
+    pull_policy: always
     profiles: ["tools"]
 
   nginx:
+    pull_policy: always
     networks:
       traefik-public: {}
 

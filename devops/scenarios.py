@@ -10,7 +10,7 @@ prod_env = Compose(
     base,
     "docker-compose.prod.yml",
     project="site",
-    allow_build=False
+    allow_build=False,
 )
 
 test_env = Compose(

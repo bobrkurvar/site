@@ -63,35 +63,3 @@ class ImageHttpClient:
 
     async def close(self):
         await self._client.aclose()
-
-# @add_exception_handler
-# class HttpClient:
-#
-#     def __init__(self, url=None, app=None):
-#         self._url = url
-#         self._app = app
-#         self._client = (
-#             AsyncClient(transport=ASGITransport(app=self._app), base_url=self._url)
-#             if self._app
-#             else AsyncClient(base_url=self._url)
-#         )
-#
-#     @property
-#     def client(self):
-#         if self._client is None:
-#             raise RuntimeError("HTTP client is not initialized")
-#         return self._client
-#
-#     async def generate_images(self, **data):
-#         try:
-#             resp = await self.client.post("/generate-images", json=data)
-#             resp.raise_for_status()
-#             return resp.json()
-#         except HTTPStatusError as exc:
-#             log.exception(f"HTTP ошибка: {exc}")
-#             return None
-#
-#     async def close(self):
-#         if self._client:
-#             await self.client.aclose()
-#             self._client = None
